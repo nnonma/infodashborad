@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🧭 一次元管理 Terminal</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Noto+Sans+JP:wght@300;400;700&family=Space+Mono:wght@400;700&display=swap');
+
+  :root {
+    --bg: #0a0b0e;
+    --bg2: #0f1117;
+    --bg3: #151820;
+    --panel: #12141a;
+    --border: #1e2230;
+    --border2: #252a3a;
+    --text: #c8cdd8;
+    --text-dim: #5a6080;
+    --text-bright: #eef0f5;
+    --accent-green: #2dff9a;
+    --accent-blue: #4d8eff;
+    --accent-amber: #ffbe3d;
+    --accent-red: #ff4d6a;
+    --accent-purple: #b97dff;
+    --accent-cyan: #3dd8ff;
+    --glow-green: rgba(45,255,154,0.15);
+    --glow-blue: rgba(77,142,255,0.15);
+    --glow-amber: rgba(255,190,61,0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── SCANLINE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.08) 2px,
+      rgba(0,0,0,0.08) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* ── HEADER ── */
+  header {
+    border-bottom: 1px solid var(--border2);
+    padding: 18px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg2);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+  }
+
+  .header-left {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+  }
+
+  .logo {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent-green);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .logo span {
+    color: var(--text-dim);
+    font-weight: 300;
+  }
+
+  .date-stamp {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.06em;
+  }
+
+  .pulse-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--accent-green);
+    box-shadow: 0 0 8px var(--accent-green);
+    animation: pulse 2s ease-in-out infinite;
+    display: inline-block;
+    margin-right: 6px;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+
+  /* ── LAYOUT ── */
+  .main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 28px 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+  }
+
+  /* ── PANEL BASE ── */
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .panel:hover::before { opacity: 1; }
+
+  .panel-green::before { background: var(--accent-green); box-shadow: 0 0 12px var(--accent-green); }
+  .panel-blue::before { background: var(--accent-blue); box-shadow: 0 0 12px var(--accent-blue); }
+  .panel-amber::before { background: var(--accent-amber); box-shadow: 0 0 12px var(--accent-amber); }
+  .panel-purple::before { background: var(--accent-purple); box-shadow: 0 0 12px var(--accent-purple); }
+  .panel-cyan::before { background: var(--accent-cyan); box-shadow: 0 0 12px var(--accent-cyan); }
+  .panel-red::before { background: var(--accent-red); box-shadow: 0 0 12px var(--accent-red); }
+
+  .panel-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255,255,255,0.02);
+  }
+
+  .panel-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .panel-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    padding: 2px 8px;
+    border-radius: 2px;
+    letter-spacing: 0.06em;
+  }
+
+  .badge-green { background: rgba(45,255,154,0.12); color: var(--accent-green); border: 1px solid rgba(45,255,154,0.25); }
+  .badge-amber { background: rgba(255,190,61,0.12); color: var(--accent-amber); border: 1px solid rgba(255,190,61,0.25); }
+  .badge-red { background: rgba(255,77,106,0.12); color: var(--accent-red); border: 1px solid rgba(255,77,106,0.25); }
+  .badge-blue { background: rgba(77,142,255,0.12); color: var(--accent-blue); border: 1px solid rgba(77,142,255,0.25); }
+  .badge-purple { background: rgba(185,125,255,0.12); color: var(--accent-purple); border: 1px solid rgba(185,125,255,0.25); }
+
+  .panel-body { padding: 16px; }
+
+  /* ── SPAN HELPERS ── */
+  .span-full { grid-column: 1 / -1; }
+  .span-2 { grid-column: span 2; }
+
+  /* ── PROJECTS ── */
+  .project-item {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 12px;
+    align-items: start;
+    transition: background 0.2s;
+    cursor: default;
+  }
+
+  .project-item:last-child { border-bottom: none; }
+  .project-item:hover { background: rgba(255,255,255,0.025); }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+
+  .dot-active { background: var(--accent-green); box-shadow: 0 0 6px var(--accent-green); }
+  .dot-hold { background: var(--accent-amber); }
+  .dot-done { background: var(--text-dim); }
+  .dot-new { background: var(--accent-blue); box-shadow: 0 0 6px var(--accent-blue); }
+
+  .project-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-bright);
+    margin-bottom: 4px;
+    line-height: 1.3;
+  }
+
+  .project-desc {
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  .project-next {
+    font-size: 10px;
+    color: var(--accent-cyan);
+    margin-top: 6px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .project-next::before { content: '▶ '; opacity: 0.6; }
+
+  .project-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+  }
+
+  .cat-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+
+  /* ── PROGRESS BAR ── */
+  .progress-wrap {
+    margin-top: 8px;
+  }
+
+  .progress-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--text-dim);
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+
+  .progress-track {
+    height: 3px;
+    background: var(--border2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 1s ease;
+  }
+
+  .fill-green { background: var(--accent-green); box-shadow: 0 0 6px rgba(45,255,154,0.5); }
+  .fill-blue { background: var(--accent-blue); }
+  .fill-amber { background: var(--accent-amber); }
+  .fill-purple { background: var(--accent-purple); }
+
+  /* ── CHECKLIST ── */
+  .checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+  }
+
+  .checklist-item:last-child { border-bottom: none; }
+
+  .check-icon {
+    width: 14px; height: 14px;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    flex-shrink: 0;
+  }
+
+  .check-done {
+    background: rgba(45,255,154,0.15);
+    border: 1px solid var(--accent-green);
+    color: var(--accent-green);
+  }
+
+  .check-todo {
+    background: transparent;
+    border: 1px solid var(--border2);
+    color: transparent;
+  }
+
+  .check-label-done { color: var(--text-dim); text-decoration: line-through; }
+  .check-label-todo { color: var(--text); }
+
+  /* ── STAT GRID ── */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .stat-cell {
+    padding: 14px 12px;
+    text-align: center;
+    border-right: 1px solid var(--border);
+  }
+
+  .stat-cell:last-child { border-right: none; }
+
+  .stat-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-label {
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 12px 0;
+    scrollbar-width: none;
+  }
+
+  .flow::-webkit-scrollbar { display: none; }
+
+  .flow-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 6px;
+  }
+
+  .flow-box {
+    padding: 8px 12px;
+    border-radius: 3px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-align: center;
+    white-space: nowrap;
+    line-height: 1.3;
+  }
+
+  .flow-arrow {
+    font-size: 14px;
+    color: var(--text-dim);
+    padding: 0 6px;
+    flex-shrink: 0;
+    margin-bottom: 16px;
+  }
+
+  /* ── SETUP LIST ── */
+  .setup-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+
+  .setup-item:hover { background: rgba(255,255,255,0.02); }
+  .setup-item:last-child { border-bottom: none; }
+
+  .setup-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    flex-shrink: 0;
+    margin-top: 1px;
+    width: 20px;
+  }
+
+  .setup-text {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .setup-status {
+    margin-left: auto;
+    flex-shrink: 0;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 2px;
+  }
+
+  /* ── SECTION LABEL ── */
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 6px 0 10px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 10px;
+  }
+
+  /* ── PHASE TABLE ── */
+  .phase-row {
+    display: grid;
+    grid-template-columns: 28px 1fr auto;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+  }
+
+  .phase-row:last-child { border-bottom: none; }
+
+  .phase-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-dim);
+    text-align: center;
+  }
+
+  .phase-name { font-size: 12px; font-weight: 700; color: var(--text-bright); }
+  .phase-sub { font-size: 10px; color: var(--text-dim); margin-top: 1px; }
+
+  .phase-icon { font-size: 15px; }
+
+  /* ── LINK BUTTON ── */
+  .notion-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    background: rgba(45,255,154,0.06);
+    border: 1px solid rgba(45,255,154,0.2);
+    border-radius: 3px;
+    color: var(--accent-green);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    transition: all 0.2s;
+    margin-top: 12px;
+  }
+
+  .notion-link:hover {
+    background: rgba(45,255,154,0.12);
+    border-color: rgba(45,255,154,0.4);
+    box-shadow: 0 0 16px rgba(45,255,154,0.1);
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .panel {
+    animation: fadeIn 0.4s ease both;
+  }
+
+  .panel:nth-child(1) { animation-delay: 0.05s; }
+  .panel:nth-child(2) { animation-delay: 0.10s; }
+  .panel:nth-child(3) { animation-delay: 0.15s; }
+  .panel:nth-child(4) { animation-delay: 0.20s; }
+  .panel:nth-child(5) { animation-delay: 0.25s; }
+  .panel:nth-child(6) { animation-delay: 0.30s; }
+  .panel:nth-child(7) { animation-delay: 0.35s; }
+  .panel:nth-child(8) { animation-delay: 0.40s; }
+
+  /* ── MOBILE ── */
+  @media (max-width: 900px) {
+    .main { grid-template-columns: 1fr 1fr; }
+    .span-full { grid-column: 1 / -1; }
+    .span-2 { grid-column: 1 / -1; }
+  }
+
+  @media (max-width: 600px) {
+    .main { grid-template-columns: 1fr; padding: 12px; gap: 12px; }
+    .span-full, .span-2 { grid-column: 1 / -1; }
+    .stat-grid { grid-template-columns: repeat(2, 1fr); }
+    .stat-cell:nth-child(2) { border-right: none; }
+    header { padding: 12px 16px; flex-wrap: wrap; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="logo">
+      <span class="pulse-dot"></span>
+      Project<span>Terminal</span>
+    </div>
+    <div class="date-stamp" id="ts">—</div>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <span class="panel-badge badge-green">LIVE</span>
+    <a href="https://www.notion.so/31a8140b186e818098f7e2f2fa4d8679" target="_blank" class="notion-link" style="margin-top:0">
+      ↗ Notion
+    </a>
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- ── STAT ROW ── -->
+  <div class="panel span-full panel-green">
+    <div class="panel-header">
+      <div class="panel-title" style="color:var(--accent-green)">📊 プロジェクト概況</div>
+      <span class="panel-badge badge-green">2026-03-11</span>
+    </div>
+    <div class="panel-body" style="padding:16px;">
+      <div class="stat-grid">
+        <div class="stat-cell">
+          <div class="stat-num" style="color:var(--accent-green)">4</div>
+          <div class="stat-label">進行中</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-num" style="color:var(--accent-amber)">1</div>
+          <div class="stat-label">試験中</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-num" style="color:var(--accent-blue)">3</div>
+          <div class="stat-label">未着手</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-num" style="color:var(--text-dim)">0</div>
+          <div class="stat-label">完了</div>
+        </div>
+      </div>
+
+      <!-- FLOW -->
+      <div class="section-label">自動化フロー</div>
+      <div class="flow">
+        <div class="flow-node">
+          <div class="flow-box" style="background:rgba(77,142,255,0.1);border:1px solid rgba(77,142,255,0.3);color:var(--accent-blue)">情報収集<br>論文・政策・ニュース</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">
+          <div class="flow-box" style="background:rgba(185,125,255,0.1);border:1px solid rgba(185,125,255,0.3);color:var(--accent-purple)">Claude /<br>NotebookLM</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">
+          <div class="flow-box" style="background:rgba(45,255,154,0.1);border:1px solid rgba(45,255,154,0.3);color:var(--accent-green)">Notion DB<br>格納</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">
+          <div class="flow-box" style="background:rgba(255,190,61,0.1);border:1px solid rgba(255,190,61,0.3);color:var(--accent-amber)">各ダッシュボード<br>反映</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">
+          <div class="flow-box" style="background:rgba(61,216,255,0.1);border:1px solid rgba(61,216,255,0.3);color:var(--accent-cyan)">Terminal<br>スマホ確認</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">
+          <div class="flow-box" style="background:rgba(255,77,106,0.1);border:1px solid rgba(255,77,106,0.3);color:var(--accent-red)">AI創作論文<br>発行</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PROJECT LIST ── -->
+  <div class="panel span-2 panel-green">
+    <div class="panel-header">
+      <div class="panel-title" style="color:var(--accent-green)">🗂️ 進行プロジェクト</div>
+      <span class="panel-badge badge-green">ACTIVE</span>
+    </div>
+
+    <div class="project-item">
+      <div class="status-dot dot-active"></div>
+      <div>
+        <div class="project-name">📖 ロッド物語 — 創作管理</div>
+        <div class="project-desc">杏と栗が崩壊地域へ向かう短中編。細胞・半導体・電磁気的類推を世界観の骨格に置く。</div>
+        <div class="progress-wrap">
+          <div class="progress-label"><span>フェーズ進行</span><span>4/6</span></div>
+          <div class="progress-track"><div class="progress-fill fill-green" style="width:66%"></div></div>
+        </div>
+        <div class="project-next">フェーズ3「探索・汚染」の線虫描写 / ロッカー風化シーン</div>
+      </div>
+      <div class="project-meta">
+        <span class="cat-tag badge-purple">制作物</span>
+        <span class="cat-tag" style="background:rgba(45,255,154,0.08);color:var(--text-dim);border:1px solid var(--border2);font-family:'Space Mono',monospace;font-size:9px;padding:2px 6px;border-radius:2px;white-space:nowrap;">2026-03-11</span>
+      </div>
+    </div>
+
+    <div class="project-item">
+      <div class="status-dot dot-active"></div>
+      <div>
+        <div class="project-name">🌿 VRChat 四季の公園ワールド</div>
+        <div class="project-desc">Unity + Udon# で四季・時間・天候対応の公園ワールド。Quest対応・GitHub Pages連携ダッシュボード構想あり。</div>
+        <div class="progress-wrap">
+          <div class="progress-label"><span>ステップ進行</span><span>4/8</span></div>
+          <div class="progress-track"><div class="progress-fill fill-blue" style="width:50%"></div></div>
+        </div>
+        <div class="project-next">STEP 05 Udon# 時間・天候・四季システムの実装</div>
+      </div>
+      <div class="project-meta">
+        <span class="cat-tag badge-blue">環境構築</span>
+        <span class="cat-tag" style="background:rgba(45,255,154,0.08);color:var(--text-dim);border:1px solid var(--border2);font-family:'Space Mono',monospace;font-size:9px;padding:2px 6px;border-radius:2px;white-space:nowrap;">2026-03-06</span>
+      </div>
+    </div>
+
+    <div class="project-item">
+      <div class="status-dot dot-active"></div>
+      <div>
+        <div class="project-name">🧠 思考の堆積（野良研究）</div>
+        <div class="project-desc">時間・距離・評価の三軸をベースにした着想の蓄積。プレプリントへの遠い到達を目標に構造化サイクルを回す。</div>
+        <div class="project-next">電磁気と評価・信用の対応データを眺める、細胞膜境界の構造を見る</div>
+      </div>
+      <div class="project-meta">
+        <span class="cat-tag badge-purple">研究</span>
+      </div>
+    </div>
+
+    <div class="project-item">
+      <div class="status-dot dot-active"></div>
+      <div>
+        <div class="project-name">💻 HTMLダッシュボード管理</div>
+        <div class="project-desc">思考の堆積を可視化するローカルHTML。ログ・構造マップ・今日の早見・問答・検索の六タブ構成。</div>
+        <div class="project-next">必要に応じてタブ・機能追加。Claude Code使用可能時にPC直反映</div>
+      </div>
+      <div class="project-meta">
+        <span class="cat-tag badge-green">環境構築</span>
+      </div>
+    </div>
+
+    <div class="project-item">
+      <div class="status-dot dot-hold"></div>
+      <div>
+        <div class="project-name">📈 経営シミュレーション</div>
+        <div class="project-desc">特定企業の立場での経営判断シミュレーション。</div>
+        <div class="project-next">継続中の内容があれば記録</div>
+      </div>
+      <div class="project-meta">
+        <span class="cat-tag badge-amber">試験中</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── VRChat チェックリスト ── -->
+  <div class="panel panel-blue">
+    <div class="panel-header">
+      <div class="panel-title" style="color:var(--accent-blue)">🌿 VRChat チェック</div>
+      <span class="panel-badge badge-blue">4/8 完了</span>
+    </div>
+    <div style="padding: 4px 0;">
+      <div class="checklist-item">
+        <div class="check-icon check-done">✓</div>
+        <span class="check-label-done">STEP 01 環境構築</span>
+      </div>
+      <div class="checklist-item">
+        <div class="check-icon check-done">✓</div>
+        <span class="check-label-done">STEP 02 Unity基本操作</span>
+      </div>
+      <div class="checklist-item">
+        <div class="check-icon check-done">✓</div>
+        <span class="check-label-done">初回ワールドアップロード 🎉</span>
+      </div>
+      <div class="checklist-item">
+        <div class="check-icon check-done">✓</div>
+        <span class="check-label-done">STEP 03-04 地形・ベンチ配置</span>
+      </div>
+      <div class="checklist-item">
+        <div class="check-icon check-todo">○</div>
+        <span class="check-label-todo" style="color:var(--accent-blue);font-weight:700">STEP 05 Udon# 四季システム ◀</span>
+      </div>
+      <div class="checklist-item">
+        <div class="check-icon check-todo">○</div>
+        <span class="check-label-todo">フローティングダッシュボード</span>
+      </div>
+      <div class="checklist-item">
+        <div class="check-icon check-todo">○</div>
+        <span class="check-label-todo">STEP 06 ライティング & テスト</span>
+      </div>
+      <div class="checklist-item">
+        <div class="check-icon check-todo">○</div>
+        <span class="check-label-todo">STEP 07 Quest対応</span>
+      </div>
+      <div class="checklist-item">
+        <div class="check-icon check-todo">○</div>
+        <span class="check-label-todo">STEP 08 GitHub連携ダッシュボード</span>
+      </div>
+    </div>
+    <div style="padding:10px 16px;border-top:1px solid var(--border);">
+      <div class="progress-label" style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);display:flex;justify-content:space-between;margin-bottom:5px;">
+        <span>完了率</span><span>44%</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill fill-blue" style="width:44%"></div></div>
+    </div>
+  </div>
+
+  <!-- ── ロッド物語フェーズ ── -->
+  <div class="panel panel-purple">
+    <div class="panel-header">
+      <div class="panel-title" style="color:var(--accent-purple)">📖 ロッド物語 フェーズ</div>
+      <span class="panel-badge badge-purple">2/6 完了</span>
+    </div>
+    <div style="padding:8px 16px;">
+      <div class="phase-row">
+        <div class="phase-num">01</div>
+        <div><div class="phase-name">導入</div><div class="phase-sub">ロッカーの記憶・任務受領・故郷へ</div></div>
+        <div class="phase-icon">✅</div>
+      </div>
+      <div class="phase-row">
+        <div class="phase-num">02</div>
+        <div><div class="phase-name">到着・侵入</div><div class="phase-sub">泉・獣道・遺跡へ強行侵入</div></div>
+        <div class="phase-icon">✅</div>
+      </div>
+      <div class="phase-row" style="background:rgba(185,125,255,0.05)">
+        <div class="phase-num" style="color:var(--accent-purple)">03</div>
+        <div><div class="phase-name" style="color:var(--accent-purple)">探索・汚染 ◀ 執筆中</div><div class="phase-sub">サビの印・禁忌・えっちな本の工作</div></div>
+        <div class="phase-icon">🔄</div>
+      </div>
+      <div class="phase-row" style="background:rgba(185,125,255,0.03)">
+        <div class="phase-num" style="color:var(--accent-purple);opacity:0.6">04</div>
+        <div><div class="phase-name" style="opacity:0.7">発見・風化</div><div class="phase-sub">コドン発見・栗の出自・ロッカー砂に</div></div>
+        <div class="phase-icon">🔄</div>
+      </div>
+      <div class="phase-row">
+        <div class="phase-num" style="opacity:0.4">05</div>
+        <div><div class="phase-name" style="opacity:0.4">崩壊・絶頂</div><div class="phase-sub">線虫の核・栗倒れる・杏四足を失う</div></div>
+        <div class="phase-icon" style="opacity:0.3">📝</div>
+      </div>
+      <div class="phase-row">
+        <div class="phase-num" style="opacity:0.4">06</div>
+        <div><div class="phase-name" style="opacity:0.4">結末</div><div class="phase-sub">泉に浮かぶ杏・えっちな本と涙</div></div>
+        <div class="phase-icon" style="opacity:0.3">📝</div>
+      </div>
+    </div>
+    <div style="padding:8px 16px;border-top:1px solid var(--border);">
+      <div class="progress-label" style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);display:flex;justify-content:space-between;margin-bottom:5px;">
+        <span>フェーズ完了率</span><span>33%</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill fill-purple" style="width:33%"></div></div>
+    </div>
+  </div>
+
+  <!-- ── 情報収集・マガジン ── -->
+  <div class="panel panel-amber">
+    <div class="panel-header">
+      <div class="panel-title" style="color:var(--accent-amber)">📰 自動マガジン / 情報収集</div>
+      <span class="panel-badge badge-amber">未着手</span>
+    </div>
+    <div class="panel-body">
+      <div class="section-label">週次レポート設計</div>
+      <div style="display:flex;flex-direction:column;gap:6px;font-size:11px;">
+        <div style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--border)">
+          <span style="color:var(--accent-amber);font-family:'Space Mono',monospace;font-size:10px;flex-shrink:0;">頻度</span>
+          <span style="color:var(--text)">週1回（月曜）</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--border)">
+          <span style="color:var(--accent-amber);font-family:'Space Mono',monospace;font-size:10px;flex-shrink:0;">内容</span>
+          <span style="color:var(--text)">概要・新規性・個人的関心箇所・DOI</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--border)">
+          <span style="color:var(--accent-amber);font-family:'Space Mono',monospace;font-size:10px;flex-shrink:0;">分野</span>
+          <span style="color:var(--text)">物理・認知・複雑系・AI・生命・社会</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;">
+          <span style="color:var(--accent-amber);font-family:'Space Mono',monospace;font-size:10px;flex-shrink:0;">方法</span>
+          <span style="color:var(--text)">Claude生成 → Notion DB追加 → スマホ確認</span>
+        </div>
+      </div>
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">
+        <div class="section-label" style="margin-bottom:8px;">セットアップ状況</div>
+        <div class="checklist-item">
+          <div class="check-icon check-todo">○</div>
+          <span class="check-label-todo">週次論文レポートDB作成</span>
+        </div>
+        <div class="checklist-item">
+          <div class="check-icon check-todo">○</div>
+          <span class="check-label-todo">テンプレート作成</span>
+        </div>
+        <div class="checklist-item">
+          <div class="check-icon check-todo">○</div>
+          <span class="check-label-todo">モバイルビュー設定</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 政策・法律 ── -->
+  <div class="panel panel-cyan">
+    <div class="panel-header">
+      <div class="panel-title" style="color:var(--accent-cyan)">🏛️ 政策・法律・政党 盤面</div>
+      <span class="panel-badge badge-blue">未着手</span>
+    </div>
+    <div class="panel-body">
+      <div class="section-label">管理項目</div>
+      <div style="display:flex;flex-direction:column;gap:5px;">
+        <div style="padding:7px 0;border-bottom:1px solid var(--border);font-size:11px;display:flex;justify-content:space-between;align-items:center;">
+          <span>政策動向（分野別）</span>
+          <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text-dim);">経済/外交/科技</span>
+        </div>
+        <div style="padding:7px 0;border-bottom:1px solid var(--border);font-size:11px;display:flex;justify-content:space-between;align-items:center;">
+          <span>法改正トラッカー</span>
+          <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text-dim);">一次ソース優先</span>
+        </div>
+        <div style="padding:7px 0;border-bottom:1px solid var(--border);font-size:11px;display:flex;justify-content:space-between;align-items:center;">
+          <span>政党動向・支持率推移</span>
+          <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text-dim);">各党スタンス</span>
+        </div>
+        <div style="padding:7px 0;font-size:11px;display:flex;justify-content:space-between;align-items:center;">
+          <span>国際動向リンク</span>
+          <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text-dim);">海外比較</span>
+        </div>
+      </div>
+      <div style="margin-top:12px;padding:10px;background:rgba(61,216,255,0.05);border:1px solid rgba(61,216,255,0.15);border-radius:3px;font-size:11px;color:var(--text-dim);">
+        → ソースをベースに<span style="color:var(--accent-cyan)">AI独自創作論文</span>へ接続
+      </div>
+    </div>
+  </div>
+
+  <!-- ── AI論文ジェネレーター ── -->
+  <div class="panel panel-red">
+    <div class="panel-header">
+      <div class="panel-title" style="color:var(--accent-red)">📝 AI独自創作論文 Gen.</div>
+      <span class="panel-badge badge-red">未着手</span>
+    </div>
+    <div class="panel-body">
+      <div class="section-label">論文フォーマット</div>
+      <div style="font-size:11px;display:flex;flex-direction:column;gap:5px;">
+        <div style="padding:5px 0;border-bottom:1px solid var(--border);">
+          <span style="color:var(--accent-red);font-family:'JetBrains Mono',monospace;font-size:9px;">TITLE</span> タイトル
+        </div>
+        <div style="padding:5px 0;border-bottom:1px solid var(--border);">
+          <span style="color:var(--accent-red);font-family:'JetBrains Mono',monospace;font-size:9px;">FOCUS</span> 焦点・データ・情報
+        </div>
+        <div style="padding:5px 0;border-bottom:1px solid var(--border);">
+          <span style="color:var(--accent-red);font-family:'JetBrains Mono',monospace;font-size:9px;">SOURCE</span> 引用元リスト（定量・精度・厳密指定）
+        </div>
+        <div style="padding:5px 0;border-bottom:1px solid var(--border);">
+          <span style="color:var(--accent-red);font-family:'JetBrains Mono',monospace;font-size:9px;">BODY</span> 複合・混沌・横断的な独自視点
+        </div>
+        <div style="padding:5px 0;border-bottom:1px solid var(--border);">
+          <span style="color:var(--accent-red);font-family:'JetBrains Mono',monospace;font-size:9px;">CLAIM</span> 新規性の主張
+        </div>
+        <div style="padding:5px 0;">
+          <span style="color:var(--accent-red);font-family:'JetBrains Mono',monospace;font-size:9px;">SHARE</span> 個人のみ / 家族共有
+        </div>
+      </div>
+      <div style="margin-top:10px;padding:8px;background:rgba(255,77,106,0.06);border:1px solid rgba(255,77,106,0.2);border-radius:3px;font-size:10px;color:var(--text-dim);line-height:1.6;">
+        A4換算 2〜5枚 × 複数本を毎回生成<br>
+        定量性とソース厳密明示を必須とする
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 未来とルーツ ── -->
+  <div class="panel panel-purple">
+    <div class="panel-header">
+      <div class="panel-title" style="color:var(--accent-purple)">🌱 未来とルーツ</div>
+      <span class="panel-badge badge-purple">随時更新</span>
+    </div>
+    <div class="panel-body">
+      <div class="section-label">タイムスパン</div>
+      <div style="display:flex;flex-direction:column;gap:0;">
+        <div style="padding:8px 0;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:center;">
+          <span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--accent-purple);flex-shrink:0;">5年</span>
+          <span style="font-size:11px;color:var(--text-dim)">近期ビジョン・具体的構想</span>
+        </div>
+        <div style="padding:8px 0;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:center;">
+          <span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--accent-purple);flex-shrink:0;">10年</span>
+          <span style="font-size:11px;color:var(--text-dim)">中期ビジョン・方向性</span>
+        </div>
+        <div style="padding:8px 0;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:center;">
+          <span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--accent-purple);flex-shrink:0;">30年</span>
+          <span style="font-size:11px;color:var(--text-dim)">長期ビジョン・人生設計</span>
+        </div>
+        <div style="padding:8px 0;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:center;">
+          <span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--accent-blue);flex-shrink:0;">ROOT</span>
+          <span style="font-size:11px;color:var(--text-dim)">思想・価値観の起源を辿るメモ</span>
+        </div>
+        <div style="padding:8px 0;display:flex;gap:12px;align-items:center;">
+          <span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--accent-cyan);flex-shrink:0;">GLOBAL</span>
+          <span style="font-size:11px;color:var(--text-dim)">国際的な関心・観察メモ</span>
+        </div>
+      </div>
+      <div style="margin-top:10px;padding:8px;background:rgba(185,125,255,0.05);border:1px solid rgba(185,125,255,0.2);border-radius:3px;font-size:10px;color:var(--text-dim);">
+        雑メモ・グローバル雑メモ → 定期抽出 → ここに格納
+      </div>
+    </div>
+  </div>
+
+  <!-- ── NotebookLM ── -->
+  <div class="panel panel-blue">
+    <div class="panel-header">
+      <div class="panel-title" style="color:var(--accent-blue)">🤖 NotebookLM 環境</div>
+      <span class="panel-badge badge-blue">セットアップ中</span>
+    </div>
+    <div class="panel-body">
+      <div class="section-label">運用フロー</div>
+      <div style="display:flex;flex-direction:column;gap:6px;font-size:11px;">
+        <div style="display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);">
+          <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--accent-blue);flex-shrink:0;margin-top:1px;">01</span>
+          <span>雑メモ・グローバルメモを定期エクスポート</span>
+        </div>
+        <div style="display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);">
+          <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--accent-blue);flex-shrink:0;margin-top:1px;">02</span>
+          <span><span style="color:var(--accent-amber)">個人情報の除去</span>（名前・住所・連絡先削除）</span>
+        </div>
+        <div style="display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);">
+          <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--accent-blue);flex-shrink:0;margin-top:1px;">03</span>
+          <span>NotebookLMへ資料としてセット</span>
+        </div>
+        <div style="display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);">
+          <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--accent-blue);flex-shrink:0;margin-top:1px;">04</span>
+          <span>管理ログをNotionに記録</span>
+        </div>
+        <div style="display:flex;gap:10px;padding:6px 0;">
+          <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--accent-blue);flex-shrink:0;margin-top:1px;">05</span>
+          <span>インサイト・要約をNotionへ戻す</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 初期セットアップ ── -->
+  <div class="panel span-full panel-amber">
+    <div class="panel-header">
+      <div class="panel-title" style="color:var(--accent-amber)">📋 初期セットアップ チェックリスト</div>
+      <span class="panel-badge badge-amber">0/8 完了</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:0;">
+      <div class="setup-item">
+        <div class="setup-num">01</div>
+        <div class="setup-text">プロジェクト管理データベース作成</div>
+        <span class="setup-status badge-amber">TODO</span>
+      </div>
+      <div class="setup-item">
+        <div class="setup-num">02</div>
+        <div class="setup-text">週次論文レポートのテンプレート作成</div>
+        <span class="setup-status badge-amber">TODO</span>
+      </div>
+      <div class="setup-item">
+        <div class="setup-num">03</div>
+        <div class="setup-text">政策・法律トラッカーのデータベース作成</div>
+        <span class="setup-status badge-amber">TODO</span>
+      </div>
+      <div class="setup-item">
+        <div class="setup-num">04</div>
+        <div class="setup-text">AI創作論文ジェネレーターのテンプレート作成</div>
+        <span class="setup-status badge-amber">TODO</span>
+      </div>
+      <div class="setup-item">
+        <div class="setup-num">05</div>
+        <div class="setup-text">未来とルーツページの初期記入</div>
+        <span class="setup-status badge-amber">TODO</span>
+      </div>
+      <div class="setup-item">
+        <div class="setup-num">06</div>
+        <div class="setup-text">NotebookLM資料の個人情報除去フロー確立</div>
+        <span class="setup-status badge-amber">TODO</span>
+      </div>
+      <div class="setup-item">
+        <div class="setup-num">07</div>
+        <div class="setup-text">ターミナルホームページのモバイルビュー設定</div>
+        <span class="setup-status badge-amber">TODO</span>
+      </div>
+      <div class="setup-item">
+        <div class="setup-num">08</div>
+        <div class="setup-text">家族共有項目の権限設定</div>
+        <span class="setup-status badge-amber">TODO</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function updateTimestamp() {
+    const now = new Date();
+    const y = now.getFullYear();
+    const mo = String(now.getMonth()+1).padStart(2,'0');
+    const d = String(now.getDate()).padStart(2,'0');
+    const h = String(now.getHours()).padStart(2,'0');
+    const mi = String(now.getMinutes()).padStart(2,'0');
+    const s = String(now.getSeconds()).padStart(2,'0');
+    document.getElementById('ts').textContent = `${y}-${mo}-${d} ${h}:${mi}:${s}`;
+  }
+  updateTimestamp();
+  setInterval(updateTimestamp, 1000);
+
+  // Animate progress bars on load
+  setTimeout(() => {
+    document.querySelectorAll('.progress-fill').forEach(bar => {
+      const w = bar.style.width;
+      bar.style.width = '0%';
+      setTimeout(() => { bar.style.width = w; }, 100);
+    });
+  }, 300);
+</script>
+</body>
+</html>

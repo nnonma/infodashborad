@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>普遍構造類推表 — 脳 × 半導体 × 社会 × 政府</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@200;300;400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #08090D;
+  --surface: #0E1018;
+  --surface2: #13161F;
+  --border: #1C2030;
+  --text: #DDD9CF;
+  --muted: #4A5165;
+  --muted2: #6B7385;
+
+  /* Domain colors */
+  --bio:    #4ED8B0;
+  --chip:   #FF7D4E;
+  --body:   #E8C84A;
+  --money:  #60C8FF;
+  --eco:    #A78BFA;
+  --org:    #F472B6;
+  --person: #86EFAC;
+  --govt:   #FCA5A5;
+
+  --col-w: 140px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Serif JP', serif;
+  font-weight: 300;
+  overflow-x: auto;
+}
+
+/* Faint grid */
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.012) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.012) 1px, transparent 1px);
+  background-size: 36px 36px;
+  pointer-events:none; z-index:0;
+}
+
+.page {
+  position:relative; z-index:1;
+  padding: 48px 32px 80px;
+  min-width: 1100px;
+}
+
+/* ── Header ── */
+header {
+  text-align:center;
+  margin-bottom: 44px;
+}
+.eyebrow {
+  font-family:'Space Mono',monospace;
+  font-size:9px; letter-spacing:.4em;
+  color:var(--muted2); text-transform:uppercase;
+  margin-bottom:14px;
+}
+h1 {
+  font-size: clamp(22px,3vw,38px);
+  font-weight:200; letter-spacing:.08em;
+  margin-bottom:10px;
+  line-height:1.3;
+}
+.subtitle {
+  font-size:12px; color:var(--muted2);
+  letter-spacing:.12em;
+}
+
+/* ── Legend bar ── */
+.legend {
+  display:flex; flex-wrap:wrap; justify-content:center;
+  gap:6px 20px; margin-bottom:36px;
+}
+.leg {
+  display:flex; align-items:center; gap:7px;
+  font-family:'Space Mono',monospace;
+  font-size:9px; letter-spacing:.15em; text-transform:uppercase;
+}
+.leg-dot {
+  width:10px; height:10px; border-radius:50%;
+  flex-shrink:0;
+}
+
+/* ── Table wrapper ── */
+.tbl-wrap {
+  width:100%;
+  border: 1px solid var(--border);
+  border-radius:4px;
+  overflow:hidden;
+}
+
+/* ── Sticky function column ── */
+table {
+  width:100%; border-collapse:collapse;
+  table-layout:fixed;
+}
+
+/* Column widths */
+col.func  { width:130px; }
+col.bio   { width:155px; }
+col.chip  { width:155px; }
+col.body  { width:148px; }
+col.money { width:148px; }
+col.eco   { width:148px; }
+col.org   { width:148px; }
+col.person{ width:140px; }
+col.govt  { width:148px; }
+
+/* ── Header row ── */
+thead tr th {
+  padding:14px 14px 12px;
+  font-family:'Space Mono',monospace;
+  font-size:9px; letter-spacing:.22em; text-transform:uppercase;
+  font-weight:400;
+  border-bottom:1px solid var(--border);
+  border-right:1px solid var(--border);
+  vertical-align:bottom;
+  background: var(--surface);
+  white-space:nowrap;
+}
+thead tr th:last-child { border-right:none; }
+
+th.func-h { color:var(--muted2); text-align:left; }
+th.bio-h   { color:var(--bio);   background: rgba(78,216,176,.04); }
+th.chip-h  { color:var(--chip);  background: rgba(255,125,78,.04); }
+th.body-h  { color:var(--body);  background: rgba(232,200,74,.04); }
+th.money-h { color:var(--money); background: rgba(96,200,255,.04); }
+th.eco-h   { color:var(--eco);   background: rgba(167,139,250,.04); }
+th.org-h   { color:var(--org);   background: rgba(244,114,182,.04); }
+th.person-h{ color:var(--person);background: rgba(134,239,172,.04); }
+th.govt-h  { color:var(--govt);  background: rgba(252,165,165,.04); }
+
+.th-icon { font-size:16px; display:block; margin-bottom:4px; }
+.th-sub  { font-size:8px; color:var(--muted); display:block; margin-top:3px; letter-spacing:.1em; }
+
+/* ── Section header row ── */
+tr.section-row td {
+  background: var(--surface2);
+  padding:8px 14px;
+  font-family:'Space Mono',monospace;
+  font-size:8.5px; letter-spacing:.3em; text-transform:uppercase;
+  color:var(--muted);
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+}
+
+/* ── Data rows ── */
+tr.data-row {
+  cursor:pointer;
+  transition: background .15s;
+}
+tr.data-row:hover { background: rgba(255,255,255,.018); }
+tr.data-row td {
+  padding:16px 14px;
+  border-right:1px solid var(--border);
+  border-bottom:1px solid rgba(28,32,48,.6);
+  vertical-align:top;
+  font-size:12px; line-height:1.65;
+}
+tr.data-row td:last-child { border-right:none; }
+
+/* Function label cell */
+td.func-cell {
+  font-family:'Space Mono',monospace;
+  font-size:9px; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--muted2);
+  vertical-align:middle !important;
+  background: var(--surface);
+  border-right: 1px solid var(--border) !important;
+  line-height:1.5;
+}
+.func-num {
+  display:block;
+  font-size:8px; color:var(--muted); margin-bottom:3px;
+}
+
+/* Domain cells */
+td.bio-c   { background: rgba(78,216,176,.025); }
+td.chip-c  { background: rgba(255,125,78,.025); }
+td.body-c  { background: rgba(232,200,74,.025); }
+td.money-c { background: rgba(96,200,255,.025); }
+td.eco-c   { background: rgba(167,139,250,.025); }
+td.org-c   { background: rgba(244,114,182,.025); }
+td.person-c{ background: rgba(134,239,172,.025); }
+td.govt-c  { background: rgba(252,165,165,.025); }
+
+tr.data-row:hover td.bio-c   { background: rgba(78,216,176,.055); }
+tr.data-row:hover td.chip-c  { background: rgba(255,125,78,.055); }
+tr.data-row:hover td.body-c  { background: rgba(232,200,74,.055); }
+tr.data-row:hover td.money-c { background: rgba(96,200,255,.055); }
+tr.data-row:hover td.eco-c   { background: rgba(167,139,250,.055); }
+tr.data-row:hover td.org-c   { background: rgba(244,114,182,.055); }
+tr.data-row:hover td.person-c{ background: rgba(134,239,172,.055); }
+tr.data-row:hover td.govt-c  { background: rgba(252,165,165,.055); }
+
+.cell-name {
+  display:block;
+  font-weight:700; font-size:13px;
+  margin-bottom:4px; letter-spacing:.02em;
+}
+.bio-c   .cell-name { color:var(--bio);   }
+.chip-c  .cell-name { color:var(--chip);  }
+.body-c  .cell-name { color:var(--body);  }
+.money-c .cell-name { color:var(--money); }
+.eco-c   .cell-name { color:var(--eco);   }
+.org-c   .cell-name { color:var(--org);   }
+.person-c .cell-name{ color:var(--person);}
+.govt-c   .cell-name{ color:var(--govt);  }
+
+.cell-desc {
+  font-size:11px; color:#9A9890; line-height:1.6;
+}
+
+/* ── Detail drawer ── */
+.drawer {
+  display:none;
+  background: var(--surface2);
+}
+.drawer.open { display:table-row; }
+.drawer td {
+  padding:20px 28px 22px;
+  border-bottom:1px solid var(--border);
+  background: var(--surface2);
+}
+.drawer-grid {
+  display:grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap:14px;
+}
+.drawer-item {}
+.drawer-label {
+  font-family:'Space Mono',monospace;
+  font-size:8px; letter-spacing:.2em; text-transform:uppercase;
+  margin-bottom:6px;
+}
+.drawer-name {
+  font-size:13px; font-weight:700; margin-bottom:5px;
+}
+.drawer-desc {
+  font-size:11px; color:#9A9890; line-height:1.6;
+}
+.drawer-analogy {
+  margin-top:16px; padding-top:14px;
+  border-top:1px solid var(--border);
+  font-size:11px; color:#7A78FF; letter-spacing:.05em;
+  font-style:italic;
+}
+
+/* ── Footer note ── */
+.footnote {
+  margin-top:32px;
+  font-size:10px; color:var(--muted);
+  letter-spacing:.08em; line-height:1.8;
+  text-align:center;
+}
+
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <p class="eyebrow">Universal Structure Analogy — Cross-Domain Mapping</p>
+  <h1>普遍構造類推表</h1>
+  <p class="subtitle">脳・神経系 × 半導体 × 身体衣食住 × 貨幣制度 × 経済圏 × 組織 × 個人 × 政府省庁 — 8層スケール対応</p>
+</header>
+
+<div class="legend">
+  <div class="leg"><div class="leg-dot" style="background:var(--bio)"></div>脳・神経系</div>
+  <div class="leg"><div class="leg-dot" style="background:var(--chip)"></div>半導体</div>
+  <div class="leg"><div class="leg-dot" style="background:var(--body)"></div>身体・衣食住</div>
+  <div class="leg"><div class="leg-dot" style="background:var(--money)"></div>貨幣・金融</div>
+  <div class="leg"><div class="leg-dot" style="background:var(--eco)"></div>経済圏・業界</div>
+  <div class="leg"><div class="leg-dot" style="background:var(--org)"></div>組織・企業</div>
+  <div class="leg"><div class="leg-dot" style="background:var(--person)"></div>個人・事業主</div>
+  <div class="leg"><div class="leg-dot" style="background:var(--govt)"></div>政府省庁</div>
+</div>
+
+<div class="tbl-wrap">
+<table>
+<colgroup>
+  <col class="func"><col class="bio"><col class="chip">
+  <col class="body"><col class="money"><col class="eco">
+  <col class="org"><col class="person"><col class="govt">
+</colgroup>
+<thead>
+<tr>
+  <th class="func-h">機能<br>カテゴリ</th>
+  <th class="bio-h"><span class="th-icon">🧠</span>脳・神経系<span class="th-sub">生体情報処理</span></th>
+  <th class="chip-h"><span class="th-icon">⚡</span>半導体<span class="th-sub">電子情報処理</span></th>
+  <th class="body-h"><span class="th-icon">🏠</span>身体・衣食住<span class="th-sub">生活基盤</span></th>
+  <th class="money-h"><span class="th-icon">💴</span>貨幣・金融<span class="th-sub">価値流通</span></th>
+  <th class="eco-h"><span class="th-icon">🌐</span>経済圏・業界<span class="th-sub">市場構造</span></th>
+  <th class="org-h"><span class="th-icon">🏢</span>組織・企業<span class="th-sub">集団運営</span></th>
+  <th class="person-h"><span class="th-icon">👤</span>個人・事業主<span class="th-sub">個体行動</span></th>
+  <th class="govt-h"><span class="th-icon">🏛️</span>政府省庁<span class="th-sub">公権力・行政</span></th>
+</tr>
+</thead>
+<tbody id="tbody">
+</tbody>
+</table>
+</div>
+
+<p class="footnote">
+  ※ 行をクリックすると各ドメインの詳細解説が展開されます。<br>
+  ※ 本表は「機能的類推（Functional Analogy）」であり、厳密な一対一対応ではなく概念的マッピングです。
+</p>
+
+</div>
+
+<script>
+const SECTIONS = [
+  {
+    id: 'processing',
+    label: '01 — 最高位処理・意思決定',
+    rows: [
+      {
+        func: '統合判断\n司令塔',
+        bio:   { name:'大脳皮質',        desc:'高次認知・判断・言語。機能分化した最上位処理層' },
+        chip:  { name:'CPU コア',         desc:'命令フェッチ・実行。OS・アプリを統括する中央演算' },
+        body:  { name:'脳・頭部',         desc:'思考・意思決定の器官。衣食住の優先判断を行う' },
+        money: { name:'中央銀行',         desc:'金融政策の最高決定機関。金利・通貨量を統制する' },
+        eco:   { name:'基幹産業・プラットフォーマー', desc:'市場全体を支配する産業構造の頂点。GAFAや基幹インフラ' },
+        org:   { name:'経営陣・取締役会', desc:'戦略立案・最終意思決定を行うトップマネジメント層' },
+        person:{ name:'理性・判断力',     desc:'感情を統制し合理的選択を行う高次思考能力' },
+        govt:  { name:'内閣・国家安全保障会議（NSC）', desc:'国家の最高意思決定機関。総理大臣を頂点に外交・安保・経済の最終判断を下す'},
+        analogy: '「分散した情報を統合し、最終判断を下す最上位ユニット」という構造が全スケールに現れる。'
+      },
+      {
+        func: '並列専門\n処理',
+        bio:   { name:'小脳',             desc:'運動の精密調整・反復学習に特化した補助処理器' },
+        chip:  { name:'GPU / DSP',        desc:'並列・定型演算に特化した専用プロセッサ群' },
+        body:  { name:'筋肉・反射神経',   desc:'脳の命令なしに瞬時に動く自動化された身体反応' },
+        money: { name:'証券・デリバティブ市場', desc:'高速・並列的な価格形成を行う専門市場機能' },
+        eco:   { name:'専門サービス業・下請け産業', desc:'特定機能に特化した業種群（物流・製造・IT等）' },
+        org:   { name:'専門部署・プロジェクトチーム', desc:'特定業務に特化した機能部門（開発・法務・デザイン等）' },
+        person:{ name:'専門スキル・習熟技能', desc:'反復習得により自動化されたプロフェッショナルの専門能力' },
+        govt:  { name:'各省庁の専門局・政策部門（国交省・農水省等）', desc:'特定分野の政策立案・執行に特化した行政機能。道路・農業・科学技術など領域別に並列稼働'},
+        analogy: '「主処理系を補助する、特定機能特化の並列ユニット」。習熟により自動化される点も共通。'
+      },
+      {
+        func: '自律維持\n基盤制御',
+        bio:   { name:'脳幹',             desc:'呼吸・心拍など生命維持を無意識に自律制御する最下層' },
+        chip:  { name:'MCU / BIOS',       desc:'起動・割り込み・電源管理など低レベル制御を常時担う' },
+        body:  { name:'自律神経・内臓',   desc:'意識なしに稼働する消化・循環・免疫などの基礎維持' },
+        money: { name:'決済インフラ・清算機関', desc:'SWIFTや日銀ネット等、金融の土台を支える基幹決済網' },
+        eco:   { name:'ライフライン産業（電力・水道・通信）', desc:'経済活動の前提となるインフラ。止まると全体が機能不全' },
+        org:   { name:'バックオフィス・総務・情報システム', desc:'表に出ない縁の下の組織運営基盤。停止すると全業務が停止' },
+        person:{ name:'生活習慣・ルーティン', desc:'意識せず自動的に行う日常行動。健康・睡眠・食事の基盤' },
+        govt:  { name:'行政管理局・内閣官房・危機管理センター', desc:'政府機能そのものを維持するための組織管理・情報収集・危機対応の常時稼働基盤'},
+        analogy: '「意識されないが止まるとシステム全体が崩壊する、最下層の自律制御基盤」。'
+      },
+    ]
+  },
+  {
+    id: 'memory',
+    label: '02 — 記憶・情報保存',
+    rows: [
+      {
+        func: '高速\n一時記憶',
+        bio:   { name:'海馬',             desc:'短期→長期記憶の変換・転送を担う中継記憶器官' },
+        chip:  { name:'キャッシュ L1-L3', desc:'頻繁アクセスデータをCPU近傍に保持する高速バッファ' },
+        body:  { name:'作業机・棚',       desc:'すぐ使うものを手元に置く即時アクセスの生活スペース' },
+        money: { name:'当座預金・財布現金', desc:'即時支払い可能な流動性最高の手元資金' },
+        eco:   { name:'在庫・バッファ在庫', desc:'需給ギャップを吸収するサプライチェーン上の一時保管' },
+        org:   { name:'中間管理職・担当者', desc:'現場と経営をつなぐ情報の中継・変換・一次判断層' },
+        person:{ name:'メモ・ノート・タスク管理', desc:'脳の外に置く外部作業記憶。ToDoリストや手帳' },
+        govt:  { name:'内閣情報調査室・国家情報センター', desc:'刻々と変化する国内外の情報を集約・分析し首相・大臣へ即時提供する政府の高速情報バッファ'},
+        analogy: '「高速だが容量は小さく、主処理系と長期ストレージの間を橋渡しする一時バッファ」。'
+      },
+      {
+        func: '長期\n永続保存',
+        bio:   { name:'大脳皮質（長期記憶）', desc:'意味記憶・手続き記憶をシナプス結合パターンとして分散保存' },
+        chip:  { name:'NAND Flash / SSD', desc:'電源断でも保持する不揮発性大容量ストレージ' },
+        body:  { name:'倉庫・家・土地',   desc:'長期保存・資産として維持する生活の物理的蓄積基盤' },
+        money: { name:'定期預金・不動産・国債', desc:'流動性を犠牲に長期安定保存を優先した資産形態' },
+        eco:   { name:'特許・ブランド資産・データ', desc:'時間をかけて蓄積した競争優位の無形・有形資産' },
+        org:   { name:'ナレッジベース・社内規程・文化', desc:'組織の経験と知恵を制度化・文書化した集合知の保存' },
+        person:{ name:'経験・資格・ポートフォリオ', desc:'人生をかけて蓄積したスキルと実績の永続的な資産' },
+        govt:  { name:'国立公文書館・法令データベース・条約集', desc:'国家が積み重ねた法律・条約・歴史的決定を半永久的に保存する制度的長期記憶'},
+        analogy: '「時間をかけて蓄積・固定化され、容易に消えない長期保存ストレージ」。'
+      },
+      {
+        func: '最小\n情報単位',
+        bio:   { name:'シナプス',         desc:'ニューロン間の接合部。可塑性により情報の重みを保持' },
+        chip:  { name:'メモリセル (DRAM/SRAM)', desc:'1bitを電荷・フリップフロップで保持する最小素子' },
+        body:  { name:'細胞・DNA',        desc:'生命の最小情報単位。遺伝情報と機能指令を内包' },
+        money: { name:'最小通貨単位（1円・1セント）', desc:'それ以上分割できない価値の最小単位' },
+        eco:   { name:'最小取引・契約単位', desc:'市場を構成する個々の売買・契約という原子的行為' },
+        org:   { name:'個人の役割・担当業務', desc:'組織を分解したときの最小機能単位である個人の職責' },
+        person:{ name:'一つの意思決定・行動', desc:'思考と行動の最小実行単位。積み重ねが人生を形成する' },
+        govt:  { name:'個別行政処分・一つの法律条文', desc:'行政の最小執行単位である個別処分・命令と、法体系を構成する最小単位の条文'},
+        analogy: '「システム全体を構成する、それ以上分割できない最小の情報・価値・機能の単位」。'
+      },
+    ]
+  },
+  {
+    id: 'communication',
+    label: '03 — 通信・流通・伝達',
+    rows: [
+      {
+        func: '信号\n伝達線',
+        bio:   { name:'軸索（アクソン）',  desc:'電気的活動電位を長距離伝導するミエリン絶縁の出力線維' },
+        chip:  { name:'金属配線（Cu Interconnect）', desc:'絶縁膜で分離されたトランジスタ間の信号伝送線路' },
+        body:  { name:'神経・血管・消化管', desc:'栄養・酸素・信号を全身に運ぶ導管ネットワーク' },
+        money: { name:'送金・振込ネットワーク', desc:'価値を一点から別の一点へ伝達する有向の金融チャネル' },
+        eco:   { name:'物流・サプライチェーン', desc:'モノ・サービスを生産者から消費者へ届ける流通経路' },
+        org:   { name:'報告・指示系統（レポートライン）', desc:'情報と命令が流れる組織内の垂直的コミュニケーション経路' },
+        person:{ name:'会話・メール・SNS発信', desc:'個人が外部へ意思・情報を送り出すアウトプット手段' },
+        govt:  { name:'政府官報・行政通知・省令通達', desc:'中央省庁から地方自治体・国民へ政策・規制・指示を伝達する公式の一方向情報チャネル'},
+        analogy: '「送り手から受け手へ、情報・価値・物資を伝達する有向の導管」。絶縁＝境界による純度維持も共通。'
+      },
+      {
+        func: '中継\n幹線網',
+        bio:   { name:'白質・脳梁',        desc:'脳各領域を繋ぐ長距離ミエリン軸索束の高速幹線' },
+        chip:  { name:'バス / NoC',        desc:'コア間を繋ぐチップ内高速データ転送トポロジ網' },
+        body:  { name:'交通網・道路・鉄道', desc:'離れた場所を繋ぐ物理移動の幹線インフラ' },
+        money: { name:'インターバンク市場・SWIFT', desc:'銀行間で資金を高速移動させる金融機関間の中継網' },
+        eco:   { name:'流通プラットフォーム・商社', desc:'生産者と消費者を繋ぐ中継・仲介の経済ハブ機能' },
+        org:   { name:'部門間連携・社内情報共有基盤', desc:'異なる部署をつなぐ横断的コミュニケーション幹線' },
+        person:{ name:'人脈・ネットワーク・コミュニティ', desc:'個人が属する関係網。情報・機会・信用が流通する経路' },
+        govt:  { name:'府省間協議・政府CIO・デジタル庁', desc:'縦割り省庁を横断して情報・政策を統合調整する行政間ネットワーク幹線'},
+        analogy: '「個別ノード間を繋ぐ、帯域最大化を目的とした高速中継幹線インフラ」。'
+      },
+      {
+        func: '伝達\n媒体・規約',
+        bio:   { name:'神経伝達物質',       desc:'シナプス間隙を化学的に橋渡しするドーパミン・GABAなど' },
+        chip:  { name:'通信プロトコル（SPI/I²C/PCIe）', desc:'デバイス間の信号形式・手順を定めた通信規約' },
+        body:  { name:'言語・ジェスチャー・表情', desc:'意図を他者に伝えるための共通符号体系' },
+        money: { name:'通貨・為替・手形',    desc:'異なる主体間で価値を交換するための媒介物・規約' },
+        eco:   { name:'業界標準・API・規格（ISO等）', desc:'異なるプレイヤー間の相互運用を可能にする共通仕様' },
+        org:   { name:'社内共通言語・フォーマット・文化規範', desc:'組織内の情報伝達を滑らかにする暗黙・明示の規約' },
+        person:{ name:'コミュニケーションスタイル・言語', desc:'個人が他者と意思疎通するために使う媒介手段・スタイル' },
+        govt:  { name:'法律・政令・告示・条約', desc:'国家間・政府-国民間の相互運用を可能にする規範的な共通言語・規約体系'},
+        analogy: '「異なるノード間の相互理解を可能にする、共有された符号・媒体・規約」。'
+      },
+    ]
+  },
+  {
+    id: 'regulation',
+    label: '04 — 調節・制御・保護',
+    rows: [
+      {
+        func: '中継\nハブ・門番',
+        bio:   { name:'視床',              desc:'感覚情報を皮質へ中継・フィルタリングする双方向ハブ' },
+        chip:  { name:'スイッチ / クロスバー / ルーター', desc:'複数パスを切り替え、優先度で振り分けるNW素子' },
+        body:  { name:'消化器・肝臓',       desc:'外部から摂取した物質を選別・変換して体内へ分配する' },
+        money: { name:'市場仲介者・証券取引所', desc:'売り手と買い手を繋ぎ、価格を形成する取引の場' },
+        eco:   { name:'商社・卸・プラットフォーム', desc:'生産側と消費側の間で情報・物流を仲介する中間機能' },
+        org:   { name:'プロジェクト管理・PMO', desc:'各部門からの情報を集約し優先度付け・振り分けをする機能' },
+        person:{ name:'判断・優先順位づけ能力', desc:'複数のインプットから重要なものを選別し行動を決める力' },
+        govt:  { name:'内閣官房・規制改革会議・総合調整機能', desc:'各省庁からの政策要求を集約・調整し優先度を決定して首相へ上申する行政の中枢ハブ'},
+        analogy: '「全情報が通過するハブ。何を通し何を止めるかを制御するゲートキーパー機能」。'
+      },
+      {
+        func: '外部脅威\nからの防護',
+        bio:   { name:'血液脳関門（BBB）',  desc:'有害物質を選択的に排除して脳の恒常性を守るバリア' },
+        chip:  { name:'ESD保護 / ファイアウォール', desc:'過電圧・不正アクセスからチップ・システムを守る防護層' },
+        body:  { name:'皮膚・免疫系・衣服', desc:'外部環境の脅威（細菌・寒暑・物理的危険）から体を守る防護層' },
+        money: { name:'金融規制・KYC・AML', desc:'不正資金・詐欺・洗マネーからシステムを守る制度的防護' },
+        eco:   { name:'参入障壁・知財・関税', desc:'外部競合の侵入を防ぎ、市場・産業を保護する制度的壁' },
+        org:   { name:'コンプライアンス・法務・セキュリティ', desc:'不正・訴訟・サイバー攻撃から組織を守る防護機能' },
+        person:{ name:'批判的思考・自己防衛・貯蓄', desc:'詐欺・情報操作・経済的リスクから個人を守る防護能力' },
+        govt:  { name:'出入国管理・税関・サイバーセキュリティ機関（NISC）', desc:'国境・関税・入管・サイバー防衛で外部からの有害な侵入を選択的に遮断する国家防護層'},
+        analogy: '「外部からの有害な侵入を選択的に遮断し、内部の恒常性を維持する境界防護層」。'
+      },
+      {
+        func: '緊急\n優先割り込み',
+        bio:   { name:'扁桃体',             desc:'脅威検知時に全処理を中断して緊急反応を優先発動する' },
+        chip:  { name:'割り込みコントローラ（IRQ/NMI）', desc:'緊急イベントをCPUへ即時通知し高優先タスクへ切替' },
+        body:  { name:'痛み・発熱・アドレナリン', desc:'危機状態をシステム全体に警告し即時対処を強制する信号' },
+        money: { name:'信用不安・取り付け騒ぎ・市場停止', desc:'緊急事態が通常の金融フローを強制的に中断させる状態' },
+        eco:   { name:'危機対応・緊急立法・市場規制介入', desc:'通常の経済サイクルを超えた緊急的な政策・制度的介入' },
+        org:   { name:'緊急対策本部・エスカレーション', desc:'通常ルートを飛ばして最高意思決定者へ直達する緊急体制' },
+        person:{ name:'直感・危機感・本能的判断',  desc:'論理的判断を飛ばして即時行動を促す生存本能的反応' },
+        govt:  { name:'緊急事態宣言・非常大権・災害対策本部', desc:'通常の立法・行政手続きを超えた緊急権限の発動。平時ルールを中断し国家的危機に即応する'},
+        analogy: '「通常フローを強制中断し、緊急処理を最高優先で即時実行させるオーバーライド機構」。'
+      },
+      {
+        func: '環境維持\nサポート',
+        bio:   { name:'グリア細胞',          desc:'ニューロンを代謝・物理的に支援し最適環境を維持する' },
+        chip:  { name:'PMIC / パッシブ素子', desc:'電圧安定・ノイズ除去・熱管理でチップ環境を整える' },
+        body:  { name:'住居・衣服・睡眠',    desc:'身体が最適に機能するための環境・休息・保温基盤' },
+        money: { name:'生活費・固定費・社会保障', desc:'経済活動の基盤を維持するための最低限の資金フロー' },
+        eco:   { name:'インフラ整備・補助金・産業政策', desc:'民間経済が機能するための公共的支援・環境整備' },
+        org:   { name:'HR・総務・福利厚生',   desc:'従業員が最大パフォーマンスを発揮できる環境の整備維持' },
+        person:{ name:'健康管理・メンタルケア・生活基盤', desc:'個人の生産性の土台となる身体・精神・生活環境の維持' },
+        govt:  { name:'厚生労働省・文部科学省・国土交通省', desc:'国民の健康・教育・住居・交通インフラを整備し、社会全体が機能できる生活環境を維持する'},
+        analogy: '「主役ではないが欠かせない、最適動作環境を整え続けるサポートインフラ」。'
+      },
+    ]
+  },
+  {
+    id: 'energy',
+    label: '05 — エネルギー・資源代謝',
+    rows: [
+      {
+        func: 'エネルギー\n供給',
+        bio:   { name:'脳血管網・グルコース代謝', desc:'血管からグルコースを受け取りATPを産生。全体の20%消費' },
+        chip:  { name:'VRM / 電源回路',      desc:'外部電源をCPUに適切な電圧・電流で供給する変換回路' },
+        body:  { name:'食事・消化・代謝',    desc:'外部から取り込んだ食物をエネルギーに変換する生命プロセス' },
+        money: { name:'資金調達・融資・資本市場', desc:'事業活動のエネルギーとなる資金を外部から引き込む機能' },
+        eco:   { name:'資源産業・エネルギー産業', desc:'経済活動の原動力となる電力・燃料・原材料を供給する産業' },
+        org:   { name:'予算配分・資金管理・資本政策', desc:'組織の各活動に必要なリソース（資金・人・時間）を分配' },
+        person:{ name:'収入・稼ぐ力・資金繰り', desc:'個人の活動・生活・投資を可能にするエネルギー源' },
+        govt:  { name:'財務省・国債発行・予算編成・税収', desc:'国家活動の全エネルギーを賄う税収・国債調達と各省への予算配分。財務省が中枢を担う'},
+        analogy: '「システムが活動を続けるために外部から取り込み変換・分配するエネルギー供給機構」。'
+      },
+      {
+        func: '廃棄物\n排出・精算',
+        bio:   { name:'リンパ系・老廃物排出', desc:'不要なタンパク質・老廃物を排出しシステム内を清浄化する' },
+        chip:  { name:'排熱・ヒートシンク・TDP管理', desc:'演算による発熱を外部へ放散し動作温度を安全域に保つ' },
+        body:  { name:'排泄・発汗・呼気',    desc:'代謝産物・余剰熱・老廃物を体外へ排出する恒常性維持' },
+        money: { name:'税金・費用・減価償却', desc:'活動によって発生する不可避な価値の流出・清算処理' },
+        eco:   { name:'廃棄物処理・リサイクル産業', desc:'生産・消費活動の副産物を処理・再利用する産業機能' },
+        org:   { name:'コスト管理・損切り・事業清算', desc:'不採算・不要資産を整理しシステムを健全に保つ機能' },
+        person:{ name:'支出管理・断捨離・デジタルデトックス', desc:'不要な情報・物・習慣を手放してリソースを最適化する' },
+        govt:  { name:'会計検査院・行政改革・規制緩和', desc:'非効率な行政支出・制度の老廃物を検査・整理し国家システムを健全化する排出・清浄機能'},
+        analogy: '「活動によって生じた不要物・熱・負債を系外へ排出してシステムの健全性を維持する機能」。'
+      },
+    ]
+  },
+  {
+    id: 'quality',
+    label: '06 — 品質保証・検査・監査',
+    rows: [
+      {
+        func: '品質検査\n誤り検出',
+        bio:   { name:'免疫系・アポトーシス', desc:'異常細胞・異物を識別・排除し自己を正確に修復する機能' },
+        chip:  { name:'ECC / テスト回路 / BIST', desc:'メモリエラー自動訂正・内蔵セルフテストによる品質保証' },
+        body:  { name:'健康診断・症状・痛み', desc:'身体の異常を検知し修復・受診行動を促すアラート機能' },
+        money: { name:'会計監査・内部統制・格付け', desc:'財務情報の正確性・信頼性を第三者が検証する制度' },
+        eco:   { name:'検査機関・ISO認証・業界審査', desc:'製品・サービスの品質基準適合を第三者が証明する仕組み' },
+        org:   { name:'内部監査・品質管理部・QC', desc:'組織内プロセスの誤りや逸脱を検出・是正する機能' },
+        person:{ name:'自己反省・振り返り・コーチング', desc:'自身の行動の誤りを検出し修正する内省・外部評価機能' },
+        govt:  { name:'会計検査院・国会審議・行政不服申立制度', desc:'行政執行の誤り・不正を独立機関が検査・是正する品質保証機構。会計検査院は憲法上独立した最高検査機関'},
+        analogy: '「システム内部の誤り・異常を検出し、修正・除去することで信頼性を維持する品質保証機構」。'
+      },
+    ]
+  },
+  {
+    id: 'learning',
+    label: '07 — 学習・適応・進化',
+    rows: [
+      {
+        func: '経験による\n最適化',
+        bio:   { name:'シナプス可塑性（LTP/LTD）', desc:'繰り返し使われた経路を強化し使われない経路を弱化する学習' },
+        chip:  { name:'ニューラルエンジン / ML アクセラレータ', desc:'重みパラメータの反復更新で推論精度を向上させる学習回路' },
+        body:  { name:'習慣形成・筋肉記憶',   desc:'反復行動により自動化・効率化される身体的学習プロセス' },
+        money: { name:'投資学習・損益記録・資産配分の最適化', desc:'過去の損益経験から投資判断の精度を上げていく適応' },
+        eco:   { name:'市場の価格発見・産業の淘汰・技術革新', desc:'競争・失敗・需給変動を通じて市場構造が最適化される過程' },
+        org:   { name:'組織学習・OJT・改善文化（カイゼン）', desc:'失敗と成功の反復から組織全体のパフォーマンスが向上する' },
+        person:{ name:'スキルアップ・PDCA・成長マインドセット', desc:'試行錯誤を通じて個人の能力・判断力が継続的に向上する' },
+        govt:  { name:'政策評価制度・EBPM・行政のデジタル改革', desc:'施策の効果測定と証拠に基づく政策立案（EBPM）により行政の精度を継続的に改善する適応機構'},
+        analogy: '「繰り返しの経験から内部パラメータを更新し、次の処理をより正確・効率的にする適応機構」。'
+      },
+      {
+        func: '多様性・\n冗長性・耐障害',
+        bio:   { name:'脳の可塑性・神経代償', desc:'一部が損傷しても他の領域が機能を肩代わりする再組織化' },
+        chip:  { name:'RAID / フォールトトレランス / 冗長系', desc:'一部故障時もシステム全体が稼働し続ける冗長設計' },
+        body:  { name:'予備の臓器・免疫記憶・回復力', desc:'腎臓・肺など対称器官の冗長性と傷の自己修復能力' },
+        money: { name:'分散投資・ポートフォリオ・リスクヘッジ', desc:'一点集中を避け、複数資産に分散してリスクを低減する戦略' },
+        eco:   { name:'産業多様化・多国間貿易・代替サプライヤー', desc:'特定産業・国への依存を減らし経済圏全体の耐障害性を高める' },
+        org:   { name:'事業継続計画（BCP）・多角化・人材冗長', desc:'特定拠点・人材への依存を排除し組織存続性を高める設計' },
+        person:{ name:'複数収入源・スキルセットの多様化・人脈の幅', desc:'一つの収入・能力に依存せず複数の代替手段を持つ個人設計' },
+        govt:  { name:'三権分立・地方分権・省庁の機能重複設計', desc:'立法・行政・司法の分離と地方自治による冗長性。一つの機関が機能不全に陥っても国家が継続する耐障害設計'},
+        analogy: '「部分的な障害・喪失があってもシステム全体が機能し続けるための冗長・分散設計」。'
+      },
+    ]
+  }
+];
+
+const tbody = document.getElementById('tbody');
+let openRow = null;
+
+SECTIONS.forEach(sec => {
+  // Section header
+  const secTr = document.createElement('tr');
+  secTr.className = 'section-row';
+  secTr.innerHTML = `<td colspan="9">${sec.label}</td>`;
+  tbody.appendChild(secTr);
+
+  sec.rows.forEach((row, ri) => {
+    const tr = document.createElement('tr');
+    tr.className = 'data-row';
+
+    const funcLines = row.func.split('\n');
+    tr.innerHTML = `
+      <td class="func-cell"><span class="func-num">${sec.id.toUpperCase().slice(0,2)}-${ri+1}</span>${funcLines.join('<br>')}</td>
+      <td class="bio-c"><span class="cell-name">${row.bio.name}</span><span class="cell-desc">${row.bio.desc}</span></td>
+      <td class="chip-c"><span class="cell-name">${row.chip.name}</span><span class="cell-desc">${row.chip.desc}</span></td>
+      <td class="body-c"><span class="cell-name">${row.body.name}</span><span class="cell-desc">${row.body.desc}</span></td>
+      <td class="money-c"><span class="cell-name">${row.money.name}</span><span class="cell-desc">${row.money.desc}</span></td>
+      <td class="eco-c"><span class="cell-name">${row.eco.name}</span><span class="cell-desc">${row.eco.desc}</span></td>
+      <td class="org-c"><span class="cell-name">${row.org.name}</span><span class="cell-desc">${row.org.desc}</span></td>
+      <td class="person-c"><span class="cell-name">${row.person.name}</span><span class="cell-desc">${row.person.desc}</span></td>
+      <td class="govt-c"><span class="cell-name">${row.govt.name}</span><span class="cell-desc">${row.govt.desc}</span></td>
+    `;
+
+    // Drawer
+    const drawer = document.createElement('tr');
+    drawer.className = 'drawer';
+    const domains = [
+      {cls:'bio-c',   label:'🧠 脳・神経系',      color:'var(--bio)',    d:row.bio},
+      {cls:'chip-c',  label:'⚡ 半導体',           color:'var(--chip)',   d:row.chip},
+      {cls:'body-c',  label:'🏠 身体・衣食住',     color:'var(--body)',   d:row.body},
+      {cls:'money-c', label:'💴 貨幣・金融',       color:'var(--money)',  d:row.money},
+      {cls:'eco-c',   label:'🌐 経済圏・業界',     color:'var(--eco)',    d:row.eco},
+      {cls:'org-c',   label:'🏢 組織・企業',       color:'var(--org)',    d:row.org},
+      {cls:'person-c',label:'👤 個人・事業主',     color:'var(--person)', d:row.person},
+      {cls:'govt-c',  label:'🏛️ 政府省庁',        color:'var(--govt)',   d:row.govt},
+    ];
+    const itemsHtml = domains.map(dom => `
+      <div class="drawer-item">
+        <div class="drawer-label" style="color:${dom.color}">${dom.label}</div>
+        <div class="drawer-name" style="color:${dom.color}">${dom.d.name}</div>
+        <div class="drawer-desc">${dom.d.desc}</div>
+      </div>
+    `).join('');
+
+    drawer.innerHTML = `
+      <td colspan="9">
+        <div class="drawer-grid">${itemsHtml}</div>
+        <div class="drawer-analogy">🔗 類推ポイント：${row.analogy}</div>
+      </td>
+    `;
+
+    tr.addEventListener('click', () => {
+      if (openRow === drawer) {
+        drawer.classList.remove('open');
+        openRow = null;
+      } else {
+        if (openRow) openRow.classList.remove('open');
+        drawer.classList.add('open');
+        openRow = drawer;
+        drawer.scrollIntoView({behavior:'smooth', block:'nearest'});
+      }
+    });
+
+    tbody.appendChild(tr);
+    tbody.appendChild(drawer);
+  });
+});
+</script>
+</body>
+</html>
