@@ -3,1037 +3,1326 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🧭 一次元管理 Terminal</title>
+<title>🧭 Project Terminal</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Noto+Sans+JP:wght@300;400;700&family=Space+Mono:wght@400;700&display=swap');
-
-  :root {
-    --bg: #0a0b0e;
-    --bg2: #0f1117;
-    --bg3: #151820;
-    --panel: #12141a;
-    --border: #1e2230;
-    --border2: #252a3a;
-    --text: #c8cdd8;
-    --text-dim: #5a6080;
-    --text-bright: #eef0f5;
-    --accent-green: #2dff9a;
-    --accent-blue: #4d8eff;
-    --accent-amber: #ffbe3d;
-    --accent-red: #ff4d6a;
-    --accent-purple: #b97dff;
-    --accent-cyan: #3dd8ff;
-    --glow-green: rgba(45,255,154,0.15);
-    --glow-blue: rgba(77,142,255,0.15);
-    --glow-amber: rgba(255,190,61,0.15);
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Noto Sans JP', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* ── SCANLINE OVERLAY ── */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0,0,0,0.08) 2px,
-      rgba(0,0,0,0.08) 4px
-    );
-    pointer-events: none;
-    z-index: 9999;
-  }
-
-  /* ── HEADER ── */
-  header {
-    border-bottom: 1px solid var(--border2);
-    padding: 18px 28px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: var(--bg2);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    backdrop-filter: blur(8px);
-  }
-
-  .header-left {
-    display: flex;
-    align-items: baseline;
-    gap: 16px;
-  }
-
-  .logo {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--accent-green);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-
-  .logo span {
-    color: var(--text-dim);
-    font-weight: 300;
-  }
-
-  .date-stamp {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    color: var(--text-dim);
-    letter-spacing: 0.06em;
-  }
-
-  .pulse-dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: var(--accent-green);
-    box-shadow: 0 0 8px var(--accent-green);
-    animation: pulse 2s ease-in-out infinite;
-    display: inline-block;
-    margin-right: 6px;
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.4; transform: scale(0.8); }
-  }
-
-  /* ── LAYOUT ── */
-  .main {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 28px 24px;
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 16px;
-  }
-
-  /* ── PANEL BASE ── */
-  .panel {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    overflow: hidden;
-    position: relative;
-  }
-
-  .panel::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 1px;
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-
-  .panel:hover::before { opacity: 1; }
-
-  .panel-green::before { background: var(--accent-green); box-shadow: 0 0 12px var(--accent-green); }
-  .panel-blue::before { background: var(--accent-blue); box-shadow: 0 0 12px var(--accent-blue); }
-  .panel-amber::before { background: var(--accent-amber); box-shadow: 0 0 12px var(--accent-amber); }
-  .panel-purple::before { background: var(--accent-purple); box-shadow: 0 0 12px var(--accent-purple); }
-  .panel-cyan::before { background: var(--accent-cyan); box-shadow: 0 0 12px var(--accent-cyan); }
-  .panel-red::before { background: var(--accent-red); box-shadow: 0 0 12px var(--accent-red); }
-
-  .panel-header {
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: rgba(255,255,255,0.02);
-  }
-
-  .panel-title {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-  }
-
-  .panel-badge {
-    font-family: 'Space Mono', monospace;
-    font-size: 9px;
-    padding: 2px 8px;
-    border-radius: 2px;
-    letter-spacing: 0.06em;
-  }
-
-  .badge-green { background: rgba(45,255,154,0.12); color: var(--accent-green); border: 1px solid rgba(45,255,154,0.25); }
-  .badge-amber { background: rgba(255,190,61,0.12); color: var(--accent-amber); border: 1px solid rgba(255,190,61,0.25); }
-  .badge-red { background: rgba(255,77,106,0.12); color: var(--accent-red); border: 1px solid rgba(255,77,106,0.25); }
-  .badge-blue { background: rgba(77,142,255,0.12); color: var(--accent-blue); border: 1px solid rgba(77,142,255,0.25); }
-  .badge-purple { background: rgba(185,125,255,0.12); color: var(--accent-purple); border: 1px solid rgba(185,125,255,0.25); }
-
-  .panel-body { padding: 16px; }
-
-  /* ── SPAN HELPERS ── */
-  .span-full { grid-column: 1 / -1; }
-  .span-2 { grid-column: span 2; }
-
-  /* ── PROJECTS ── */
-  .project-item {
-    padding: 14px 16px;
-    border-bottom: 1px solid var(--border);
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    gap: 12px;
-    align-items: start;
-    transition: background 0.2s;
-    cursor: default;
-  }
-
-  .project-item:last-child { border-bottom: none; }
-  .project-item:hover { background: rgba(255,255,255,0.025); }
-
-  .status-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    margin-top: 5px;
-    flex-shrink: 0;
-  }
-
-  .dot-active { background: var(--accent-green); box-shadow: 0 0 6px var(--accent-green); }
-  .dot-hold { background: var(--accent-amber); }
-  .dot-done { background: var(--text-dim); }
-  .dot-new { background: var(--accent-blue); box-shadow: 0 0 6px var(--accent-blue); }
-
-  .project-name {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--text-bright);
-    margin-bottom: 4px;
-    line-height: 1.3;
-  }
-
-  .project-desc {
-    font-size: 11px;
-    color: var(--text-dim);
-    line-height: 1.5;
-  }
-
-  .project-next {
-    font-size: 10px;
-    color: var(--accent-cyan);
-    margin-top: 6px;
-    font-family: 'JetBrains Mono', monospace;
-  }
-
-  .project-next::before { content: '▶ '; opacity: 0.6; }
-
-  .project-meta {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 4px;
-  }
-
-  .cat-tag {
-    font-family: 'Space Mono', monospace;
-    font-size: 9px;
-    padding: 2px 6px;
-    border-radius: 2px;
-    white-space: nowrap;
-  }
-
-  /* ── PROGRESS BAR ── */
-  .progress-wrap {
-    margin-top: 8px;
-  }
-
-  .progress-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    color: var(--text-dim);
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 4px;
-  }
-
-  .progress-track {
-    height: 3px;
-    background: var(--border2);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  .progress-fill {
-    height: 100%;
-    border-radius: 2px;
-    transition: width 1s ease;
-  }
-
-  .fill-green { background: var(--accent-green); box-shadow: 0 0 6px rgba(45,255,154,0.5); }
-  .fill-blue { background: var(--accent-blue); }
-  .fill-amber { background: var(--accent-amber); }
-  .fill-purple { background: var(--accent-purple); }
-
-  /* ── CHECKLIST ── */
-  .checklist-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 11px;
-  }
-
-  .checklist-item:last-child { border-bottom: none; }
-
-  .check-icon {
-    width: 14px; height: 14px;
-    border-radius: 2px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 8px;
-    flex-shrink: 0;
-  }
-
-  .check-done {
-    background: rgba(45,255,154,0.15);
-    border: 1px solid var(--accent-green);
-    color: var(--accent-green);
-  }
-
-  .check-todo {
-    background: transparent;
-    border: 1px solid var(--border2);
-    color: transparent;
-  }
-
-  .check-label-done { color: var(--text-dim); text-decoration: line-through; }
-  .check-label-todo { color: var(--text); }
-
-  /* ── STAT GRID ── */
-  .stat-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    overflow: hidden;
-    margin-bottom: 16px;
-  }
-
-  .stat-cell {
-    padding: 14px 12px;
-    text-align: center;
-    border-right: 1px solid var(--border);
-  }
-
-  .stat-cell:last-child { border-right: none; }
-
-  .stat-num {
-    font-family: 'Space Mono', monospace;
-    font-size: 26px;
-    font-weight: 700;
-    line-height: 1;
-    margin-bottom: 4px;
-  }
-
-  .stat-label {
-    font-size: 9px;
-    color: var(--text-dim);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    font-family: 'JetBrains Mono', monospace;
-  }
-
-  /* ── FLOW DIAGRAM ── */
-  .flow {
-    display: flex;
-    align-items: center;
-    gap: 0;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    padding: 12px 0;
-    scrollbar-width: none;
-  }
-
-  .flow::-webkit-scrollbar { display: none; }
-
-  .flow-node {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex-shrink: 0;
-    gap: 6px;
-  }
-
-  .flow-box {
-    padding: 8px 12px;
-    border-radius: 3px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-align: center;
-    white-space: nowrap;
-    line-height: 1.3;
-  }
-
-  .flow-arrow {
-    font-size: 14px;
-    color: var(--text-dim);
-    padding: 0 6px;
-    flex-shrink: 0;
-    margin-bottom: 16px;
-  }
-
-  /* ── SETUP LIST ── */
-  .setup-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 8px 16px;
-    border-bottom: 1px solid var(--border);
-    transition: background 0.15s;
-  }
-
-  .setup-item:hover { background: rgba(255,255,255,0.02); }
-  .setup-item:last-child { border-bottom: none; }
-
-  .setup-num {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    color: var(--text-dim);
-    flex-shrink: 0;
-    margin-top: 1px;
-    width: 20px;
-  }
-
-  .setup-text {
-    font-size: 12px;
-    line-height: 1.5;
-  }
-
-  .setup-status {
-    margin-left: auto;
-    flex-shrink: 0;
-    font-family: 'Space Mono', monospace;
-    font-size: 9px;
-    padding: 2px 6px;
-    border-radius: 2px;
-  }
-
-  /* ── SECTION LABEL ── */
-  .section-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    padding: 6px 0 10px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 10px;
-  }
-
-  /* ── PHASE TABLE ── */
-  .phase-row {
-    display: grid;
-    grid-template-columns: 28px 1fr auto;
-    gap: 10px;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--border);
-    align-items: center;
-  }
-
-  .phase-row:last-child { border-bottom: none; }
-
-  .phase-num {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--text-dim);
-    text-align: center;
-  }
-
-  .phase-name { font-size: 12px; font-weight: 700; color: var(--text-bright); }
-  .phase-sub { font-size: 10px; color: var(--text-dim); margin-top: 1px; }
-
-  .phase-icon { font-size: 15px; }
-
-  /* ── LINK BUTTON ── */
-  .notion-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 7px 14px;
-    background: rgba(45,255,154,0.06);
-    border: 1px solid rgba(45,255,154,0.2);
-    border-radius: 3px;
-    color: var(--accent-green);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-decoration: none;
-    transition: all 0.2s;
-    margin-top: 12px;
-  }
-
-  .notion-link:hover {
-    background: rgba(45,255,154,0.12);
-    border-color: rgba(45,255,154,0.4);
-    box-shadow: 0 0 16px rgba(45,255,154,0.1);
-  }
-
-  /* ── ANIMATIONS ── */
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .panel {
-    animation: fadeIn 0.4s ease both;
-  }
-
-  .panel:nth-child(1) { animation-delay: 0.05s; }
-  .panel:nth-child(2) { animation-delay: 0.10s; }
-  .panel:nth-child(3) { animation-delay: 0.15s; }
-  .panel:nth-child(4) { animation-delay: 0.20s; }
-  .panel:nth-child(5) { animation-delay: 0.25s; }
-  .panel:nth-child(6) { animation-delay: 0.30s; }
-  .panel:nth-child(7) { animation-delay: 0.35s; }
-  .panel:nth-child(8) { animation-delay: 0.40s; }
-
-  /* ── MOBILE ── */
-  @media (max-width: 900px) {
-    .main { grid-template-columns: 1fr 1fr; }
-    .span-full { grid-column: 1 / -1; }
-    .span-2 { grid-column: 1 / -1; }
-  }
-
-  @media (max-width: 600px) {
-    .main { grid-template-columns: 1fr; padding: 12px; gap: 12px; }
-    .span-full, .span-2 { grid-column: 1 / -1; }
-    .stat-grid { grid-template-columns: repeat(2, 1fr); }
-    .stat-cell:nth-child(2) { border-right: none; }
-    header { padding: 12px 16px; flex-wrap: wrap; gap: 8px; }
-  }
+@import url('https://fonts.googleapis.com/css2?family=Syne+Mono&family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&display=swap');
+
+:root {
+  --bg:    #07080d;
+  --bg2:   #0b0d14;
+  --panel: #0d0f18;
+  --line:  #171b28;
+  --line2: #1e2335;
+  --dim:   #3a405c;
+  --mid:   #6b7394;
+  --text:  #b4bad4;
+  --hi:    #e8ecf8;
+  --g:   #00e07a;   --ga: rgba(0,224,122,.13);   --gs: rgba(0,224,122,.06);
+  --b:   #4a8fff;   --ba: rgba(74,143,255,.13);   --bs: rgba(74,143,255,.06);
+  --a:   #ffb830;   --aa: rgba(255,184,48,.13);   --as: rgba(255,184,48,.06);
+  --r:   #ff4060;   --ra: rgba(255,64,96,.13);
+  --p:   #c47dff;   --pa: rgba(196,125,255,.13);
+  --c:   #2ed4ff;   --ca: rgba(46,212,255,.13);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Sans JP', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* grain */
+body::before {
+  content:'';
+  position:fixed; inset:0; z-index:9999; pointer-events:none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity:.4;
+}
+
+/* ─── LOCK ─── */
+#lock {
+  position:fixed; inset:0; z-index:1000;
+  background:var(--bg);
+  display:flex; align-items:center; justify-content:center;
+}
+.lock-inner {
+  width:min(360px,92vw);
+  display:flex; flex-direction:column; align-items:center; gap:28px;
+}
+.lock-logo {
+  font-family:'Syne Mono',monospace;
+  font-size:11px; letter-spacing:.28em; color:var(--dim);
+  text-transform:uppercase;
+}
+.lock-card {
+  width:100%;
+  background:var(--panel); border:1px solid var(--line2);
+  padding:32px 28px; display:flex; flex-direction:column; gap:16px;
+}
+.lock-label {
+  font-family:'DM Mono',monospace; font-size:9px;
+  letter-spacing:.18em; color:var(--dim); text-transform:uppercase;
+}
+#pin {
+  width:100%; background:var(--bg2);
+  border:1px solid var(--line2); color:var(--hi);
+  font-family:'Syne Mono',monospace; font-size:18px;
+  letter-spacing:.22em; padding:13px 16px; outline:none;
+  transition:border-color .2s;
+  caret-color:var(--g);
+}
+#pin:focus { border-color:var(--dim); }
+#pin.shake { animation:shake .28s ease; border-color:var(--r); }
+@keyframes shake {
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-5px)}
+  60%{transform:translateX(5px)}
+}
+.lock-err {
+  font-family:'DM Mono',monospace; font-size:10px;
+  color:var(--r); min-height:14px; letter-spacing:.04em;
+}
+.lock-fail-log { display:none; }
+.lock-fail-log-title {
+  font-family:'DM Mono',monospace; font-size:9px;
+  color:var(--dim); letter-spacing:.12em; margin-bottom:8px;
+}
+.fail-item {
+  display:flex; justify-content:space-between;
+  font-family:'DM Mono',monospace; font-size:9px;
+  color:var(--r); padding:4px 0; border-bottom:1px solid var(--line);
+  opacity:.7;
+}
+.fail-item span { color:var(--dim); }
+
+/* cooldown overlay – silent, just blocks input */
+#cool {
+  position:fixed; inset:0; z-index:999;
+  background:rgba(7,8,13,.97);
+  display:none; align-items:center; justify-content:center;
+  flex-direction:column; gap:16px;
+}
+.cool-num {
+  font-family:'Syne Mono',monospace; font-size:52px;
+  color:var(--r); opacity:.7;
+}
+.cool-msg {
+  font-family:'DM Mono',monospace; font-size:10px;
+  color:var(--dim); letter-spacing:.14em;
+}
+
+/* ─── APP ─── */
+#app { display:none; }
+
+/* ─── HEADER ─── */
+.hdr {
+  position:sticky; top:0; z-index:100;
+  background:rgba(7,8,13,.88); backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line);
+  padding:14px 28px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.hdr-logo {
+  font-family:'Syne Mono',monospace; font-size:12px;
+  color:var(--g); letter-spacing:.1em;
+}
+.hdr-logo em { color:var(--dim); font-style:normal; }
+.hdr-r { display:flex; align-items:center; gap:12px; }
+.live {
+  display:flex; align-items:center; gap:6px;
+  font-family:'DM Mono',monospace; font-size:9px;
+  color:var(--g); letter-spacing:.1em;
+}
+.dot {
+  width:6px; height:6px; border-radius:50%;
+  background:var(--g); box-shadow:0 0 7px var(--g);
+  animation:throb 2.4s ease infinite;
+}
+@keyframes throb {
+  0%,100%{opacity:1} 50%{opacity:.25}
+}
+.ts {
+  font-family:'DM Mono',monospace; font-size:10px;
+  color:var(--dim);
+}
+
+/* ─── LAYOUT ─── */
+.page { max-width:1160px; margin:0 auto; padding:28px 20px 60px; }
+
+/* ─── SECTION ─── */
+.sec {
+  margin-bottom:10px;
+  animation:fadeUp .4s ease both;
+}
+@keyframes fadeUp {
+  from{opacity:0;transform:translateY(8px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.sec:nth-child(1){animation-delay:.04s} .sec:nth-child(2){animation-delay:.08s}
+.sec:nth-child(3){animation-delay:.12s} .sec:nth-child(4){animation-delay:.16s}
+.sec:nth-child(5){animation-delay:.20s} .sec:nth-child(6){animation-delay:.24s}
+.sec:nth-child(7){animation-delay:.28s} .sec:nth-child(8){animation-delay:.32s}
+.sec:nth-child(9){animation-delay:.36s} .sec:nth-child(10){animation-delay:.40s}
+
+/* ─── CARD ─── */
+.card {
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:3px; overflow:hidden;
+  position:relative;
+}
+.card::after {
+  content:''; position:absolute; top:0; left:0; right:0;
+  height:1px; opacity:0; transition:opacity .25s;
+}
+.card:hover::after { opacity:1; }
+.cg::after{background:var(--g);box-shadow:0 0 8px var(--g);}
+.cb::after{background:var(--b);box-shadow:0 0 8px var(--b);}
+.ca::after{background:var(--a);box-shadow:0 0 8px var(--a);}
+.cr::after{background:var(--r);box-shadow:0 0 8px var(--r);}
+.cp::after{background:var(--p);box-shadow:0 0 8px var(--p);}
+.cc::after{background:var(--c);box-shadow:0 0 8px var(--c);}
+
+.ch {
+  padding:11px 16px; border-bottom:1px solid var(--line);
+  display:flex; align-items:center; justify-content:space-between;
+  background:rgba(255,255,255,.015);
+}
+.cht {
+  font-family:'DM Mono',monospace; font-size:9px;
+  font-weight:500; letter-spacing:.16em; text-transform:uppercase;
+}
+.cbody { padding:14px 16px; }
+
+/* ─── BADGE ─── */
+.badge {
+  font-family:'DM Mono',monospace; font-size:8px;
+  padding:2px 7px; border-radius:2px; letter-spacing:.07em;
+  white-space:nowrap;
+}
+.bg { background:var(--ga); color:var(--g); border:1px solid rgba(0,224,122,.2); }
+.bb { background:var(--ba); color:var(--b); border:1px solid rgba(74,143,255,.2); }
+.ba { background:var(--aa); color:var(--a); border:1px solid rgba(255,184,48,.2); }
+.br { background:var(--ra); color:var(--r); border:1px solid rgba(255,64,96,.2); }
+.bp { background:var(--pa); color:var(--p); border:1px solid rgba(196,125,255,.2); }
+.bc { background:var(--ca); color:var(--c); border:1px solid rgba(46,212,255,.2); }
+.bd { background:rgba(255,255,255,.04); color:var(--mid); border:1px solid var(--line2); }
+
+/* ─── STATS ─── */
+.stats {
+  display:grid; grid-template-columns:repeat(4,1fr);
+  border:1px solid var(--line); border-radius:3px; overflow:hidden;
+  margin-bottom:14px;
+}
+.stat {
+  padding:14px 10px; text-align:center;
+  border-right:1px solid var(--line);
+}
+.stat:last-child { border-right:none; }
+.stat-n {
+  font-family:'Syne Mono',monospace; font-size:30px;
+  line-height:1; margin-bottom:4px;
+}
+.stat-l {
+  font-family:'DM Mono',monospace; font-size:8px;
+  color:var(--dim); letter-spacing:.12em; text-transform:uppercase;
+}
+
+/* ─── FLOW ─── */
+.flow {
+  display:flex; align-items:center;
+  overflow-x:auto; padding:8px 0; gap:0;
+  scrollbar-width:none;
+}
+.flow::-webkit-scrollbar { display:none; }
+.fn { flex-shrink:0; }
+.fb {
+  padding:7px 10px; border-radius:3px;
+  font-family:'DM Mono',monospace; font-size:8px;
+  font-weight:500; letter-spacing:.07em;
+  text-align:center; white-space:nowrap; line-height:1.45;
+}
+.far {
+  font-size:12px; color:var(--dim);
+  padding:0 5px; flex-shrink:0; margin-bottom:10px;
+}
+
+/* ─── PROJECT ROW ─── */
+.prow {
+  padding:13px 16px; border-bottom:1px solid var(--line);
+  transition:background .15s;
+}
+.prow:last-child { border-bottom:none; }
+.prow:hover { background:rgba(255,255,255,.018); }
+.prow-top { display:flex; align-items:flex-start; gap:10px; }
+.sdot {
+  width:7px; height:7px; border-radius:50%;
+  flex-shrink:0; margin-top:6px;
+}
+.sdg { background:var(--g); box-shadow:0 0 5px var(--g); }
+.sda { background:var(--a); }
+.sdb { background:var(--b); box-shadow:0 0 5px var(--b); }
+.sdd { background:var(--dim); }
+.prow-main { flex:1; min-width:0; }
+.prow-name {
+  font-size:13px; font-weight:700; color:var(--hi);
+  margin-bottom:3px; display:flex; align-items:center;
+  gap:7px; flex-wrap:wrap;
+}
+.prow-desc { font-size:11px; color:var(--mid); line-height:1.6; margin-bottom:5px; }
+.prow-next {
+  font-family:'DM Mono',monospace; font-size:10px;
+  color:var(--c);
+}
+.prow-next::before { content:'▶ '; opacity:.45; }
+
+/* ─── PROGRESS ─── */
+.prog { margin-top:8px; }
+.prog-lbl {
+  font-family:'DM Mono',monospace; font-size:9px;
+  color:var(--dim); display:flex; justify-content:space-between;
+  margin-bottom:4px;
+}
+.prog-track {
+  height:3px; background:var(--line2); border-radius:2px;
+  overflow:hidden; cursor:pointer;
+}
+.prog-fill {
+  height:100%; border-radius:2px;
+  transition:width .7s cubic-bezier(.4,0,.2,1);
+}
+.pfg { background:var(--g); box-shadow:0 0 5px rgba(0,224,122,.4); }
+.pfb { background:var(--b); }
+.pfp { background:var(--p); }
+.pfa { background:var(--a); }
+
+/* progress slider (edit mode) */
+.prog-slider { display:flex; align-items:center; gap:8px; margin-top:6px; }
+.prog-slider input[type=range] {
+  flex:1; accent-color:var(--g); height:3px; cursor:pointer;
+}
+.prog-val {
+  font-family:'DM Mono',monospace; font-size:10px;
+  color:var(--g); width:30px; text-align:right;
+}
+
+/* ─── INLINE EDIT ─── */
+.ie {
+  background:var(--bg2); border:1px solid var(--b);
+  color:var(--hi); font-family:'Noto Sans JP',sans-serif;
+  font-size:11px; padding:4px 7px; outline:none;
+  width:100%; border-radius:2px; margin-bottom:5px;
+  transition:border-color .2s;
+}
+.ie:focus { border-color:var(--c); }
+textarea.ie { resize:vertical; min-height:44px; line-height:1.5; }
+.sel {
+  background:var(--bg2); border:1px solid var(--line2);
+  color:var(--text); font-family:'DM Mono',monospace;
+  font-size:9px; padding:4px 7px; cursor:pointer;
+  outline:none; border-radius:2px;
+}
+
+/* ─── CHECKLIST ─── */
+.cl {
+  display:flex; align-items:center; gap:9px;
+  padding:7px 16px; border-bottom:1px solid var(--line);
+  cursor:pointer; transition:background .14s; user-select:none;
+}
+.cl:last-child { border-bottom:none; }
+.cl:hover { background:rgba(255,255,255,.022); }
+.cl-box {
+  width:14px; height:14px; border-radius:2px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:8px; flex-shrink:0; transition:all .18s;
+}
+.cl-done { background:rgba(0,224,122,.12); border:1px solid var(--g); color:var(--g); }
+.cl-todo { background:transparent; border:1px solid var(--line2); color:transparent; }
+.cl-lbl { font-size:11px; flex:1; transition:all .18s; }
+.cl-lbl.done { color:var(--dim); text-decoration:line-through; }
+.cl-lbl.todo { color:var(--text); }
+
+/* ─── PHASE ─── */
+.phase {
+  display:grid; grid-template-columns:22px 1fr 18px;
+  gap:10px; padding:8px 0; border-bottom:1px solid var(--line);
+  align-items:center; cursor:pointer; transition:background .14s;
+}
+.phase:last-child { border-bottom:none; }
+.phase:hover { background:rgba(255,255,255,.02); margin:0 -16px; padding:8px 16px; }
+.p-num {
+  font-family:'DM Mono',monospace; font-size:10px;
+  color:var(--dim); text-align:center;
+}
+.p-name { font-size:12px; font-weight:700; color:var(--hi); }
+.p-sub { font-size:10px; color:var(--mid); margin-top:1px; }
+.p-ico { font-size:14px; text-align:center; }
+
+/* ─── LINKS GRID ─── */
+.links-grid {
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap:8px; padding:14px 16px;
+}
+.lnk {
+  display:flex; align-items:center; gap:9px;
+  padding:10px 12px;
+  background:var(--bg2); border:1px solid var(--line2);
+  border-radius:3px; text-decoration:none;
+  color:var(--text); font-size:12px;
+  transition:all .18s; cursor:pointer;
+}
+.lnk:hover {
+  border-color:var(--dim); color:var(--hi);
+  background:rgba(255,255,255,.03);
+  transform:translateY(-1px);
+}
+.lnk-ico {
+  font-size:14px; flex-shrink:0;
+}
+.lnk-sub {
+  font-family:'DM Mono',monospace; font-size:9px;
+  color:var(--dim); margin-top:2px; letter-spacing:.04em;
+}
+
+/* ─── ARCHIVE ─── */
+.arch-row {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 16px; border-bottom:1px solid var(--line);
+  opacity:.55; transition:opacity .2s;
+}
+.arch-row:last-child { border-bottom:none; }
+.arch-row:hover { opacity:.85; }
+.arch-name {
+  flex:1; font-size:12px; color:var(--dim);
+  text-decoration:line-through;
+}
+.arch-date { font-family:'DM Mono',monospace; font-size:9px; color:var(--dim); }
+
+/* ─── BUTTONS ─── */
+.btn-sm {
+  font-family:'DM Mono',monospace; font-size:9px;
+  padding:3px 9px; background:transparent;
+  border:1px solid var(--line2); color:var(--dim);
+  cursor:pointer; transition:all .18s; border-radius:2px;
+  letter-spacing:.06em;
+}
+.btn-sm:hover { border-color:var(--g); color:var(--g); }
+.btn-sm.act { background:var(--ga); border-color:rgba(0,224,122,.3); color:var(--g); }
+
+.btn-arch {
+  font-family:'DM Mono',monospace; font-size:9px;
+  padding:3px 8px; background:transparent;
+  border:1px solid var(--line2); color:var(--dim);
+  cursor:pointer; transition:all .18s; border-radius:2px;
+}
+.btn-arch:hover { border-color:var(--a); color:var(--a); }
+
+.btn-restore {
+  font-family:'DM Mono',monospace; font-size:9px;
+  padding:3px 8px; background:transparent;
+  border:1px solid var(--line2); color:var(--dim);
+  cursor:pointer; transition:all .18s; border-radius:2px;
+}
+.btn-restore:hover { border-color:var(--g); color:var(--g); }
+
+.btn-add {
+  display:inline-flex; align-items:center; gap:5px;
+  margin:10px 16px;
+  padding:6px 12px; background:transparent;
+  border:1px dashed var(--line2); color:var(--dim);
+  cursor:pointer; font-family:'DM Mono',monospace;
+  font-size:9px; transition:all .18s; border-radius:2px;
+  letter-spacing:.06em;
+}
+.btn-add:hover { border-color:var(--g); color:var(--g); }
+
+.btn-save {
+  padding:7px 16px; background:var(--ga);
+  border:1px solid rgba(0,224,122,.22); color:var(--g);
+  font-family:'DM Mono',monospace; font-size:9px;
+  font-weight:500; letter-spacing:.1em;
+  cursor:pointer; transition:all .2s; border-radius:2px;
+}
+.btn-save:hover { box-shadow:0 0 12px rgba(0,224,122,.12); }
+
+/* ─── ADD FORM ─── */
+.add-form {
+  display:none; flex-direction:column; gap:9px;
+  padding:12px 16px; border-top:1px solid var(--line);
+  background:rgba(255,255,255,.013);
+}
+.add-form.open { display:flex; }
+.form-row { display:flex; gap:8px; }
+
+/* ─── SAVED MSG ─── */
+.saved {
+  font-family:'DM Mono',monospace; font-size:9px;
+  color:var(--g); margin-left:8px; opacity:0;
+  transition:opacity .25s;
+}
+
+/* ─── MEMO ─── */
+.memo-area {
+  width:100%; background:var(--bg2);
+  border:1px solid var(--line2); color:var(--text);
+  font-family:'DM Mono',monospace; font-size:11px;
+  padding:11px 12px; resize:none; outline:none;
+  line-height:1.7; transition:border-color .2s; min-height:90px;
+}
+.memo-area:focus { border-color:var(--dim); }
+
+/* ─── 2-COL ─── */
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.grid3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+.span2 { grid-column:span 2; }
+
+/* ─── TOAST ─── */
+#toast {
+  position:fixed; bottom:22px; right:22px; z-index:9000;
+  font-family:'DM Mono',monospace; font-size:10px;
+  padding:9px 16px; border-radius:3px;
+  background:var(--panel); border:1px solid var(--g); color:var(--g);
+  transform:translateY(12px); opacity:0;
+  transition:all .25s; pointer-events:none;
+}
+#toast.show { transform:translateY(0); opacity:1; }
+
+/* ─── DIVIDER ─── */
+.div { height:1px; background:var(--line); margin:10px 0; }
+.slbl {
+  font-family:'DM Mono',monospace; font-size:8px;
+  letter-spacing:.16em; text-transform:uppercase;
+  color:var(--dim); padding-bottom:8px;
+  border-bottom:1px solid var(--line); margin-bottom:9px;
+}
+
+/* ─── NOTION LINK ─── */
+.notion-btn {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:6px 14px;
+  background:var(--ga); border:1px solid rgba(0,224,122,.2);
+  border-radius:2px; color:var(--g);
+  font-family:'DM Mono',monospace; font-size:9px;
+  font-weight:500; text-decoration:none;
+  letter-spacing:.08em; transition:all .2s;
+}
+.notion-btn:hover { box-shadow:0 0 14px rgba(0,224,122,.1); }
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:860px) {
+  .grid2 { grid-template-columns:1fr; }
+  .grid3 { grid-template-columns:1fr 1fr; }
+  .span2 { grid-column:span 1; }
+  .stats { grid-template-columns:repeat(2,1fr); }
+  .stat:nth-child(2) { border-right:none; }
+  .stat:nth-child(3) { border-top:1px solid var(--line); }
+  .stat:nth-child(4) { border-top:1px solid var(--line); }
+}
+@media(max-width:560px) {
+  .grid3 { grid-template-columns:1fr; }
+  .hdr { padding:11px 14px; flex-wrap:wrap; gap:8px; }
+  .page { padding:16px 12px 50px; }
+  .links-grid { grid-template-columns:1fr 1fr; }
+}
 </style>
 </head>
 <body>
 
-<header>
-  <div class="header-left">
-    <div class="logo">
-      <span class="pulse-dot"></span>
-      Project<span>Terminal</span>
-    </div>
-    <div class="date-stamp" id="ts">—</div>
-  </div>
-  <div style="display:flex;gap:8px;align-items:center">
-    <span class="panel-badge badge-green">LIVE</span>
-    <a href="https://www.notion.so/31a8140b186e818098f7e2f2fa4d8679" target="_blank" class="notion-link" style="margin-top:0">
-      ↗ Notion
-    </a>
-  </div>
-</header>
-
-<div class="main">
-
-  <!-- ── STAT ROW ── -->
-  <div class="panel span-full panel-green">
-    <div class="panel-header">
-      <div class="panel-title" style="color:var(--accent-green)">📊 プロジェクト概況</div>
-      <span class="panel-badge badge-green">2026-03-11</span>
-    </div>
-    <div class="panel-body" style="padding:16px;">
-      <div class="stat-grid">
-        <div class="stat-cell">
-          <div class="stat-num" style="color:var(--accent-green)">4</div>
-          <div class="stat-label">進行中</div>
-        </div>
-        <div class="stat-cell">
-          <div class="stat-num" style="color:var(--accent-amber)">1</div>
-          <div class="stat-label">試験中</div>
-        </div>
-        <div class="stat-cell">
-          <div class="stat-num" style="color:var(--accent-blue)">3</div>
-          <div class="stat-label">未着手</div>
-        </div>
-        <div class="stat-cell">
-          <div class="stat-num" style="color:var(--text-dim)">0</div>
-          <div class="stat-label">完了</div>
-        </div>
-      </div>
-
-      <!-- FLOW -->
-      <div class="section-label">自動化フロー</div>
-      <div class="flow">
-        <div class="flow-node">
-          <div class="flow-box" style="background:rgba(77,142,255,0.1);border:1px solid rgba(77,142,255,0.3);color:var(--accent-blue)">情報収集<br>論文・政策・ニュース</div>
-        </div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-node">
-          <div class="flow-box" style="background:rgba(185,125,255,0.1);border:1px solid rgba(185,125,255,0.3);color:var(--accent-purple)">Claude /<br>NotebookLM</div>
-        </div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-node">
-          <div class="flow-box" style="background:rgba(45,255,154,0.1);border:1px solid rgba(45,255,154,0.3);color:var(--accent-green)">Notion DB<br>格納</div>
-        </div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-node">
-          <div class="flow-box" style="background:rgba(255,190,61,0.1);border:1px solid rgba(255,190,61,0.3);color:var(--accent-amber)">各ダッシュボード<br>反映</div>
-        </div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-node">
-          <div class="flow-box" style="background:rgba(61,216,255,0.1);border:1px solid rgba(61,216,255,0.3);color:var(--accent-cyan)">Terminal<br>スマホ確認</div>
-        </div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-node">
-          <div class="flow-box" style="background:rgba(255,77,106,0.1);border:1px solid rgba(255,77,106,0.3);color:var(--accent-red)">AI創作論文<br>発行</div>
-        </div>
+<!-- ─── LOCK ─── -->
+<div id="lock">
+  <div class="lock-inner">
+    <div class="lock-logo">◈ &nbsp; Project Terminal &nbsp; ◈</div>
+    <div class="lock-card">
+      <div class="lock-label">// Enter passkey</div>
+      <input type="password" id="pin" autocomplete="off" spellcheck="false"
+             placeholder="············"
+             onkeydown="if(event.key==='Enter')tryLogin()" />
+      <div class="lock-err" id="lerr"></div>
+      <div class="lock-fail-log" id="flog">
+        <div class="lock-fail-log-title">// access failure log</div>
+        <div id="floglist"></div>
       </div>
     </div>
   </div>
-
-  <!-- ── PROJECT LIST ── -->
-  <div class="panel span-2 panel-green">
-    <div class="panel-header">
-      <div class="panel-title" style="color:var(--accent-green)">🗂️ 進行プロジェクト</div>
-      <span class="panel-badge badge-green">ACTIVE</span>
-    </div>
-
-    <div class="project-item">
-      <div class="status-dot dot-active"></div>
-      <div>
-        <div class="project-name">📖 ロッド物語 — 創作管理</div>
-        <div class="project-desc">杏と栗が崩壊地域へ向かう短中編。細胞・半導体・電磁気的類推を世界観の骨格に置く。</div>
-        <div class="progress-wrap">
-          <div class="progress-label"><span>フェーズ進行</span><span>4/6</span></div>
-          <div class="progress-track"><div class="progress-fill fill-green" style="width:66%"></div></div>
-        </div>
-        <div class="project-next">フェーズ3「探索・汚染」の線虫描写 / ロッカー風化シーン</div>
-      </div>
-      <div class="project-meta">
-        <span class="cat-tag badge-purple">制作物</span>
-        <span class="cat-tag" style="background:rgba(45,255,154,0.08);color:var(--text-dim);border:1px solid var(--border2);font-family:'Space Mono',monospace;font-size:9px;padding:2px 6px;border-radius:2px;white-space:nowrap;">2026-03-11</span>
-      </div>
-    </div>
-
-    <div class="project-item">
-      <div class="status-dot dot-active"></div>
-      <div>
-        <div class="project-name">🌿 VRChat 四季の公園ワールド</div>
-        <div class="project-desc">Unity + Udon# で四季・時間・天候対応の公園ワールド。Quest対応・GitHub Pages連携ダッシュボード構想あり。</div>
-        <div class="progress-wrap">
-          <div class="progress-label"><span>ステップ進行</span><span>4/8</span></div>
-          <div class="progress-track"><div class="progress-fill fill-blue" style="width:50%"></div></div>
-        </div>
-        <div class="project-next">STEP 05 Udon# 時間・天候・四季システムの実装</div>
-      </div>
-      <div class="project-meta">
-        <span class="cat-tag badge-blue">環境構築</span>
-        <span class="cat-tag" style="background:rgba(45,255,154,0.08);color:var(--text-dim);border:1px solid var(--border2);font-family:'Space Mono',monospace;font-size:9px;padding:2px 6px;border-radius:2px;white-space:nowrap;">2026-03-06</span>
-      </div>
-    </div>
-
-    <div class="project-item">
-      <div class="status-dot dot-active"></div>
-      <div>
-        <div class="project-name">🧠 思考の堆積（野良研究）</div>
-        <div class="project-desc">時間・距離・評価の三軸をベースにした着想の蓄積。プレプリントへの遠い到達を目標に構造化サイクルを回す。</div>
-        <div class="project-next">電磁気と評価・信用の対応データを眺める、細胞膜境界の構造を見る</div>
-      </div>
-      <div class="project-meta">
-        <span class="cat-tag badge-purple">研究</span>
-      </div>
-    </div>
-
-    <div class="project-item">
-      <div class="status-dot dot-active"></div>
-      <div>
-        <div class="project-name">💻 HTMLダッシュボード管理</div>
-        <div class="project-desc">思考の堆積を可視化するローカルHTML。ログ・構造マップ・今日の早見・問答・検索の六タブ構成。</div>
-        <div class="project-next">必要に応じてタブ・機能追加。Claude Code使用可能時にPC直反映</div>
-      </div>
-      <div class="project-meta">
-        <span class="cat-tag badge-green">環境構築</span>
-      </div>
-    </div>
-
-    <div class="project-item">
-      <div class="status-dot dot-hold"></div>
-      <div>
-        <div class="project-name">📈 経営シミュレーション</div>
-        <div class="project-desc">特定企業の立場での経営判断シミュレーション。</div>
-        <div class="project-next">継続中の内容があれば記録</div>
-      </div>
-      <div class="project-meta">
-        <span class="cat-tag badge-amber">試験中</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── VRChat チェックリスト ── -->
-  <div class="panel panel-blue">
-    <div class="panel-header">
-      <div class="panel-title" style="color:var(--accent-blue)">🌿 VRChat チェック</div>
-      <span class="panel-badge badge-blue">4/8 完了</span>
-    </div>
-    <div style="padding: 4px 0;">
-      <div class="checklist-item">
-        <div class="check-icon check-done">✓</div>
-        <span class="check-label-done">STEP 01 環境構築</span>
-      </div>
-      <div class="checklist-item">
-        <div class="check-icon check-done">✓</div>
-        <span class="check-label-done">STEP 02 Unity基本操作</span>
-      </div>
-      <div class="checklist-item">
-        <div class="check-icon check-done">✓</div>
-        <span class="check-label-done">初回ワールドアップロード 🎉</span>
-      </div>
-      <div class="checklist-item">
-        <div class="check-icon check-done">✓</div>
-        <span class="check-label-done">STEP 03-04 地形・ベンチ配置</span>
-      </div>
-      <div class="checklist-item">
-        <div class="check-icon check-todo">○</div>
-        <span class="check-label-todo" style="color:var(--accent-blue);font-weight:700">STEP 05 Udon# 四季システム ◀</span>
-      </div>
-      <div class="checklist-item">
-        <div class="check-icon check-todo">○</div>
-        <span class="check-label-todo">フローティングダッシュボード</span>
-      </div>
-      <div class="checklist-item">
-        <div class="check-icon check-todo">○</div>
-        <span class="check-label-todo">STEP 06 ライティング & テスト</span>
-      </div>
-      <div class="checklist-item">
-        <div class="check-icon check-todo">○</div>
-        <span class="check-label-todo">STEP 07 Quest対応</span>
-      </div>
-      <div class="checklist-item">
-        <div class="check-icon check-todo">○</div>
-        <span class="check-label-todo">STEP 08 GitHub連携ダッシュボード</span>
-      </div>
-    </div>
-    <div style="padding:10px 16px;border-top:1px solid var(--border);">
-      <div class="progress-label" style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);display:flex;justify-content:space-between;margin-bottom:5px;">
-        <span>完了率</span><span>44%</span>
-      </div>
-      <div class="progress-track"><div class="progress-fill fill-blue" style="width:44%"></div></div>
-    </div>
-  </div>
-
-  <!-- ── ロッド物語フェーズ ── -->
-  <div class="panel panel-purple">
-    <div class="panel-header">
-      <div class="panel-title" style="color:var(--accent-purple)">📖 ロッド物語 フェーズ</div>
-      <span class="panel-badge badge-purple">2/6 完了</span>
-    </div>
-    <div style="padding:8px 16px;">
-      <div class="phase-row">
-        <div class="phase-num">01</div>
-        <div><div class="phase-name">導入</div><div class="phase-sub">ロッカーの記憶・任務受領・故郷へ</div></div>
-        <div class="phase-icon">✅</div>
-      </div>
-      <div class="phase-row">
-        <div class="phase-num">02</div>
-        <div><div class="phase-name">到着・侵入</div><div class="phase-sub">泉・獣道・遺跡へ強行侵入</div></div>
-        <div class="phase-icon">✅</div>
-      </div>
-      <div class="phase-row" style="background:rgba(185,125,255,0.05)">
-        <div class="phase-num" style="color:var(--accent-purple)">03</div>
-        <div><div class="phase-name" style="color:var(--accent-purple)">探索・汚染 ◀ 執筆中</div><div class="phase-sub">サビの印・禁忌・えっちな本の工作</div></div>
-        <div class="phase-icon">🔄</div>
-      </div>
-      <div class="phase-row" style="background:rgba(185,125,255,0.03)">
-        <div class="phase-num" style="color:var(--accent-purple);opacity:0.6">04</div>
-        <div><div class="phase-name" style="opacity:0.7">発見・風化</div><div class="phase-sub">コドン発見・栗の出自・ロッカー砂に</div></div>
-        <div class="phase-icon">🔄</div>
-      </div>
-      <div class="phase-row">
-        <div class="phase-num" style="opacity:0.4">05</div>
-        <div><div class="phase-name" style="opacity:0.4">崩壊・絶頂</div><div class="phase-sub">線虫の核・栗倒れる・杏四足を失う</div></div>
-        <div class="phase-icon" style="opacity:0.3">📝</div>
-      </div>
-      <div class="phase-row">
-        <div class="phase-num" style="opacity:0.4">06</div>
-        <div><div class="phase-name" style="opacity:0.4">結末</div><div class="phase-sub">泉に浮かぶ杏・えっちな本と涙</div></div>
-        <div class="phase-icon" style="opacity:0.3">📝</div>
-      </div>
-    </div>
-    <div style="padding:8px 16px;border-top:1px solid var(--border);">
-      <div class="progress-label" style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);display:flex;justify-content:space-between;margin-bottom:5px;">
-        <span>フェーズ完了率</span><span>33%</span>
-      </div>
-      <div class="progress-track"><div class="progress-fill fill-purple" style="width:33%"></div></div>
-    </div>
-  </div>
-
-  <!-- ── 情報収集・マガジン ── -->
-  <div class="panel panel-amber">
-    <div class="panel-header">
-      <div class="panel-title" style="color:var(--accent-amber)">📰 自動マガジン / 情報収集</div>
-      <span class="panel-badge badge-amber">未着手</span>
-    </div>
-    <div class="panel-body">
-      <div class="section-label">週次レポート設計</div>
-      <div style="display:flex;flex-direction:column;gap:6px;font-size:11px;">
-        <div style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--border)">
-          <span style="color:var(--accent-amber);font-family:'Space Mono',monospace;font-size:10px;flex-shrink:0;">頻度</span>
-          <span style="color:var(--text)">週1回（月曜）</span>
-        </div>
-        <div style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--border)">
-          <span style="color:var(--accent-amber);font-family:'Space Mono',monospace;font-size:10px;flex-shrink:0;">内容</span>
-          <span style="color:var(--text)">概要・新規性・個人的関心箇所・DOI</span>
-        </div>
-        <div style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--border)">
-          <span style="color:var(--accent-amber);font-family:'Space Mono',monospace;font-size:10px;flex-shrink:0;">分野</span>
-          <span style="color:var(--text)">物理・認知・複雑系・AI・生命・社会</span>
-        </div>
-        <div style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;">
-          <span style="color:var(--accent-amber);font-family:'Space Mono',monospace;font-size:10px;flex-shrink:0;">方法</span>
-          <span style="color:var(--text)">Claude生成 → Notion DB追加 → スマホ確認</span>
-        </div>
-      </div>
-      <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">
-        <div class="section-label" style="margin-bottom:8px;">セットアップ状況</div>
-        <div class="checklist-item">
-          <div class="check-icon check-todo">○</div>
-          <span class="check-label-todo">週次論文レポートDB作成</span>
-        </div>
-        <div class="checklist-item">
-          <div class="check-icon check-todo">○</div>
-          <span class="check-label-todo">テンプレート作成</span>
-        </div>
-        <div class="checklist-item">
-          <div class="check-icon check-todo">○</div>
-          <span class="check-label-todo">モバイルビュー設定</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── 政策・法律 ── -->
-  <div class="panel panel-cyan">
-    <div class="panel-header">
-      <div class="panel-title" style="color:var(--accent-cyan)">🏛️ 政策・法律・政党 盤面</div>
-      <span class="panel-badge badge-blue">未着手</span>
-    </div>
-    <div class="panel-body">
-      <div class="section-label">管理項目</div>
-      <div style="display:flex;flex-direction:column;gap:5px;">
-        <div style="padding:7px 0;border-bottom:1px solid var(--border);font-size:11px;display:flex;justify-content:space-between;align-items:center;">
-          <span>政策動向（分野別）</span>
-          <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text-dim);">経済/外交/科技</span>
-        </div>
-        <div style="padding:7px 0;border-bottom:1px solid var(--border);font-size:11px;display:flex;justify-content:space-between;align-items:center;">
-          <span>法改正トラッカー</span>
-          <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text-dim);">一次ソース優先</span>
-        </div>
-        <div style="padding:7px 0;border-bottom:1px solid var(--border);font-size:11px;display:flex;justify-content:space-between;align-items:center;">
-          <span>政党動向・支持率推移</span>
-          <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text-dim);">各党スタンス</span>
-        </div>
-        <div style="padding:7px 0;font-size:11px;display:flex;justify-content:space-between;align-items:center;">
-          <span>国際動向リンク</span>
-          <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text-dim);">海外比較</span>
-        </div>
-      </div>
-      <div style="margin-top:12px;padding:10px;background:rgba(61,216,255,0.05);border:1px solid rgba(61,216,255,0.15);border-radius:3px;font-size:11px;color:var(--text-dim);">
-        → ソースをベースに<span style="color:var(--accent-cyan)">AI独自創作論文</span>へ接続
-      </div>
-    </div>
-  </div>
-
-  <!-- ── AI論文ジェネレーター ── -->
-  <div class="panel panel-red">
-    <div class="panel-header">
-      <div class="panel-title" style="color:var(--accent-red)">📝 AI独自創作論文 Gen.</div>
-      <span class="panel-badge badge-red">未着手</span>
-    </div>
-    <div class="panel-body">
-      <div class="section-label">論文フォーマット</div>
-      <div style="font-size:11px;display:flex;flex-direction:column;gap:5px;">
-        <div style="padding:5px 0;border-bottom:1px solid var(--border);">
-          <span style="color:var(--accent-red);font-family:'JetBrains Mono',monospace;font-size:9px;">TITLE</span> タイトル
-        </div>
-        <div style="padding:5px 0;border-bottom:1px solid var(--border);">
-          <span style="color:var(--accent-red);font-family:'JetBrains Mono',monospace;font-size:9px;">FOCUS</span> 焦点・データ・情報
-        </div>
-        <div style="padding:5px 0;border-bottom:1px solid var(--border);">
-          <span style="color:var(--accent-red);font-family:'JetBrains Mono',monospace;font-size:9px;">SOURCE</span> 引用元リスト（定量・精度・厳密指定）
-        </div>
-        <div style="padding:5px 0;border-bottom:1px solid var(--border);">
-          <span style="color:var(--accent-red);font-family:'JetBrains Mono',monospace;font-size:9px;">BODY</span> 複合・混沌・横断的な独自視点
-        </div>
-        <div style="padding:5px 0;border-bottom:1px solid var(--border);">
-          <span style="color:var(--accent-red);font-family:'JetBrains Mono',monospace;font-size:9px;">CLAIM</span> 新規性の主張
-        </div>
-        <div style="padding:5px 0;">
-          <span style="color:var(--accent-red);font-family:'JetBrains Mono',monospace;font-size:9px;">SHARE</span> 個人のみ / 家族共有
-        </div>
-      </div>
-      <div style="margin-top:10px;padding:8px;background:rgba(255,77,106,0.06);border:1px solid rgba(255,77,106,0.2);border-radius:3px;font-size:10px;color:var(--text-dim);line-height:1.6;">
-        A4換算 2〜5枚 × 複数本を毎回生成<br>
-        定量性とソース厳密明示を必須とする
-      </div>
-    </div>
-  </div>
-
-  <!-- ── 未来とルーツ ── -->
-  <div class="panel panel-purple">
-    <div class="panel-header">
-      <div class="panel-title" style="color:var(--accent-purple)">🌱 未来とルーツ</div>
-      <span class="panel-badge badge-purple">随時更新</span>
-    </div>
-    <div class="panel-body">
-      <div class="section-label">タイムスパン</div>
-      <div style="display:flex;flex-direction:column;gap:0;">
-        <div style="padding:8px 0;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:center;">
-          <span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--accent-purple);flex-shrink:0;">5年</span>
-          <span style="font-size:11px;color:var(--text-dim)">近期ビジョン・具体的構想</span>
-        </div>
-        <div style="padding:8px 0;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:center;">
-          <span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--accent-purple);flex-shrink:0;">10年</span>
-          <span style="font-size:11px;color:var(--text-dim)">中期ビジョン・方向性</span>
-        </div>
-        <div style="padding:8px 0;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:center;">
-          <span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--accent-purple);flex-shrink:0;">30年</span>
-          <span style="font-size:11px;color:var(--text-dim)">長期ビジョン・人生設計</span>
-        </div>
-        <div style="padding:8px 0;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:center;">
-          <span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--accent-blue);flex-shrink:0;">ROOT</span>
-          <span style="font-size:11px;color:var(--text-dim)">思想・価値観の起源を辿るメモ</span>
-        </div>
-        <div style="padding:8px 0;display:flex;gap:12px;align-items:center;">
-          <span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--accent-cyan);flex-shrink:0;">GLOBAL</span>
-          <span style="font-size:11px;color:var(--text-dim)">国際的な関心・観察メモ</span>
-        </div>
-      </div>
-      <div style="margin-top:10px;padding:8px;background:rgba(185,125,255,0.05);border:1px solid rgba(185,125,255,0.2);border-radius:3px;font-size:10px;color:var(--text-dim);">
-        雑メモ・グローバル雑メモ → 定期抽出 → ここに格納
-      </div>
-    </div>
-  </div>
-
-  <!-- ── NotebookLM ── -->
-  <div class="panel panel-blue">
-    <div class="panel-header">
-      <div class="panel-title" style="color:var(--accent-blue)">🤖 NotebookLM 環境</div>
-      <span class="panel-badge badge-blue">セットアップ中</span>
-    </div>
-    <div class="panel-body">
-      <div class="section-label">運用フロー</div>
-      <div style="display:flex;flex-direction:column;gap:6px;font-size:11px;">
-        <div style="display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);">
-          <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--accent-blue);flex-shrink:0;margin-top:1px;">01</span>
-          <span>雑メモ・グローバルメモを定期エクスポート</span>
-        </div>
-        <div style="display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);">
-          <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--accent-blue);flex-shrink:0;margin-top:1px;">02</span>
-          <span><span style="color:var(--accent-amber)">個人情報の除去</span>（名前・住所・連絡先削除）</span>
-        </div>
-        <div style="display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);">
-          <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--accent-blue);flex-shrink:0;margin-top:1px;">03</span>
-          <span>NotebookLMへ資料としてセット</span>
-        </div>
-        <div style="display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);">
-          <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--accent-blue);flex-shrink:0;margin-top:1px;">04</span>
-          <span>管理ログをNotionに記録</span>
-        </div>
-        <div style="display:flex;gap:10px;padding:6px 0;">
-          <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--accent-blue);flex-shrink:0;margin-top:1px;">05</span>
-          <span>インサイト・要約をNotionへ戻す</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── 初期セットアップ ── -->
-  <div class="panel span-full panel-amber">
-    <div class="panel-header">
-      <div class="panel-title" style="color:var(--accent-amber)">📋 初期セットアップ チェックリスト</div>
-      <span class="panel-badge badge-amber">0/8 完了</span>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:0;">
-      <div class="setup-item">
-        <div class="setup-num">01</div>
-        <div class="setup-text">プロジェクト管理データベース作成</div>
-        <span class="setup-status badge-amber">TODO</span>
-      </div>
-      <div class="setup-item">
-        <div class="setup-num">02</div>
-        <div class="setup-text">週次論文レポートのテンプレート作成</div>
-        <span class="setup-status badge-amber">TODO</span>
-      </div>
-      <div class="setup-item">
-        <div class="setup-num">03</div>
-        <div class="setup-text">政策・法律トラッカーのデータベース作成</div>
-        <span class="setup-status badge-amber">TODO</span>
-      </div>
-      <div class="setup-item">
-        <div class="setup-num">04</div>
-        <div class="setup-text">AI創作論文ジェネレーターのテンプレート作成</div>
-        <span class="setup-status badge-amber">TODO</span>
-      </div>
-      <div class="setup-item">
-        <div class="setup-num">05</div>
-        <div class="setup-text">未来とルーツページの初期記入</div>
-        <span class="setup-status badge-amber">TODO</span>
-      </div>
-      <div class="setup-item">
-        <div class="setup-num">06</div>
-        <div class="setup-text">NotebookLM資料の個人情報除去フロー確立</div>
-        <span class="setup-status badge-amber">TODO</span>
-      </div>
-      <div class="setup-item">
-        <div class="setup-num">07</div>
-        <div class="setup-text">ターミナルホームページのモバイルビュー設定</div>
-        <span class="setup-status badge-amber">TODO</span>
-      </div>
-      <div class="setup-item">
-        <div class="setup-num">08</div>
-        <div class="setup-text">家族共有項目の権限設定</div>
-        <span class="setup-status badge-amber">TODO</span>
-      </div>
-    </div>
-  </div>
-
 </div>
 
-<script>
-  function updateTimestamp() {
-    const now = new Date();
-    const y = now.getFullYear();
-    const mo = String(now.getMonth()+1).padStart(2,'0');
-    const d = String(now.getDate()).padStart(2,'0');
-    const h = String(now.getHours()).padStart(2,'0');
-    const mi = String(now.getMinutes()).padStart(2,'0');
-    const s = String(now.getSeconds()).padStart(2,'0');
-    document.getElementById('ts').textContent = `${y}-${mo}-${d} ${h}:${mi}:${s}`;
-  }
-  updateTimestamp();
-  setInterval(updateTimestamp, 1000);
+<!-- ─── COOLDOWN ─── -->
+<div id="cool">
+  <div class="cool-num" id="cdn">300</div>
+  <div class="cool-msg">// access suspended · retry in <span id="cdns">300</span>s</div>
+</div>
 
-  // Animate progress bars on load
+<!-- ─── APP ─── -->
+<div id="app">
+
+  <header class="hdr">
+    <div class="hdr-logo">Project<em>Terminal</em></div>
+    <div class="hdr-r">
+      <div class="live"><div class="dot"></div>LIVE</div>
+      <div class="ts" id="ts">—</div>
+      <a href="https://www.notion.so/31a8140b186e818098f7e2f2fa4d8679" target="_blank" class="notion-btn">↗ Notion</a>
+    </div>
+  </header>
+
+  <div class="page">
+
+    <!-- ── 0. STATS ── -->
+    <div class="sec">
+      <div class="card cg">
+        <div class="ch">
+          <div class="cht" style="color:var(--g)">📊 概況</div>
+          <div id="ovDate" style="font-family:'DM Mono',monospace;font-size:9px;color:var(--dim)"></div>
+        </div>
+        <div class="cbody">
+          <div class="stats">
+            <div class="stat"><div class="stat-n" style="color:var(--g)" id="cn-act">—</div><div class="stat-l">進行中</div></div>
+            <div class="stat"><div class="stat-n" style="color:var(--a)" id="cn-hld">—</div><div class="stat-l">試験中</div></div>
+            <div class="stat"><div class="stat-n" style="color:var(--b)" id="cn-new">—</div><div class="stat-l">未着手</div></div>
+            <div class="stat"><div class="stat-n" style="color:var(--dim)" id="cn-arc">—</div><div class="stat-l">完了</div></div>
+          </div>
+          <div class="slbl">自動化フロー</div>
+          <div class="flow">
+            <div class="fn"><div class="fb" style="background:var(--bs);border:1px solid rgba(74,143,255,.25);color:var(--b)">情報収集<br>論文・政策</div></div>
+            <div class="far">→</div>
+            <div class="fn"><div class="fb" style="background:var(--pa);border:1px solid rgba(196,125,255,.25);color:var(--p)">Claude /<br>NotebookLM</div></div>
+            <div class="far">→</div>
+            <div class="fn"><div class="fb" style="background:var(--ga);border:1px solid rgba(0,224,122,.25);color:var(--g)">Notion DB<br>格納</div></div>
+            <div class="far">→</div>
+            <div class="fn"><div class="fb" style="background:var(--aa);border:1px solid rgba(255,184,48,.25);color:var(--a)">各ダッシュ<br>ボード</div></div>
+            <div class="far">→</div>
+            <div class="fn"><div class="fb" style="background:var(--ca);border:1px solid rgba(46,212,255,.25);color:var(--c)">Terminal<br>スマホ</div></div>
+            <div class="far">→</div>
+            <div class="fn"><div class="fb" style="background:var(--ra);border:1px solid rgba(255,64,96,.25);color:var(--r)">AI創作論文<br>発行</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 1. PROJECTS ── -->
+    <div class="sec">
+      <div class="card cg">
+        <div class="ch">
+          <div class="cht" style="color:var(--g)">🗂️ 進行プロジェクト</div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <button class="btn-sm" id="editBtn" onclick="toggleEdit()">✎ 編集</button>
+            <span class="badge bg" id="pjBadge">—</span>
+          </div>
+        </div>
+        <div id="pjList"></div>
+        <button class="btn-add" onclick="toggleAddForm()">＋ プロジェクトを追加</button>
+        <div class="add-form" id="addForm">
+          <div class="form-row">
+            <input class="ie" id="nName" placeholder="プロジェクト名" style="font-size:13px;font-weight:700;" />
+            <select class="sel" id="nStatus">
+              <option value="active">🟢 進行中</option>
+              <option value="hold">🟡 試験中</option>
+              <option value="new">🔵 未着手</option>
+            </select>
+          </div>
+          <textarea class="ie" id="nDesc" placeholder="概要（任意）" style="min-height:44px"></textarea>
+          <input class="ie" id="nNext" placeholder="次にやること（任意）" />
+          <div class="form-row">
+            <select class="sel" id="nCat">
+              <option>制作物</option><option>研究</option>
+              <option>環境構築</option><option>情報収集</option><option>その他</option>
+            </select>
+            <button class="btn-save" onclick="addProject()">追加</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 2. VRChat ── -->
+    <div class="sec">
+      <div class="grid2">
+        <div class="card cb">
+          <div class="ch">
+            <div class="cht" style="color:var(--b)">🌿 VRChat ステップ</div>
+            <span class="badge bb" id="vrcBadge">—</span>
+          </div>
+          <div id="vrcList"></div>
+        </div>
+        <div class="card cb">
+          <div class="ch"><div class="cht" style="color:var(--b)">📈 進行状況</div></div>
+          <div class="cbody">
+            <div class="prog">
+              <div class="prog-lbl"><span>完了率</span><span id="vrcPct">—</span></div>
+              <div class="prog-track" style="height:5px"><div class="prog-fill pfb" id="vrcBar" style="width:0%"></div></div>
+            </div>
+            <div class="div"></div>
+            <div class="slbl">GitHub連携 最有力案</div>
+            <div style="font-size:11px;color:var(--mid);line-height:1.8;">
+              ④ VRCImageDownloader（Quest対応◎）<br>
+              ⑤ GitHub Pages → PNG自動出力<br>
+              <span style="color:var(--b);">→ ④+⑤組み合わせが最有力</span>
+            </div>
+            <div class="div"></div>
+            <div class="slbl">メモ</div>
+            <textarea class="memo-area" id="mVrc" rows="3" placeholder="VRChatメモ..."></textarea>
+            <div style="display:flex;align-items:center;margin-top:8px;">
+              <button class="btn-save" onclick="saveMemo('mVrc','sVrc')">保存</button>
+              <span class="saved" id="sVrc">✓ 保存</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 3. ロッド物語 ── -->
+    <div class="sec">
+      <div class="grid2">
+        <div class="card cp">
+          <div class="ch">
+            <div class="cht" style="color:var(--p)">📖 ロッド物語 フェーズ</div>
+            <span class="badge bp" id="rodBadge">—</span>
+          </div>
+          <div class="cbody" id="rodPhases"></div>
+          <div style="padding:8px 16px;border-top:1px solid var(--line);">
+            <div class="prog-lbl" style="font-family:'DM Mono',monospace;font-size:9px;color:var(--dim);display:flex;justify-content:space-between;margin-bottom:5px;">
+              <span>完了率</span><span id="rodPct">—</span>
+            </div>
+            <div class="prog-track" style="height:4px"><div class="prog-fill pfp" id="rodBar" style="width:0%"></div></div>
+          </div>
+        </div>
+        <div class="card cp">
+          <div class="ch"><div class="cht" style="color:var(--p)">⚠️ 未回収フラグ</div></div>
+          <div id="rodFlags" style="padding:0 16px 4px;"></div>
+          <div class="cbody" style="border-top:1px solid var(--line);">
+            <div class="slbl">執筆メモ</div>
+            <textarea class="memo-area" id="mRod" rows="5" placeholder="執筆メモ・アイデア..."></textarea>
+            <div style="display:flex;align-items:center;margin-top:8px;">
+              <button class="btn-save" onclick="saveMemo('mRod','sRod')">保存</button>
+              <span class="saved" id="sRod">✓ 保存</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 4. SYSTEMS ── -->
+    <div class="sec">
+      <div class="grid3">
+        <div class="card ca">
+          <div class="ch"><div class="cht" style="color:var(--a)">📰 自動マガジン</div><span class="badge ba">未着手</span></div>
+          <div class="cbody" style="font-size:11px;color:var(--mid);line-height:1.8;">
+            週1回（月曜）· 概要/新規性/関心箇所/DOI<br>
+            分野: 物理・認知・複雑系・AI・生命・社会<br>
+            <span style="color:var(--a);">Claude生成 → Notion DB → スマホ確認</span>
+          </div>
+        </div>
+        <div class="card cc">
+          <div class="ch"><div class="cht" style="color:var(--c)">🏛️ 政策・法律盤面</div><span class="badge bc">未着手</span></div>
+          <div class="cbody" style="font-size:11px;color:var(--mid);line-height:1.8;">
+            政策動向（分野別）· 法改正トラッカー<br>
+            政党動向・支持率推移<br>
+            <span style="color:var(--c);">一次ソース優先 → AI論文へ接続</span>
+          </div>
+        </div>
+        <div class="card cr">
+          <div class="ch"><div class="cht" style="color:var(--r)">📝 AI創作論文 Gen.</div><span class="badge br">未着手</span></div>
+          <div class="cbody" style="font-size:11px;color:var(--mid);line-height:1.8;">
+            A4換算2〜5枚 × 複数本/回<br>
+            定量性・ソース厳密指定 必須<br>
+            <span style="color:var(--r);">複合・混沌・横断的な独自視点</span>
+          </div>
+        </div>
+        <div class="card cb">
+          <div class="ch"><div class="cht" style="color:var(--b)">🤖 NotebookLM</div><span class="badge bb">セットアップ中</span></div>
+          <div class="cbody" style="font-size:11px;color:var(--mid);line-height:1.8;">
+            雑メモ・グローバルメモ → エクスポート<br>
+            <span style="color:var(--a);">個人情報除去</span> → NotebookLMへセット<br>
+            インサイト・要約 → Notion戻し
+          </div>
+        </div>
+        <div class="card cp span2">
+          <div class="ch"><div class="cht" style="color:var(--p)">🌱 未来とルーツ</div><span class="badge bp">随時更新</span></div>
+          <div class="cbody">
+            <textarea class="memo-area" id="mFuture" rows="4"
+              placeholder="[5年] &#10;[10年] &#10;[30年] &#10;[ROOT] &#10;[GLOBAL] "></textarea>
+            <div style="display:flex;align-items:center;margin-top:8px;">
+              <button class="btn-save" onclick="saveMemo('mFuture','sFuture')">保存</button>
+              <span class="saved" id="sFuture">✓ 保存</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 5. SETUP CHECKLIST ── -->
+    <div class="sec">
+      <div class="card ca">
+        <div class="ch">
+          <div class="cht" style="color:var(--a)">📋 初期セットアップ</div>
+          <span class="badge ba" id="setupBadge">—</span>
+        </div>
+        <div id="setupList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))"></div>
+      </div>
+    </div>
+
+    <!-- ── 6. LINKS ── -->
+    <div class="sec">
+      <div class="card cg">
+        <div class="ch"><div class="cht" style="color:var(--g)">🔗 ページリンク集</div></div>
+        <div class="links-grid">
+          <a class="lnk" href="https://infodashborad.nonma01.workers.dev/" target="_blank">
+            <span class="lnk-ico">🏠</span>
+            <div><div>index</div><div class="lnk-sub">infodashborad.nonma01.workers.dev</div></div>
+          </a>
+          <a class="lnk" href="https://infodashborad.nonma01.workers.dev/Thinking.html" target="_blank">
+            <span class="lnk-ico">🧠</span>
+            <div><div>Thinking</div><div class="lnk-sub">Thinking.html</div></div>
+          </a>
+          <a class="lnk" href="https://infodashborad.nonma01.workers.dev/brain-chip-visual.html" target="_blank">
+            <span class="lnk-ico">🔬</span>
+            <div><div>Brain Chip Visual</div><div class="lnk-sub">brain-chip-visual.html</div></div>
+          </a>
+          <a class="lnk" href="https://infodashborad.nonma01.workers.dev/pixiv_dashboard_complete.html" target="_blank">
+            <span class="lnk-ico">🎨</span>
+            <div><div>pixiv Dashboard</div><div class="lnk-sub">pixiv_dashboard_complete.html</div></div>
+          </a>
+          <a class="lnk" href="https://infodashborad.nonma01.workers.dev/universal-analogy.html" target="_blank">
+            <span class="lnk-ico">🌐</span>
+            <div><div>Universal Analogy</div><div class="lnk-sub">universal-analogy.html</div></div>
+          </a>
+          <a class="lnk" href="https://infodashborad.nonma01.workers.dev/management-wisdom.html" target="_blank">
+            <span class="lnk-ico">📚</span>
+            <div><div>Management Wisdom</div><div class="lnk-sub">management-wisdom.html</div></div>
+          </a>
+          <a class="lnk" href="https://infodashborad.nonma01.workers.dev/rod_StoryNavigator.html" target="_blank">
+            <span class="lnk-ico">📖</span>
+            <div><div>Rod StoryNavigator</div><div class="lnk-sub">rod_StoryNavigator.html</div></div>
+          </a>
+          <a class="lnk" href="https://infodashborad.nonma01.workers.dev/vrchat_market_dashboard.html" target="_blank">
+            <span class="lnk-ico">🌿</span>
+            <div><div>VRChat Market</div><div class="lnk-sub">vrchat_market_dashboard.html</div></div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 7. ARCHIVE ── -->
+    <div class="sec">
+      <div class="card ca">
+        <div class="ch">
+          <div class="cht" style="color:var(--a)">🗄️ アーカイブ</div>
+          <span class="badge ba" id="archBadge">0件</span>
+        </div>
+        <div id="archList">
+          <div style="padding:22px;text-align:center;font-family:'DM Mono',monospace;font-size:10px;color:var(--dim);">
+            完了したプロジェクトはここに移動されます
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /page -->
+</div><!-- /app -->
+
+<div id="toast"></div>
+
+<script>
+// ════════════════════════════════════
+// CONFIG
+// ════════════════════════════════════
+const PASS = '2820285082126';
+const CD_SEC = 300;
+
+// ════════════════════════════════════
+// AUTH STATE
+// ════════════════════════════════════
+let fails    = parseInt(localStorage.getItem('pt_f')  || '0');
+let cdEnd    = parseInt(localStorage.getItem('pt_cd') || '0');
+let failLog  = JSON.parse(localStorage.getItem('pt_fl') || '[]');
+let cdTimer  = null;
+
+function initAuth() {
+  const pin = document.getElementById('pin');
+  renderFailLog();
+  if (fails >= 3 && cdEnd > Date.now()) { showCool(cdEnd - Date.now()); return; }
+  if (fails >= 3) resetAuth();
+  pin.addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
+  pin.focus();
+}
+
+function tryLogin() {
+  const pin = document.getElementById('pin');
+  const v   = pin.value;
+  if (v === PASS) {
+    resetAuth();
+    document.getElementById('lock').style.display = 'none';
+    document.getElementById('app').style.display  = 'block';
+    boot();
+  } else {
+    fails++;
+    const now = new Date();
+    const ts  = fmt(now);
+    failLog.push(ts);
+    localStorage.setItem('pt_f',  fails);
+    localStorage.setItem('pt_fl', JSON.stringify(failLog));
+    renderFailLog();
+
+    pin.classList.add('shake');
+    setTimeout(() => pin.classList.remove('shake'), 300);
+    pin.value = '';
+    pin.focus();
+
+    const err = document.getElementById('lerr');
+    if (fails >= 3) {
+      const end = Date.now() + CD_SEC * 1000;
+      localStorage.setItem('pt_cd', end);
+      cdEnd = end;
+      showCool(CD_SEC * 1000);
+    } else {
+      err.textContent = `認証失敗 (${fails}/3)`;
+    }
+  }
+}
+
+function showCool(ms) {
+  const ov  = document.getElementById('cool');
+  const num = document.getElementById('cdn');
+  const ns  = document.getElementById('cdns');
+  ov.style.display = 'flex';
+  let sec = Math.ceil(ms / 1000);
+  num.textContent = ns.textContent = sec;
+  cdTimer = setInterval(() => {
+    sec--;
+    num.textContent = ns.textContent = Math.max(0, sec);
+    if (sec <= 0) {
+      clearInterval(cdTimer);
+      ov.style.display = 'none';
+      resetAuth();
+      document.getElementById('pin').focus();
+    }
+  }, 1000);
+}
+
+function resetAuth() {
+  fails = 0; failLog = []; cdEnd = 0;
+  ['pt_f','pt_cd','pt_fl'].forEach(k => localStorage.removeItem(k));
+}
+
+function renderFailLog() {
+  const wrap = document.getElementById('flog');
+  const list = document.getElementById('floglist');
+  if (!failLog.length) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  list.innerHTML = '';
+  [...failLog].reverse().slice(0,8).forEach(ts => {
+    const d = document.createElement('div');
+    d.className = 'fail-item';
+    d.innerHTML = `<span>✕ 認証失敗</span>${ts}`;
+    list.appendChild(d);
+  });
+}
+
+// ════════════════════════════════════
+// DATA
+// ════════════════════════════════════
+const DKEY = 'pt_data';
+let D = JSON.parse(localStorage.getItem(DKEY) || 'null') || {
+  projects: [
+    { id:1, name:'📖 ロッド物語 — 創作管理', status:'active', cat:'制作物',
+      desc:'杏と栗が崩壊地域へ向かう短中編。細胞・半導体・電磁気的類推を世界観の骨格に置く。',
+      next:'フェーズ3「探索・汚染」の線虫描写 / ロッカー風化シーン', progress:33, date:'2026-03-11'},
+    { id:2, name:'🌿 VRChat 四季の公園ワールド', status:'active', cat:'環境構築',
+      desc:'Unity + Udon# で四季・時間・天候対応の公園ワールド。Quest対応・GitHub連携ダッシュボード構想あり。',
+      next:'STEP 05 Udon# 時間・天候・四季システムの実装', progress:44, date:'2026-03-06'},
+    { id:3, name:'🧠 思考の堆積（野良研究）', status:'active', cat:'研究',
+      desc:'時間・距離・評価の三軸をベースにした着想の蓄積。プレプリントへの到達を遠い目標に。',
+      next:'電磁気と評価・信用の対応データを眺める', progress:20, date:'2026-03-06'},
+    { id:4, name:'💻 HTMLダッシュボード管理', status:'active', cat:'環境構築',
+      desc:'思考の堆積を可視化するローカルHTML。ログ・構造マップ・今日の早見など六タブ構成。',
+      next:'タブ・機能追加。Claude Code使用可能時にPC直反映', progress:60, date:'2026-03-06'},
+    { id:5, name:'📈 経営シミュレーション', status:'hold', cat:'その他',
+      desc:'特定企業の立場での経営判断シミュレーション。',
+      next:'継続中の内容があれば記録', progress:10, date:'—'},
+  ],
+  archived: [],
+  vrc: [
+    {label:'STEP 01 環境構築（Unity Hub / VCC / SDK）', done:true},
+    {label:'STEP 02 Unity基本操作', done:true},
+    {label:'初回ワールドアップロード 🎉', done:true},
+    {label:'STEP 03-04 地形作成・ベンチ配置', done:true},
+    {label:'STEP 05 Udon# 時間・天候・四季システム', done:false},
+    {label:'STEP 05+ フローティングダッシュボード', done:false},
+    {label:'STEP 06 ライティング & テスト', done:false},
+    {label:'STEP 07 Quest（モバイル）対応', done:false},
+    {label:'STEP 08 GitHub連携ダッシュボード実装', done:false},
+  ],
+  rod: [
+    {num:'01', name:'導入', sub:'ロッカーの記憶・任務受領・故郷へ', status:'done'},
+    {num:'02', name:'到着・侵入', sub:'泉のほとり→獣道→遺跡へ強行侵入', status:'done'},
+    {num:'03', name:'探索・汚染', sub:'サビの印・禁忌イエローカード・えっちな本の隠蔽工作', status:'active'},
+    {num:'04', name:'発見・風化', sub:'コドン発見・栗の出自・ロッカーが砂になる', status:'active'},
+    {num:'05', name:'崩壊・絶頂', sub:'線虫の核・栗倒れる・杏が四足を割かれる', status:'todo'},
+    {num:'06', name:'結末', sub:'泉に浮かぶ杏・えっちな本と涙・屋上のすれ違い', status:'todo'},
+  ],
+  rodFlags: [
+    {weight:95, label:'泉と杏の帰結', note:'導入の泉→扉開放→泉に浮かぶ杏の環状構造'},
+    {weight:90, label:'禁忌の刻印', note:'サビの印→イエローカード→キラー召喚の連鎖'},
+    {weight:88, label:'えっちな本', note:'聖域の防衛→価値観衝突→慟哭の媒介'},
+    {weight:82, label:'ロッカーの風化', note:'避暑地喪失→自己犠牲への動機'},
+  ],
+  setup: [
+    {label:'プロジェクト管理データベース作成', done:false},
+    {label:'週次論文レポートのテンプレート作成', done:false},
+    {label:'政策・法律トラッカーのデータベース作成', done:false},
+    {label:'AI創作論文ジェネレーターのテンプレート作成', done:false},
+    {label:'未来とルーツページの初期記入', done:false},
+    {label:'NotebookLM資料の個人情報除去フロー確立', done:false},
+    {label:'ターミナルホームページのモバイルビュー設定', done:false},
+    {label:'家族共有項目の権限設定', done:false},
+  ],
+  memos: {}
+};
+const save = () => localStorage.setItem(DKEY, JSON.stringify(D));
+
+// ════════════════════════════════════
+// BOOT
+// ════════════════════════════════════
+function boot() {
+  setInterval(tick, 1000); tick();
+  const d = new Date();
+  document.getElementById('ovDate').textContent = fmt(d).slice(0,10);
+  renderAll();
+  loadMemos();
+  // delayed progress animation
   setTimeout(() => {
-    document.querySelectorAll('.progress-fill').forEach(bar => {
-      const w = bar.style.width;
-      bar.style.width = '0%';
-      setTimeout(() => { bar.style.width = w; }, 100);
+    document.querySelectorAll('.prog-fill').forEach(el => {
+      const w = el.style.width;
+      el.style.width = '0';
+      setTimeout(() => el.style.width = w, 50);
     });
-  }, 300);
+  }, 200);
+}
+
+function tick() {
+  document.getElementById('ts').textContent = fmt(new Date());
+}
+
+function renderAll() {
+  renderStats();
+  renderProjects();
+  renderVRC();
+  renderRod();
+  renderSetup();
+  renderArchive();
+}
+
+// ════════════════════════════════════
+// STATS
+// ════════════════════════════════════
+function renderStats() {
+  const c = {active:0, hold:0, new:0};
+  D.projects.forEach(p => { if(c[p.status]!==undefined) c[p.status]++; else c.new++; });
+  document.getElementById('cn-act').textContent = c.active;
+  document.getElementById('cn-hld').textContent = c.hold;
+  document.getElementById('cn-new').textContent = c.new;
+  document.getElementById('cn-arc').textContent = D.archived.length;
+}
+
+// ════════════════════════════════════
+// PROJECTS
+// ════════════════════════════════════
+const SMAP = {
+  active: {dot:'sdg', badge:'bg', lbl:'🟢 進行中'},
+  hold:   {dot:'sda', badge:'ba', lbl:'🟡 試験中'},
+  new:    {dot:'sdb', badge:'bb', lbl:'🔵 未着手'},
+};
+const FILL  = {active:'pfg', hold:'pfa', new:'pfb'};
+const CBADGE = {'制作物':'bp','研究':'bb','環境構築':'bg','情報収集':'bc','その他':'ba'};
+
+let editMode = false;
+
+function renderProjects() {
+  const el = document.getElementById('pjList');
+  el.innerHTML = '';
+  D.projects.forEach(p => {
+    const sm = SMAP[p.status] || SMAP.new;
+    const div = document.createElement('div');
+    div.className = 'prow';
+    if (editMode) {
+      div.innerHTML = `
+        <div class="prow-top">
+          <div class="sdot ${sm.dot}"></div>
+          <div class="prow-main">
+            <input class="ie" style="font-size:13px;font-weight:700;margin-bottom:6px;" value="${x(p.name)}"
+              onchange="upField(${p.id},'name',this.value)" />
+            <textarea class="ie" onchange="upField(${p.id},'desc',this.value)">${x(p.desc)}</textarea>
+            <input class="ie" value="${x(p.next||'')}" placeholder="次にやること"
+              onchange="upField(${p.id},'next',this.value)" />
+            <div class="prog-slider">
+              <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--dim);">進捗</span>
+              <input type="range" min="0" max="100" value="${p.progress}"
+                oninput="document.getElementById('pv${p.id}').textContent=this.value+'%'"
+                onchange="upField(${p.id},'progress',parseInt(this.value))" />
+              <span class="prog-val" id="pv${p.id}">${p.progress}%</span>
+            </div>
+            <div style="display:flex;gap:7px;margin-top:7px;align-items:center;">
+              <select class="sel" onchange="upField(${p.id},'status',this.value)">
+                <option value="active" ${p.status==='active'?'selected':''}>🟢 進行中</option>
+                <option value="hold"   ${p.status==='hold'  ?'selected':''}>🟡 試験中</option>
+                <option value="new"    ${p.status==='new'   ?'selected':''}>🔵 未着手</option>
+              </select>
+              <button class="btn-arch" onclick="archivePj(${p.id})">▼ アーカイブ</button>
+            </div>
+          </div>
+        </div>`;
+    } else {
+      div.innerHTML = `
+        <div class="prow-top">
+          <div class="sdot ${sm.dot}"></div>
+          <div class="prow-main">
+            <div class="prow-name">${x(p.name)}<span class="badge ${sm.badge}">${sm.lbl}</span></div>
+            <div class="prow-desc">${x(p.desc)}</div>
+            ${p.next ? `<div class="prow-next">${x(p.next)}</div>` : ''}
+            <div class="prog">
+              <div class="prog-lbl"><span>進捗</span><span>${p.progress}%</span></div>
+              <div class="prog-track"><div class="prog-fill ${FILL[p.status]||'pfb'}" style="width:${p.progress}%"></div></div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;margin-left:8px;">
+            <span class="badge ${CBADGE[p.cat]||'ba'}">${p.cat}</span>
+            <span class="badge bd" style="font-size:8px;">${p.date}</span>
+          </div>
+        </div>`;
+    }
+    el.appendChild(div);
+  });
+  document.getElementById('pjBadge').textContent = D.projects.length + '件';
+  renderStats();
+}
+
+function toggleEdit() {
+  editMode = !editMode;
+  const btn = document.getElementById('editBtn');
+  btn.textContent = editMode ? '✓ 完了' : '✎ 編集';
+  btn.classList.toggle('act', editMode);
+  renderProjects();
+}
+
+function upField(id, field, val) {
+  const p = D.projects.find(p => p.id === id);
+  if (!p) return;
+  p[field] = val;
+  save();
+  if (field !== 'name' && field !== 'desc' && field !== 'next') renderProjects();
+  toast('更新しました');
+}
+
+function archivePj(id) {
+  const i = D.projects.findIndex(p => p.id === id);
+  if (i < 0) return;
+  const p = D.projects.splice(i, 1)[0];
+  p.archivedAt = new Date().toISOString().slice(0,10);
+  D.archived.push(p);
+  save(); renderProjects(); renderArchive();
+  toast(`「${p.name}」をアーカイブしました`);
+}
+
+function toggleAddForm() {
+  document.getElementById('addForm').classList.toggle('open');
+}
+
+function addProject() {
+  const name = document.getElementById('nName').value.trim();
+  if (!name) { toast('プロジェクト名を入力してください'); return; }
+  D.projects.push({
+    id: Date.now(),
+    name,
+    status: document.getElementById('nStatus').value,
+    cat:    document.getElementById('nCat').value,
+    desc:   document.getElementById('nDesc').value.trim(),
+    next:   document.getElementById('nNext').value.trim(),
+    progress: 0,
+    date: new Date().toISOString().slice(0,10)
+  });
+  save();
+  ['nName','nDesc','nNext'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('addForm').classList.remove('open');
+  renderProjects();
+  toast('プロジェクトを追加しました');
+}
+
+// ════════════════════════════════════
+// VRC
+// ════════════════════════════════════
+function renderVRC() {
+  const el = document.getElementById('vrcList');
+  el.innerHTML = '';
+  D.vrc.forEach((c, i) => {
+    const d = document.createElement('div');
+    d.className = 'cl';
+    d.onclick = () => { D.vrc[i].done = !D.vrc[i].done; save(); renderVRC(); toast(D.vrc[i].done ? '✓ 完了' : '未完了に戻しました'); };
+    d.innerHTML = `<div class="cl-box ${c.done?'cl-done':'cl-todo'}">${c.done?'✓':''}</div>
+      <span class="cl-lbl ${c.done?'done':'todo'}">${x(c.label)}</span>`;
+    el.appendChild(d);
+  });
+  const done  = D.vrc.filter(c => c.done).length;
+  const total = D.vrc.length;
+  const pct   = Math.round(done / total * 100);
+  document.getElementById('vrcBadge').textContent = `${done}/${total}`;
+  document.getElementById('vrcPct').textContent   = pct + '%';
+  document.getElementById('vrcBar').style.width   = pct + '%';
+}
+
+// ════════════════════════════════════
+// ROD STORY
+// ════════════════════════════════════
+function renderRod() {
+  const el   = document.getElementById('rodPhases');
+  el.innerHTML = '';
+  const ico  = {done:'✅', active:'🔄', todo:'📝'};
+  const col  = {done:'var(--dim)', active:'var(--p)', todo:'rgba(196,125,255,.3)'};
+  D.rod.forEach((ph, i) => {
+    const d = document.createElement('div');
+    d.className = 'phase';
+    d.title = 'クリックでステータス変更';
+    d.style.background = ph.status === 'active' ? 'rgba(196,125,255,.04)' : '';
+    d.onclick = () => {
+      const order = ['todo','active','done'];
+      ph.status = order[(order.indexOf(ph.status)+1) % order.length];
+      save(); renderRod();
+    };
+    d.innerHTML = `
+      <div class="p-num" style="color:${col[ph.status]}">${ph.num}</div>
+      <div>
+        <div class="p-name" style="color:${ph.status==='todo'?'var(--mid)':'var(--hi)'}">${x(ph.name)}${ph.status==='active'?' <span style="font-size:10px;color:var(--p);font-family:\'DM Mono\',monospace">◀ 執筆中</span>':''}</div>
+        <div class="p-sub">${x(ph.sub)}</div>
+      </div>
+      <div class="p-ico">${ico[ph.status]}</div>`;
+    el.appendChild(d);
+  });
+  const done = D.rod.filter(r => r.status === 'done').length;
+  const pct  = Math.round(done / D.rod.length * 100);
+  document.getElementById('rodBadge').textContent = `${done}/${D.rod.length}`;
+  document.getElementById('rodPct').textContent   = pct + '%';
+  document.getElementById('rodBar').style.width   = pct + '%';
+
+  const fl = document.getElementById('rodFlags');
+  fl.innerHTML = '';
+  D.rodFlags.forEach(f => {
+    const d = document.createElement('div');
+    d.style.cssText = 'padding:8px 0;border-bottom:1px solid var(--line);';
+    d.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+      <span style="font-size:12px;font-weight:700;color:var(--hi);">▲ ${x(f.label)}</span>
+      <span class="badge ba">重み${f.weight}</span>
+    </div>
+    <div style="font-size:11px;color:var(--mid);">${x(f.note)}</div>`;
+    fl.appendChild(d);
+  });
+}
+
+// ════════════════════════════════════
+// SETUP
+// ════════════════════════════════════
+function renderSetup() {
+  const el = document.getElementById('setupList');
+  el.innerHTML = '';
+  D.setup.forEach((c, i) => {
+    const d = document.createElement('div');
+    d.className = 'cl';
+    d.onclick = () => {
+      D.setup[i].done = !D.setup[i].done; save(); renderSetup();
+      toast(D.setup[i].done ? '✓ 完了' : '未完了に戻しました');
+    };
+    d.innerHTML = `<div class="cl-box ${c.done?'cl-done':'cl-todo'}">${c.done?'✓':''}</div>
+      <span class="cl-lbl ${c.done?'done':'todo'}">${x(c.label)}</span>`;
+    el.appendChild(d);
+  });
+  const done = D.setup.filter(c => c.done).length;
+  document.getElementById('setupBadge').textContent = `${done}/${D.setup.length}`;
+}
+
+// ════════════════════════════════════
+// ARCHIVE
+// ════════════════════════════════════
+function renderArchive() {
+  const el = document.getElementById('archList');
+  document.getElementById('archBadge').textContent = D.archived.length + '件';
+  if (!D.archived.length) {
+    el.innerHTML = '<div style="padding:22px;text-align:center;font-family:\'DM Mono\',monospace;font-size:10px;color:var(--dim);">完了したプロジェクトはここに移動されます</div>';
+    return;
+  }
+  el.innerHTML = '';
+  [...D.archived].reverse().forEach((p, ri) => {
+    const i = D.archived.length - 1 - ri;
+    const d = document.createElement('div');
+    d.className = 'arch-row';
+    d.innerHTML = `<div class="sdot sdd"></div>
+      <div style="flex:1">
+        <div class="arch-name">${x(p.name)}</div>
+        <div style="font-size:10px;color:var(--dim);margin-top:2px;">${x(p.desc||'')}</div>
+      </div>
+      <span class="arch-date">${p.archivedAt||'—'}</span>
+      <button class="btn-restore" onclick="restorePj(${i})">↩ 復元</button>`;
+    el.appendChild(d);
+  });
+}
+
+function restorePj(i) {
+  const p = D.archived.splice(i, 1)[0];
+  delete p.archivedAt;
+  D.projects.push(p);
+  save(); renderProjects(); renderArchive();
+  toast(`「${p.name}」を復元しました`);
+}
+
+// ════════════════════════════════════
+// MEMOS
+// ════════════════════════════════════
+function saveMemo(id, savedId) {
+  const val = document.getElementById(id).value;
+  if (!D.memos) D.memos = {};
+  D.memos[id] = val;
+  save();
+  const el = document.getElementById(savedId);
+  el.style.opacity = 1;
+  setTimeout(() => el.style.opacity = 0, 2000);
+}
+
+function loadMemos() {
+  if (!D.memos) return;
+  Object.entries(D.memos).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el) el.value = val;
+  });
+}
+
+// ════════════════════════════════════
+// TOAST
+// ════════════════════════════════════
+let _tt = null;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  if (_tt) clearTimeout(_tt);
+  _tt = setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+// ════════════════════════════════════
+// UTILS
+// ════════════════════════════════════
+function x(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function fmt(d) {
+  const p = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+}
+
+// ════════════════════════════════════
+// INIT
+// ════════════════════════════════════
+initAuth();
 </script>
 </body>
 </html>
