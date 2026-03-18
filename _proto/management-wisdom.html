@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>事業・組織を動かす最低限の知恵</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600;700&family=Noto+Sans+JP:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1208;
+    --paper: #f5f0e8;
+    --sepia: #8b6914;
+    --rust: #b84a1a;
+    --slate: #3d4a5c;
+    --sage: #4a6741;
+    --cream: #ede8d8;
+    --light: #faf7f0;
+    --rule: #c8b89a;
+    --accent: #c4590a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--light);
+    color: var(--ink);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 300;
+    line-height: 1.8;
+    font-size: 14px;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 3rem 2rem 2.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--rust), var(--sepia), var(--sage));
+  }
+  header::after {
+    content: '経営知';
+    font-family: 'Noto Serif JP', serif;
+    font-size: 12rem;
+    font-weight: 700;
+    color: rgba(255,255,255,0.03);
+    position: absolute;
+    right: -2rem;
+    top: -2rem;
+    line-height: 1;
+    pointer-events: none;
+  }
+  .header-inner { max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
+  .header-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--sepia);
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+  }
+  header h1 {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.9rem;
+    font-weight: 600;
+    line-height: 1.4;
+    margin-bottom: 0.6rem;
+  }
+  header p {
+    font-size: 13px;
+    color: rgba(245,240,232,0.6);
+    max-width: 600px;
+  }
+
+  /* NAV */
+  nav {
+    background: var(--cream);
+    border-bottom: 1px solid var(--rule);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  nav ul {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    gap: 0;
+    list-style: none;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  nav ul::-webkit-scrollbar { display: none; }
+  nav a {
+    display: block;
+    padding: 0.75rem 1.1rem;
+    font-size: 12px;
+    color: var(--slate);
+    text-decoration: none;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    font-weight: 400;
+  }
+  nav a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* LAYOUT */
+  .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+  /* SECTION HEADERS */
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin: 3rem 0 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .section-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--sepia);
+    letter-spacing: 0.1em;
+    flex-shrink: 0;
+  }
+  .section-head h2 {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .section-sub {
+    font-size: 12px;
+    color: var(--slate);
+    margin-top: 0.2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  /* CARDS GRID */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin-bottom: 2rem; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin-bottom: 2rem; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin-bottom: 2rem; }
+  .cell {
+    background: var(--light);
+    padding: 1.2rem 1.3rem;
+  }
+  .cell-head {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--sepia);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  .cell h3 {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--ink);
+  }
+  .cell p { font-size: 12.5px; line-height: 1.7; color: #3a3328; }
+  .cell.accent-rust { border-left: 3px solid var(--rust); }
+  .cell.accent-slate { border-left: 3px solid var(--slate); }
+  .cell.accent-sage { border-left: 3px solid var(--sage); }
+  .cell.accent-sepia { border-left: 3px solid var(--sepia); }
+
+  /* ANNOTATION */
+  .anno {
+    display: inline-block;
+    background: var(--sepia);
+    color: white;
+    font-size: 9px;
+    font-family: 'DM Mono', monospace;
+    padding: 1px 5px;
+    border-radius: 2px;
+    margin-left: 4px;
+    vertical-align: middle;
+    letter-spacing: 0.05em;
+  }
+  .anno.green { background: var(--sage); }
+  .anno.blue { background: var(--slate); }
+
+  /* TABLE */
+  .data-table-wrap { overflow-x: auto; margin-bottom: 2rem; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+  thead tr { background: var(--ink); color: var(--paper); }
+  thead th {
+    padding: 0.65rem 0.9rem;
+    text-align: left;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+  }
+  tbody tr { border-bottom: 1px solid var(--rule); }
+  tbody tr:nth-child(even) { background: var(--cream); }
+  tbody td { padding: 0.6rem 0.9rem; vertical-align: top; line-height: 1.6; }
+  td.cat {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--sepia);
+    white-space: nowrap;
+    font-weight: 400;
+  }
+  td.name { font-weight: 500; white-space: nowrap; }
+  td.desc { color: #4a4338; }
+  td.note { color: var(--slate); font-size: 11.5px; font-style: italic; }
+
+  /* QUOTE BLOCK */
+  .wisdom-block {
+    border-left: 3px solid var(--rust);
+    padding: 1rem 1.4rem;
+    background: var(--cream);
+    margin: 1.2rem 0;
+  }
+  .wisdom-block .role {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--rust);
+    letter-spacing: 0.1em;
+    margin-bottom: 0.3rem;
+  }
+  .wisdom-block p { font-size: 13px; color: var(--ink); line-height: 1.75; }
+
+  /* FLOW */
+  .flow {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin: 1rem 0 2rem;
+    overflow-x: auto;
+  }
+  .flow-item {
+    flex: 1;
+    min-width: 110px;
+    background: var(--light);
+    border: 1px solid var(--rule);
+    padding: 0.8rem;
+    text-align: center;
+    position: relative;
+  }
+  .flow-item + .flow-item::before {
+    content: '→';
+    position: absolute;
+    left: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--sepia);
+    font-size: 14px;
+    z-index: 1;
+  }
+  .flow-item .fn { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--sepia); letter-spacing: 0.08em; }
+  .flow-item strong { display: block; font-size: 12px; margin-top: 0.2rem; }
+
+  /* PILL LIST */
+  .pill-list { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.6rem 0 1.2rem; }
+  .pill {
+    background: var(--cream);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    padding: 0.2rem 0.65rem;
+    font-size: 11.5px;
+    color: var(--slate);
+  }
+  .pill.r { background: #fce8e0; border-color: #d9a090; color: var(--rust); }
+  .pill.g { background: #e4ede2; border-color: #9ab095; color: var(--sage); }
+
+  /* CALLOUT */
+  .callout {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 1.3rem 1.5rem;
+    margin: 1.5rem 0;
+    position: relative;
+  }
+  .callout::before {
+    content: '!';
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    position: absolute;
+    right: 1rem; top: 1rem;
+    color: var(--sepia);
+  }
+  .callout h4 { font-family: 'Noto Serif JP', serif; font-size: 0.9rem; margin-bottom: 0.4rem; }
+  .callout p { font-size: 12.5px; color: rgba(245,240,232,0.75); }
+
+  /* DIVIDER */
+  .divider { border: none; border-top: 1px solid var(--rule); margin: 2.5rem 0; }
+
+  /* FOOTER */
+  footer {
+    background: var(--cream);
+    border-top: 1px solid var(--rule);
+    padding: 1.5rem;
+    text-align: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--sepia);
+    letter-spacing: 0.1em;
+  }
+
+  @media (max-width: 720px) {
+    .grid-3, .grid-4 { grid-template-columns: 1fr 1fr; }
+    .grid-2 { grid-template-columns: 1fr; }
+    header h1 { font-size: 1.4rem; }
+    .flow { flex-direction: column; }
+    .flow-item + .flow-item::before { content: '↓'; left: 50%; top: -12px; transform: translateX(-50%); }
+  }
+  @media (max-width: 480px) {
+    .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-label">Pragmatic Business Intelligence</div>
+    <h1>事業・組織を動かす<br>最低限の知恵と資料</h1>
+    <p>大企業・中小企業・業界横断で使える実践知。煩雑さを排し、本当に必要なものだけを。</p>
+  </div>
+</header>
+
+<nav>
+  <ul>
+    <li><a href="#data">必須データ・資料</a></li>
+    <li><a href="#excel">必須エクセル表</a></li>
+    <li><a href="#mgmt">経営者の最低限認識</a></li>
+    <li><a href="#roles">役割別の知恵</a></li>
+    <li><a href="#cycle">組織を回す原理</a></li>
+  </ul>
+</nav>
+
+<div class="container">
+
+  <!-- ==================== SECTION 1 ==================== -->
+  <div id="data">
+    <div class="section-head">
+      <span class="section-num">01</span>
+      <h2>どの企業でも必要な最低限のデータ・資料</h2>
+    </div>
+    <p class="section-sub">「これさえ把握できれば、事業の現在地と向かう先が見える」9種類の資料群。</p>
+
+    <div class="data-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>分類</th>
+            <th>資料名</th>
+            <th>何がわかるか</th>
+            <th>初学者メモ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="cat">お金の状態</td>
+            <td class="name">損益計算書 (PL)</td>
+            <td class="desc">売上・費用・利益。「儲かっているか」の最基本。月次・年次で見る。</td>
+            <td class="note">Profit & Loss。黒字=売上＞費用。赤字なら何の費用が重いかを追う。</td>
+          </tr>
+          <tr>
+            <td class="cat">お金の状態</td>
+            <td class="name">貸借対照表 (BS)</td>
+            <td class="desc">資産・負債・純資産。「会社の体力・借金残高」がわかる。</td>
+            <td class="note">Balance Sheet。右側（負債＋純資産）＝どう調達したか。左側（資産）＝何に使ったか。</td>
+          </tr>
+          <tr>
+            <td class="cat">お金の状態</td>
+            <td class="name">キャッシュフロー計算書 (CF)</td>
+            <td class="desc">現金の増減。「黒字倒産」を防ぐための実際の手元資金の動き。</td>
+            <td class="note">利益があっても現金がなければ会社は死ぬ。中小企業では特に重要。</td>
+          </tr>
+          <tr>
+            <td class="cat">売上構造</td>
+            <td class="name">売上分解表</td>
+            <td class="desc">顧客別・商品別・地域別・チャネル別の売上構成。どこが稼いでいるか。</td>
+            <td class="note">「80:20の法則」—上位2割の顧客が売上の8割を作ることが多い。</td>
+          </tr>
+          <tr>
+            <td class="cat">人と組織</td>
+            <td class="name">組織図・人員配置表</td>
+            <td class="desc">誰が何をしているか。責任者・担当者の可視化。意思決定ルートの把握。</td>
+            <td class="note">紙1枚で「誰に何を頼むか」「どこがボトルネックか」が見える。</td>
+          </tr>
+          <tr>
+            <td class="cat">人と組織</td>
+            <td class="name">採用・離職データ</td>
+            <td class="desc">入退社数・定着率・採用コスト。組織の健康状態を示すバロメーター。</td>
+            <td class="note">離職率が高い部署は経営的問題のサインであることが多い。</td>
+          </tr>
+          <tr>
+            <td class="cat">市場・競合</td>
+            <td class="name">市場規模・シェアデータ</td>
+            <td class="desc">自社の立ち位置。成長市場か縮小市場か。業界誌・調査会社レポートで把握。</td>
+            <td class="note">「TAM（全体市場）→SAM（狙える市場）→SOM（実際に取れる市場）」の順に絞る。</td>
+          </tr>
+          <tr>
+            <td class="cat">業務・現場</td>
+            <td class="name">KPI管理表</td>
+            <td class="desc">目標に対する進捗を数値で可視化。部門ごとの活動指標を週次・月次で追う。</td>
+            <td class="note">KPI＝Key Performance Indicator。「営業件数」「製造不良率」「顧客満足度」など現場の指標。</td>
+          </tr>
+          <tr>
+            <td class="cat">計画・予実</td>
+            <td class="name">予算対実績表 (予実管理)</td>
+            <td class="desc">計画と実際のズレを金額・率で把握。ズレた理由を追うことで経営判断を精度化。</td>
+            <td class="note">「なぜズレたか」を毎月問い続けることが経営の習慣の核心。</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <h4>最小セット原則</h4>
+      <p>小規模企業なら「PL＋キャッシュ残高＋KPI管理表」の3点で事業の生死はわかる。BSや市場データは規模拡大・融資・M&Aの局面で重要度が上がる。</p>
+    </div>
+  </div>
+
+  <!-- ==================== SECTION 2 ==================== -->
+  <div id="excel">
+    <div class="section-head">
+      <span class="section-num">02</span>
+      <h2>どの企業でも作られている最低限のエクセル的表</h2>
+    </div>
+    <p class="section-sub">業種を問わず、現場レベルで実際に使われている「生きた表」。</p>
+
+    <div class="grid-3">
+      <div class="cell accent-rust">
+        <div class="cell-head">FINANCE</div>
+        <h3>月次収支管理表</h3>
+        <p>月ごとの売上・原価・経費・利益を横に並べた表。12ヶ月を一覧で見ることで季節変動や傾向が見える。</p>
+      </div>
+      <div class="cell accent-rust">
+        <div class="cell-head">FINANCE</div>
+        <h3>資金繰り表</h3>
+        <p>向こう3〜6ヶ月の現金の入出金予測。「いつ、いくら必要か」を先読みする。中小企業では生命線。</p>
+      </div>
+      <div class="cell accent-slate">
+        <div class="cell-head">SALES</div>
+        <h3>商談・案件管理表</h3>
+        <p>顧客名・商品・金額・確度・次アクション・担当者を一覧化。「どれがいつ受注できるか」を追う。</p>
+      </div>
+      <div class="cell accent-slate">
+        <div class="cell-head">SALES</div>
+        <h3>顧客リスト（顧客台帳）</h3>
+        <p>顧客の基本情報・購買履歴・担当者・最終接触日。営業と顧客対応の基盤。CRMの原型。</p>
+      </div>
+      <div class="cell accent-sage">
+        <div class="cell-head">OPERATION</div>
+        <h3>在庫・仕入管理表</h3>
+        <p>製造業・小売業・飲食業に必須。品目別の在庫数・発注点・リードタイムを管理。欠品・過剰在庫を防ぐ。</p>
+      </div>
+      <div class="cell accent-sage">
+        <div class="cell-head">OPERATION</div>
+        <h3>工程・スケジュール管理表</h3>
+        <p>プロジェクト・製造・案件の工程を時系列で管理。ガントチャート形式が多い。納期管理の基本。</p>
+      </div>
+      <div class="cell accent-sepia">
+        <div class="cell-head">HR</div>
+        <h3>勤怠・シフト管理表</h3>
+        <p>出勤・欠勤・残業時間の記録。人件費計算と労務管理の基本。法的義務でもある。</p>
+      </div>
+      <div class="cell accent-sepia">
+        <div class="cell-head">HR</div>
+        <h3>評価・目標管理シート</h3>
+        <p>個人の目標と実績、評価コメントを記録。期初設定→期末振り返りのサイクルで使う。</p>
+      </div>
+      <div class="cell accent-slate">
+        <div class="cell-head">MANAGEMENT</div>
+        <h3>KPI・進捗ダッシュボード</h3>
+        <p>部門横断の主要指標を1枚に集約。週次・月次の経営会議で共有し、全体の方向性を確認する。</p>
+      </div>
+    </div>
+
+    <div class="wisdom-block">
+      <div class="role">FIELD NOTE</div>
+      <p>エクセル表の本質は「誰が見ても同じ解釈ができること」。見た目より定義の統一が先。「売上」一つとっても、税込か税抜か、返品控除前か後かで数字が変わる。</p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ==================== SECTION 3 ==================== -->
+  <div id="mgmt">
+    <div class="section-head">
+      <span class="section-num">03</span>
+      <h2>経営者が最低限持つべき認識</h2>
+    </div>
+    <p class="section-sub">歴の長い経営者が「これだけあれば組織は動かせる」と言う認識の核。</p>
+
+    <div class="grid-2">
+      <div class="cell accent-rust">
+        <div class="cell-head">CASH IS KING</div>
+        <h3>① 利益より現金を先に見よ</h3>
+        <p>黒字でも現金がなければ会社は死ぬ。月末の手元資金と向こう3ヶ月の資金繰りを常に頭に入れておく。「いつ枯渇するか」を先読みするのが経営者の最重要センサー。</p>
+      </div>
+      <div class="cell accent-rust">
+        <div class="cell-head">CONSTRAINT THEORY</div>
+        <h3>② ボトルネックは必ず一つある</h3>
+        <p>全体の生産性を決めるのは最も遅い工程・部門・人。そこを特定し、そこに資源を集中させる。それ以外を改善しても全体は変わらない（TOC：制約理論）。</p>
+      </div>
+      <div class="cell accent-slate">
+        <div class="cell-head">MARKET SENSING</div>
+        <h3>③ 市場のサイクルと自社の位置を知る</h3>
+        <p>どの業界にも「導入期→成長期→成熟期→衰退期」のサイクルがある。自社と市場が今どこにいるかで、打つべき手は全く異なる。</p>
+      </div>
+      <div class="cell accent-slate">
+        <div class="cell-head">PEOPLE FIRST</div>
+        <h3>④ 人が全ての出発点</h3>
+        <p>戦略より人。優秀な人材に適切な場所を与えれば、戦略は後からついてくる。逆に人が間違っていれば、どんな戦略も機能しない（ジム・コリンズ「ビジョナリー・カンパニー」）。</p>
+      </div>
+      <div class="cell accent-sage">
+        <div class="cell-head">FOCUS</div>
+        <h3>⑤ やらないことを決める</h3>
+        <p>資源は有限。経営判断の本質は「何をしないか」を決めること。中小企業が大企業と同じことをしようとすると必ず負ける。絞り込みが強みを生む。</p>
+      </div>
+      <div class="cell accent-sage">
+        <div class="cell-head">CYCLE</div>
+        <h3>⑥ PDCAより「観察→仮説→実験→学習」</h3>
+        <p>形式的なPDCAより、現場で何が起きているかを自分の目で見て仮説を立て、小さく試して学ぶサイクルの方が実際には機能する。スピードが命。</p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <h4>先人の知恵・最重要3原則</h4>
+      <p>
+        ① <strong>「現場・現物・現実」（三現主義）</strong>—数字より先に現場を見よ。<br>
+        ② <strong>「顧客は誰か」を問い続けよ</strong>—ドラッカー。事業の定義はここから始まる。<br>
+        ③ <strong>「悪い情報を早く上げる文化」をつくれ</strong>—良い情報は放っておいても上がる。危機管理の本質。
+      </p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ==================== SECTION 4 ==================== -->
+  <div id="roles">
+    <div class="section-head">
+      <span class="section-num">04</span>
+      <h2>役割別の知恵 ——最低限これだけ</h2>
+    </div>
+    <p class="section-sub">5つの役割が持つ視点と思考法。物語・創作の人物造形にも使える。</p>
+
+    <div class="wisdom-block">
+      <div class="role">DIRECTOR ／ ディレクター</div>
+      <p>「品質とスケジュールの番人」。何をいつまでにどのレベルで作るかを決め、チームに伝え、確認する。最大の武器は<strong>「定義の精度」</strong>——曖昧な指示は必ず問題になる。成果物の定義が仕事の8割。</p>
+    </div>
+
+    <div class="wisdom-block">
+      <div class="role">PRODUCER ／ プロデューサー</div>
+      <p>「リソースと関係性のブローカー」。お金・人・時間・信用の配分を決める。最大の武器は<strong>「誰を連れてくるか」</strong>——プロデューサーの仕事はほぼ人選に尽きる。リスクを取るが責任も取る。</p>
+    </div>
+
+    <div class="wisdom-block">
+      <div class="role">会長 ／ オーナー経営者</div>
+      <p>「時間軸の最も長い人」。今期の数字より、5〜10年後の構造を考える。最大の武器は<strong>「辛抱と撤退の判断力」</strong>——何を続け、何を手放すかの判断が事業の命運を決める。人脈と信用が主な通貨。</p>
+    </div>
+
+    <div class="wisdom-block">
+      <div class="role">現場監督 ／ ラインマネージャー</div>
+      <p>「翻訳者」。経営の言葉を現場の言葉に変え、現場の声を経営に届ける。最大の武器は<strong>「段取りと例外処理」</strong>——99%は段取りで決まり、残り1%の例外をどう捌くかで評価が分かれる。</p>
+    </div>
+
+    <div class="wisdom-block">
+      <div class="role">営業 ／ セールス</div>
+      <p>「情報の最前線」。顧客の課題・競合の動き・市場の変化を最初につかむポジション。最大の武器は<strong>「信頼残高」</strong>——売る前に信用をためる。「断られた後」の行動が長期的な関係をつくる。数字は結果であって目的ではない。</p>
+    </div>
+
+    <div class="grid-4">
+      <div class="cell">
+        <div class="cell-head">共通する問い</div>
+        <h3>「誰のために」</h3>
+        <p>どの役割も、顧客・メンバー・組織の誰のために動いているかを見失うと機能不全になる。</p>
+      </div>
+      <div class="cell">
+        <div class="cell-head">共通する問い</div>
+        <h3>「何がうまくいって<br>いないか」</h3>
+        <p>問題は常に存在する。それを早く・小さく発見するのが全職種に求められる基礎能力。</p>
+      </div>
+      <div class="cell">
+        <div class="cell-head">共通する問い</div>
+        <h3>「次のアクションは何か」</h3>
+        <p>会議・議論の終わりに「誰が・何を・いつまでに」が決まっていなければ何も動かない。</p>
+      </div>
+      <div class="cell">
+        <div class="cell-head">共通する問い</div>
+        <h3>「伝わったか」</h3>
+        <p>「言った」と「伝わった」は別物。確認・フィードバック・繰り返しが組織コミュニケーションの肝。</p>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ==================== SECTION 5 ==================== -->
+  <div id="cycle">
+    <div class="section-head">
+      <span class="section-num">05</span>
+      <h2>組織を「回す」ための原理</h2>
+    </div>
+    <p class="section-sub">業界・規模を問わず機能する、組織運営の最小構造。</p>
+
+    <div class="flow">
+      <div class="flow-item">
+        <span class="fn">STEP 01</span>
+        <strong>現状把握</strong>
+        <span style="font-size:11px;color:#666">数字と現場</span>
+      </div>
+      <div class="flow-item">
+        <span class="fn">STEP 02</span>
+        <strong>課題特定</strong>
+        <span style="font-size:11px;color:#666">ボトルネック</span>
+      </div>
+      <div class="flow-item">
+        <span class="fn">STEP 03</span>
+        <strong>優先順位</strong>
+        <span style="font-size:11px;color:#666">やる/やらない</span>
+      </div>
+      <div class="flow-item">
+        <span class="fn">STEP 04</span>
+        <strong>担当・期限</strong>
+        <span style="font-size:11px;color:#666">誰が/いつまで</span>
+      </div>
+      <div class="flow-item">
+        <span class="fn">STEP 05</span>
+        <strong>実行・確認</strong>
+        <span style="font-size:11px;color:#666">進捗チェック</span>
+      </div>
+      <div class="flow-item">
+        <span class="fn">STEP 06</span>
+        <strong>振り返り</strong>
+        <span style="font-size:11px;color:#666">学習・修正</span>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="cell accent-rust">
+        <div class="cell-head">MEETING DESIGN</div>
+        <h3>会議の最低限設計</h3>
+        <p>
+          <strong>①目的の明示</strong>（決める/共有する/発散する）<br>
+          <strong>②参加者の絞り込み</strong>（意思決定者 or 実行者のみ）<br>
+          <strong>③アジェンダの事前配布</strong><br>
+          <strong>④終わりに次アクション確認</strong><br><br>
+          <em>会議が多い組織は意思決定が遅い組織。</em>
+        </p>
+      </div>
+      <div class="cell accent-slate">
+        <div class="cell-head">COMMUNICATION</div>
+        <h3>報連相の実態</h3>
+        <p>
+          <strong>報告</strong>：結果と事実（判断は求めない）<br>
+          <strong>連絡</strong>：関係者への情報共有（FYI）<br>
+          <strong>相談</strong>：意思決定者に判断を仰ぐ<br><br>
+          <em>「相談」を「報告」として持ってくる部下は、実は判断責任を上に押し付けている。</em>
+        </p>
+      </div>
+    </div>
+
+    <div class="data-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>状況</th>
+            <th>経験則（先人の知恵）</th>
+            <th>背景</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="name">採用</td>
+            <td class="desc">「急いで雇うと後悔する」——採用は慎重に、解雇は迅速に</td>
+            <td class="note">人件費は固定費。外す判断の遅さが組織を蝕む。</td>
+          </tr>
+          <tr>
+            <td class="name">新規事業</td>
+            <td class="desc">「小さく始めて、早く失敗せよ」</td>
+            <td class="note">大きく仕込んで失敗するより、小さく試して学ぶ方が組織は生き残る。</td>
+          </tr>
+          <tr>
+            <td class="name">価格設定</td>
+            <td class="desc">「最初の値付けは慎重に。一度下げた値段は上げられない」</td>
+            <td class="note">安売りは顧客層と競合ポジションを固定する。</td>
+          </tr>
+          <tr>
+            <td class="name">危機対応</td>
+            <td class="desc">「悪いニュースは早く・広く・全部出せ」</td>
+            <td class="note">隠蔽・先送りは傷を必ず広げる。信用は一瞬で消える。</td>
+          </tr>
+          <tr>
+            <td class="name">成長期</td>
+            <td class="desc">「人より先に仕組みを作れ」</td>
+            <td class="note">優秀な人に依存する組織は、その人が去ると崩壊する。</td>
+          </tr>
+          <tr>
+            <td class="name">成熟期</td>
+            <td class="desc">「コア以外をアウトソースし、コアを深掘りせよ」</td>
+            <td class="note">選択と集中。自社の強みの定義が曖昧な組織は方向を失う。</td>
+          </tr>
+          <tr>
+            <td class="name">衰退兆候</td>
+            <td class="desc">「現場の愚痴が増えたら、経営が現場を見ていないサイン」</td>
+            <td class="note">愚痴は情報。潰さず、なぜそう感じるかを聞く。</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pill-list">
+      <span class="pill r">現金残高を毎週確認</span>
+      <span class="pill r">売上より粗利率を見る</span>
+      <span class="pill">ボトルネックに集中投資</span>
+      <span class="pill">会議を半分にする</span>
+      <span class="pill g">採用に時間をかける</span>
+      <span class="pill g">現場に月1回は降りる</span>
+      <span class="pill">悪いニュースを歓迎する文化</span>
+      <span class="pill">やらないことリストを持つ</span>
+    </div>
+
+  </div>
+
+</div>
+
+<footer>
+  PRAGMATIC BUSINESS INTELLIGENCE &nbsp;·&nbsp; 大企業・中小企業・業界横断版 &nbsp;·&nbsp; 実践知早見リファレンス
+</footer>
+
+</body>
+</html>

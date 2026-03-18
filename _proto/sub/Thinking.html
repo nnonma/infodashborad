@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>思考の堆積</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600&family=Space+Mono:ital@0;1&display=swap');
+
+  :root {
+    --bg: #0e0e0f;
+    --surface: #141416;
+    --border: #222226;
+    --border-light: #2e2e34;
+    --text: #c8c8cc;
+    --text-dim: #5a5a62;
+    --text-bright: #e8e8ec;
+    --accent: #7eb8a4;
+    --accent-dim: #3a6b5e;
+    --accent2: #a896c8;
+    --accent3: #c8a87e;
+    --tag-bg: #1a1a1e;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Serif JP', serif;
+    font-weight: 300;
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: 100vh;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    border-right: 1px solid var(--border);
+    padding: 2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  .logo {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo span {
+    display: block;
+    font-size: 1rem;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    margin-top: 0.3rem;
+  }
+
+  .nav-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+  }
+
+  .session-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .session-item {
+    padding: 0.6rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+    border: 1px solid transparent;
+  }
+
+  .session-item:hover {
+    background: var(--surface);
+    border-color: var(--border);
+  }
+
+  .session-item.active {
+    background: var(--surface);
+    border-color: var(--accent-dim);
+  }
+
+  .session-date {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    margin-bottom: 0.2rem;
+  }
+
+  .session-title {
+    font-size: 0.78rem;
+    color: var(--text);
+    line-height: 1.4;
+  }
+
+  .new-btn {
+    background: none;
+    border: 1px solid var(--border-light);
+    color: var(--text-dim);
+    padding: 0.6rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    transition: all 0.2s;
+    width: 100%;
+  }
+
+  .new-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* MAIN */
+  .main {
+    display: flex;
+    flex-direction: column;
+    max-width: 820px;
+    padding: 2.5rem 3rem;
+  }
+
+  .view-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 2.5rem;
+  }
+
+  .tab {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 0.6rem 1.2rem;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.2s;
+  }
+
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* LOG VIEW */
+  .log-entry {
+    border-left: 1px solid var(--border);
+    padding: 0 0 2.5rem 1.8rem;
+    position: relative;
+    animation: fadeIn 0.4s ease;
+  }
+
+  .log-entry::before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: 6px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent-dim);
+    border: 1px solid var(--accent);
+  }
+
+  .log-entry:last-child { border-left-color: transparent; }
+
+  .entry-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .entry-date {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--text-dim);
+  }
+
+  .entry-tags {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 2px;
+    background: var(--tag-bg);
+    border: 1px solid var(--border-light);
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+  }
+
+  .tag.t-scale { border-color: var(--accent-dim); color: var(--accent); }
+  .tag.t-mind { border-color: #6b5a7e; color: var(--accent2); }
+  .tag.t-data { border-color: #7e6b3a; color: var(--accent3); }
+
+  .entry-title {
+    font-size: 1.05rem;
+    color: var(--text-bright);
+    font-weight: 400;
+    margin-bottom: 0.8rem;
+    line-height: 1.5;
+  }
+
+  .entry-body {
+    font-size: 0.85rem;
+    color: var(--text);
+    line-height: 1.9;
+    margin-bottom: 1rem;
+  }
+
+  .entry-body p { margin-bottom: 0.6rem; }
+
+  .schema-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1rem 1.2rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    line-height: 2;
+    margin: 0.8rem 0;
+    overflow-x: auto;
+  }
+
+  .schema-block .hl { color: var(--accent); }
+  .schema-block .hl2 { color: var(--accent2); }
+  .schema-block .hl3 { color: var(--accent3); }
+
+  .note-block {
+    border-left: 2px solid var(--accent-dim);
+    padding: 0.6rem 1rem;
+    margin: 0.8rem 0;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    font-style: italic;
+  }
+
+  /* EDIT VIEW */
+  .edit-area {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .field-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+
+  input, textarea, select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Noto Serif JP', serif;
+    font-weight: 300;
+    font-size: 0.85rem;
+    padding: 0.7rem 0.9rem;
+    border-radius: 4px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s;
+    resize: vertical;
+  }
+
+  input:focus, textarea:focus { border-color: var(--accent-dim); }
+
+  .tag-input-row {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .tag-toggle {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 2px;
+    border: 1px solid var(--border-light);
+    background: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.08em;
+  }
+
+  .tag-toggle.selected-scale { border-color: var(--accent-dim); color: var(--accent); background: #1a2e28; }
+  .tag-toggle.selected-mind { border-color: #6b5a7e; color: var(--accent2); background: #1e1828; }
+  .tag-toggle.selected-data { border-color: #7e6b3a; color: var(--accent3); background: #28221a; }
+
+  .save-btn {
+    background: none;
+    border: 1px solid var(--accent-dim);
+    color: var(--accent);
+    padding: 0.7rem 1.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    transition: all 0.2s;
+    align-self: flex-start;
+  }
+
+  .save-btn:hover { background: var(--accent-dim); color: var(--bg); }
+
+  /* MAP VIEW */
+  .map-view {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .map-axis {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.2rem 1.5rem;
+  }
+
+  .axis-header {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .axis-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .axis-name {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .axis-content {
+    font-size: 0.82rem;
+    line-height: 1.8;
+    color: var(--text);
+  }
+
+  .axis-schema {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    margin-top: 0.6rem;
+    line-height: 1.9;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-dim);
+    font-size: 0.82rem;
+    font-style: italic;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .search-wrap {
+    position: relative;
+    margin-bottom: 1rem;
+  }
+
+  .search-input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Noto Serif JP', serif;
+    font-size: 0.78rem;
+    padding: 0.55rem 0.8rem 0.55rem 2rem;
+    border-radius: 4px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .search-input:focus { border-color: var(--accent-dim); }
+
+  .search-icon {
+    position: absolute;
+    left: 0.6rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-dim);
+    font-size: 0.7rem;
+    pointer-events: none;
+  }
+
+  .search-results {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .search-result-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.9rem 1rem;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .search-result-item:hover { border-color: var(--accent-dim); }
+
+  .search-result-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.4rem;
+    flex-wrap: wrap;
+  }
+
+  .search-result-session {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--accent);
+    background: #1a2e28;
+    border: 1px solid var(--accent-dim);
+    border-radius: 2px;
+    padding: 0.15rem 0.4rem;
+  }
+
+  .search-result-date {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--text-dim);
+  }
+
+  .search-result-title {
+    font-size: 0.85rem;
+    color: var(--text-bright);
+    margin-bottom: 0.3rem;
+  }
+
+  .search-result-body {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    line-height: 1.7;
+  }
+
+  .search-highlight {
+    color: var(--accent);
+    background: #1a2e28;
+    border-radius: 2px;
+    padding: 0 2px;
+  }
+
+  .search-empty {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    font-style: italic;
+  }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 2px; }
+
+  #last-updated {
+    position: fixed;
+    bottom: 0.8rem;
+    right: 1rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+    z-index: 10000;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      思考の堆積
+      <span>log & drift</span>
+    </div>
+
+    <div>
+      <div class="nav-label">セッション</div>
+      <ul class="session-list" id="sessionList"></ul>
+    </div>
+
+    <button class="new-btn" onclick="newSession()">＋ 新しいセッション</button>
+    <button class="new-btn" style="margin-top:0.3rem; color:#6b3a3a; border-color:#4a2a2a;" onclick="resetData()">↺ データをリセット</button>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="view-tabs">
+      <div class="tab active" onclick="switchTab('log', this)">ログ</div>
+      <div class="tab" onclick="switchTab('edit', this)">記録する</div>
+      <div class="tab" onclick="switchTab('map', this)">構造マップ</div>
+      <div class="tab" onclick="switchTab('hayami', this)">今日の早見</div>
+      <div class="tab" onclick="switchTab('mondo', this)">問答</div>
+      <div class="tab" onclick="switchTab('search', this)">検索</div>
+    </div>
+
+    <!-- LOG TAB -->
+    <div id="tab-log">
+      <div id="logEntries"></div>
+    </div>
+
+    <!-- EDIT TAB -->
+    <div id="tab-edit" style="display:none">
+      <div class="edit-area">
+        <div>
+          <div class="field-label">タイトル / 断片</div>
+          <input type="text" id="editTitle" placeholder="思いついたこと、問い、断片">
+        </div>
+        <div>
+          <div class="field-label">内容</div>
+          <textarea id="editBody" rows="6" placeholder="投げてきた考え、返ってきた構造、蒸留したこと。なんでも。"></textarea>
+        </div>
+        <div>
+          <div class="field-label">スキーマ / 数式 / コード（任意）</div>
+          <textarea id="editSchema" rows="3" placeholder="電磁気 ↔ 評価&#10;細胞膜 ↔ 距離&#10;..."></textarea>
+        </div>
+        <div>
+          <div class="field-label">タグ</div>
+          <div class="tag-input-row">
+            <button class="tag-toggle" data-tag="スケール" data-cls="scale" onclick="toggleTag(this)">スケール</button>
+            <button class="tag-toggle" data-tag="精神" data-cls="mind" onclick="toggleTag(this)">精神</button>
+            <button class="tag-toggle" data-tag="データ" data-cls="data" onclick="toggleTag(this)">データ</button>
+            <button class="tag-toggle" data-tag="評価" data-cls="scale" onclick="toggleTag(this)">評価</button>
+            <button class="tag-toggle" data-tag="距離" data-cls="scale" onclick="toggleTag(this)">距離</button>
+            <button class="tag-toggle" data-tag="時間" data-cls="scale" onclick="toggleTag(this)">時間</button>
+            <button class="tag-toggle" data-tag="抵抗" data-cls="mind" onclick="toggleTag(this)">抵抗</button>
+          </div>
+        </div>
+        <div>
+          <div class="field-label">備考（任意）</div>
+          <input type="text" id="editNote" placeholder="勝手な思い違いかもしれない、など">
+        </div>
+        <button class="save-btn" onclick="saveEntry()">保存する</button>
+      </div>
+    </div>
+
+    <!-- MAP TAB -->
+    <div id="tab-map" style="display:none">
+      <div class="map-view">
+        <div class="map-axis">
+          <div class="axis-header">
+            <div class="axis-dot" style="background:var(--accent)"></div>
+            <div class="axis-name" style="color:var(--accent)">距離 / スケール</div>
+          </div>
+          <div class="axis-content">10^-7 あたり（細胞膜）を中心軸に置く。境界・内外の区別が生まれるスケール。日常（10^0）から適度に離れていて、かつ意味がある。</div>
+          <div class="axis-schema">10^-33 ── 電子・渦・局在<br>10^-10 ── アミノ酸<br><span style="color:var(--accent)">10^-7  ── 細胞膜・境界 ←中心</span><br>10^-3  ── 細胞・組織<br>10^0   ── 個人・脳・半導体<br>10^+11 ── 恒星</div>
+        </div>
+
+        <div class="map-axis">
+          <div class="axis-header">
+            <div class="axis-dot" style="background:var(--accent3)"></div>
+            <div class="axis-name" style="color:var(--accent3)">時間 / 記憶</div>
+          </div>
+          <div class="axis-content">脳・半導体が担う軸。記憶と処理があって初めて時間が意味を持つ。ルーツ（過去の蓄積）→ 現在 → 未来（飽和社会）という人文的ニュアンス。</div>
+          <div class="axis-schema">脳・半導体 ↔ 時間・記憶・処理</div>
+        </div>
+
+        <div class="map-axis">
+          <div class="axis-header">
+            <div class="axis-dot" style="background:var(--accent2)"></div>
+            <div class="axis-name" style="color:var(--accent2)">評価 / 信用</div>
+          </div>
+          <div class="axis-content">電磁気が担う軸。勾配があるところに力が生まれる、差があるから流れる。貨幣・信用・貢献制ポイントは力学的な向き・勾配・局在性として記述できるかもしれない。</div>
+          <div class="axis-schema">電磁気 ↔ 評価・信用・勾配<br>個人（ペプチド）→ 社会（高分子）→ 恒星（座標を動かす力）</div>
+        </div>
+
+        <div class="map-axis" style="border-color: #2e2e34">
+          <div class="axis-header">
+            <div class="axis-dot" style="background:#5a5a62"></div>
+            <div class="axis-name" style="color:#888">精神的構造（今日時点）</div>
+          </div>
+          <div class="axis-content">高度さへの帰属と低度さへの同調の板挟み。その間を移ろうことが生存戦略。低度＝劣っているのではなく、地に足がついている・他者を安心させる・尊いもの。抵抗がないと一方の帰属性がずれる。</div>
+          <div class="axis-schema" style="color:#5a5a62">「静かな日常に溶けてしまうことへの抵抗」<br>── 焦点を持つことの代償であり、源泉</div>
+        </div>
+      </div>
+    </div>
+    <!-- HAYAMI TAB -->
+    <div id="tab-hayami" style="display:none">
+      <div class="map-view">
+
+        <div class="map-axis" style="border-color:var(--accent-dim)">
+          <div class="axis-header">
+            <div class="axis-dot" style="background:var(--accent)"></div>
+            <div class="axis-name" style="color:var(--accent)">あなたの座標</div>
+          </div>
+          <div class="axis-content" style="margin-bottom:0.6rem">スケール 10^-7（細胞膜・境界）を中心軸に置いている。時間・距離・評価の三軸で世界を見る癖がある。体系より探索が好き、地図を渡されると萎える。</div>
+          <div class="axis-schema">
+            やり方：思いついたことを投げる → データや構造が返ってくる → 眺めて蒸留してまた投げる<br>
+            外に出したくなったら：プレプリント（arXiv、bioRxiv、OSF）<br>
+            論文も組織も不要
+          </div>
+        </div>
+
+        <div class="map-axis">
+          <div class="axis-header">
+            <div class="axis-dot" style="background:var(--accent3)"></div>
+            <div class="axis-name" style="color:var(--accent3)">三軸の対応骨格</div>
+          </div>
+          <div class="axis-schema" style="font-size:0.75rem; line-height:2.2">
+            <span style="color:var(--accent2)">電磁気</span>　　　　↔　評価・信用・勾配　（差があるから流れる）<br>
+            <span style="color:var(--accent)">細胞膜</span>　　　　↔　距離・境界・内外　（境界がなければ距離は意味を持たない）<br>
+            <span style="color:var(--accent3)">脳・半導体</span>　　↔　時間・記憶・処理　（記憶と処理があって初めて時間が意味を持つ）<br>
+            <br>
+            個人（ペプチド）→ 社会（高分子）→ 恒星（座標を動かす力）
+          </div>
+        </div>
+
+        <div class="map-axis">
+          <div class="axis-header">
+            <div class="axis-dot" style="background:var(--accent)"></div>
+            <div class="axis-name" style="color:var(--accent)">スケール軸</div>
+          </div>
+          <div class="axis-schema" style="font-size:0.75rem; line-height:2.2">
+            10^-33　── 電子・渦・局在<br>
+            10^-10　── アミノ酸<br>
+            <span style="color:var(--accent)">10^-7　 ── 細胞膜・境界　← 中心</span><br>
+            10^-3　 ── 細胞・組織<br>
+            10^0　　── 個人・脳・半導体<br>
+            10^+11　── 恒星
+          </div>
+        </div>
+
+        <div class="map-axis" style="border-color:var(--accent2); opacity:0.85">
+          <div class="axis-header">
+            <div class="axis-dot" style="background:var(--accent2)"></div>
+            <div class="axis-name" style="color:var(--accent2)">精神的構造の早見</div>
+          </div>
+          <div class="axis-content" style="margin-bottom:0.8rem">
+            血縁からの「高度であってほしい」という期待と、実際の環境からの「低度への同調」圧力。その板挟みの間を移ろうことが生存戦略になっている。
+          </div>
+          <div class="axis-schema" style="line-height:2.2">
+            抵抗について：静かな日常に完全に溶けてしまうことへの抵抗がある。溶けられたら楽なのに、という諦念も同時にある。抵抗がないと一方の帰属性がずれる、安定がないともう一方がずれる。その間を気まぐれに揺れることが自分。<br><br>
+            自己評価について：「くだらない」「嘘つき」「低度な基礎能力」という言葉を自分に向けがち。ただし実際の動きとはかなりずれている。<br><br>
+            低度について：低度＝劣っているではない。地に足がついている・他者と地続きである・安心を与える、という意味。高度さだけでは降りられない猫になる。低度さがあるから地面がある。<br><br>
+            周りへの波及について：自分の抵抗や存在が周りの安定を乱してしまうという苦しさがある。過去の具体的な経験からきている部分と強迫観念の部分が混在している。「勝手な思い違いかもしれない」と自分で言えていた。
+          </div>
+          <div class="note-block" style="margin-top:1rem">
+            「静かな日常に溶けてしまうことへの抵抗」── 焦点を持つことの代償であり、源泉。溶けている人は焦点を持たない安定とセットになっている。
+          </div>
+        </div>
+
+        <div class="map-axis" style="border-color:var(--border); opacity:0.6">
+          <div class="axis-header">
+            <div class="axis-dot" style="background:#444"></div>
+            <div class="axis-name" style="color:#666">今日未着手のこと</div>
+          </div>
+          <div class="axis-schema">
+            電磁気と評価・信用の対応、データを眺める<br>
+            細胞膜の境界としての構造、具体的に見る
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SEARCH TAB -->
+    <div id="tab-search" style="display:none">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input class="search-input" type="text" id="searchInput" placeholder="キーワードで検索（ログ・問答を横断）" oninput="doSearch(this.value)">
+      </div>
+      <div class="search-results" id="searchResults">
+        <div class="search-empty">キーワードを入力してください</div>
+      </div>
+    </div>
+
+    <!-- MONDO TAB -->
+    <div id="tab-mondo" style="display:none">
+      <div class="map-view" id="mondoList"></div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  // Storage
+  const STORAGE_KEY = 'shiko_sessions';
+  const DATA_VERSION = '2026-03-06-v5'; // エントリ数が変わるたびに更新
+  let sessions = [];
+  let currentSessionId = null;
+  let selectedTags = [];
+
+  function resetData() {
+    if (!confirm('ローカルのデータをリセットしてHTMLの初期データに戻します。手動で追加した記録は消えます。よいですか？')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(STORAGE_KEY + '_version');
+    sessions = [];
+    initFirstSession();
+    renderSidebar();
+    renderLog();
+  }
+
+  function load() {
+    try {
+      const savedVersion = localStorage.getItem(STORAGE_KEY + '_version');
+      const raw = localStorage.getItem(STORAGE_KEY);
+      // バージョンが違う場合は初期データで上書き
+      if (savedVersion !== DATA_VERSION) {
+        localStorage.removeItem(STORAGE_KEY);
+        sessions = [];
+      } else {
+        sessions = raw ? JSON.parse(raw) : [];
+      }
+    } catch(e) { sessions = []; }
+    if (sessions.length === 0) initFirstSession();
+    else currentSessionId = sessions[sessions.length - 1].id;
+    renderSidebar();
+    renderLog();
+  }
+
+  function save() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
+  }
+
+  function initFirstSession() {
+    const session = {
+      id: Date.now(),
+      title: '最初の堆積',
+      date: '2026-03-06',
+      entries: [
+        {
+          id: 1,
+          date: '2026-03-06',
+          title: '三軸の骨格',
+          body: 'スケール（距離）・時間・評価の三軸で世界を見る着想。体系として提示すると疑似科学になるリスクがあるが、一箇所を切り取ってデータで問える形にすれば研究になる。',
+          schema: '電磁気       ↔  評価・信用・勾配\n細胞膜       ↔  距離・境界・内外\n脳・半導体   ↔  時間・記憶・処理',
+          tags: ['スケール', '評価', '距離', '時間'],
+          note: ''
+        },
+        {
+          id: 2,
+          date: '2026-03-06',
+          title: 'やり方の確認',
+          body: '論文も組織も不要。思いついたことを投げる→データや構造が返ってくる→眺めて蒸留してまた投げる。このサイクルを回すこと自体が、静かな日常への抵抗として機能する。',
+          schema: '',
+          tags: ['抵抗'],
+          note: '外に出したくなったらプレプリント（arXiv、OSF等）'
+        },
+        {
+          id: 3,
+          date: '2026-03-06',
+          title: '低度について',
+          body: '低度＝劣っているではない。地に足がついている・他者と地続きである・安心を与える、という意味。高度さだけでは降りられない猫になる。低度さがあるから地面がある。',
+          schema: '',
+          tags: ['精神'],
+          note: '「低度な基礎能力」という自己評価の再解釈'
+        },
+        {
+          id: 4,
+          date: '2026-03-06',
+          title: 'Claudeの使い方の整理',
+          body: '情報収集・着想の構造化（今日やったこと）の延長として、蒸留の補助・反論役・既存研究との照合・言語化の代筆・数式や図への変換がある。他にすでに使っている用途として経営シミュレーション・制作代行・調査とフローチャート作成・人生相談がある。試していない角度として、身体・習慣の設計、読書の伴走、夢や断片の記録と接続、法律・契約の確認、対話の予行練習、記憶の補綴、感情のラベリング、他者の言動の解釈などがある。',
+          schema: '',
+          tags: ['データ'],
+          note: '着想を投げて構造化してもらうの延長線上にあるものが多い'
+        },
+        {
+          id: 5,
+          date: '2026-03-06',
+          title: 'ファイル・メモ管理の体制',
+          body: '現状：断片・即時メモ→Keep、まとまった考え→OneNote、画像→各端末・外付けHD、HTML・PDF→これから増える。方針：基本はNotionを正本にしてClaudeが直接読み書きする。HTML・PDFはGoogleドライブで管理。Notionは接続済みで「これをNotionに保存して」と言うだけで動く。Googleドライブは画像を入れず文書系だけにすれば無料15GBはほぼ減らない。',
+          schema: 'Keep → 断片・即時メモ\nOneNote → まとまった考え\nNotion → 正本・会話の蓄積（Claude接続済み）\nGoogleドライブ → HTML・PDF保管',
+          tags: ['データ'],
+          note: 'Googleドライブはまだ未接続。接続すれば「ドライブに保存して」と言うだけで動く。'
+        }
+      ]
+    };
+    sessions.push(session);
+    currentSessionId = session.id;
+    save();
+    localStorage.setItem(STORAGE_KEY + '_version', DATA_VERSION);
+  }
+
+  function getCurrentSession() {
+    return sessions.find(s => s.id === currentSessionId);
+  }
+
+  function renderSidebar() {
+    const list = document.getElementById('sessionList');
+    list.innerHTML = sessions.map(s => `
+      <li class="session-item ${s.id === currentSessionId ? 'active' : ''}" onclick="selectSession(${s.id})">
+        <div class="session-date">${s.date}</div>
+        <div class="session-title">${s.title}</div>
+      </li>
+    `).join('');
+  }
+
+  function renderLog() {
+    const s = getCurrentSession();
+    const container = document.getElementById('logEntries');
+    if (!s || s.entries.length === 0) {
+      container.innerHTML = '<div class="empty-state">まだ記録がありません。<br>「記録する」タブから投げてください。</div>';
+      return;
+    }
+    container.innerHTML = [...s.entries].reverse().map(e => `
+      <div class="log-entry">
+        <div class="entry-meta">
+          <span class="entry-date">${e.date}</span>
+          <div class="entry-tags">${e.tags.map(t => `<span class="tag ${tagClass(t)}">${t}</span>`).join('')}</div>
+        </div>
+        <div class="entry-title">${e.title}</div>
+        <div class="entry-body"><p>${e.body.replace(/\n/g,'</p><p>')}</p></div>
+        ${e.schema ? `<div class="schema-block"><pre>${e.schema}</pre></div>` : ''}
+        ${e.note ? `<div class="note-block">${e.note}</div>` : ''}
+      </div>
+    `).join('');
+  }
+
+  function tagClass(t) {
+    const scaleT = ['スケール','距離','時間','評価','データ'];
+    const mindT = ['精神','抵抗'];
+    if (scaleT.includes(t)) return 't-scale';
+    if (mindT.includes(t)) return 't-mind';
+    return 't-data';
+  }
+
+  function selectSession(id) {
+    currentSessionId = id;
+    renderSidebar();
+    renderLog();
+  }
+
+  function newSession() {
+    const title = prompt('セッション名：') || '無題のセッション';
+    const today = new Date().toISOString().slice(0,10);
+    const s = { id: Date.now(), title, date: today, entries: [] };
+    sessions.push(s);
+    currentSessionId = s.id;
+    save();
+    renderSidebar();
+    renderLog();
+  }
+
+  function toggleTag(btn) {
+    const tag = btn.dataset.tag;
+    const cls = btn.dataset.cls;
+    if (selectedTags.includes(tag)) {
+      selectedTags = selectedTags.filter(t => t !== tag);
+      btn.className = 'tag-toggle';
+    } else {
+      selectedTags.push(tag);
+      btn.className = `tag-toggle selected-${cls}`;
+    }
+  }
+
+  function saveEntry() {
+    const title = document.getElementById('editTitle').value.trim();
+    const body = document.getElementById('editBody').value.trim();
+    const schema = document.getElementById('editSchema').value.trim();
+    const note = document.getElementById('editNote').value.trim();
+    if (!title && !body) return;
+    const today = new Date().toISOString().slice(0,10);
+    const entry = { id: Date.now(), date: today, title: title || '（無題）', body, schema, tags: [...selectedTags], note };
+    const s = getCurrentSession();
+    s.entries.push(entry);
+    save();
+    // reset
+    document.getElementById('editTitle').value = '';
+    document.getElementById('editBody').value = '';
+    document.getElementById('editSchema').value = '';
+    document.getElementById('editNote').value = '';
+    selectedTags = [];
+    document.querySelectorAll('.tag-toggle').forEach(b => b.className = 'tag-toggle');
+    switchTab('log', document.querySelectorAll('.tab')[0]);
+    renderLog();
+  }
+
+  function switchTab(name, el) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    ['log','edit','map','hayami','mondo','search'].forEach(t => {
+      document.getElementById('tab-'+t).style.display = t === name ? 'block' : 'none';
+    });
+    if (name === 'mondo') renderMondo();
+    if (name === 'search') {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('searchResults').innerHTML = '<div class="search-empty">キーワードを入力してください</div>';
+      setTimeout(() => document.getElementById('searchInput').focus(), 50);
+    }
+  }
+
+  function highlight(text, kw) {
+    if (!kw) return text;
+    const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return text.replace(new RegExp(escaped, 'gi'), m => `<span class="search-highlight">${m}</span>`);
+  }
+
+  function doSearch(kw) {
+    const container = document.getElementById('searchResults');
+    kw = kw.trim();
+    if (!kw) {
+      container.innerHTML = '<div class="search-empty">キーワードを入力してください</div>';
+      return;
+    }
+
+    const results = [];
+    const lkw = kw.toLowerCase();
+
+    // ログ（全セッション横断）
+    sessions.forEach(s => {
+      s.entries.forEach(e => {
+        const haystack = [e.title, e.body, e.schema, e.note, ...(e.tags||[])].join(' ').toLowerCase();
+        if (haystack.includes(lkw)) {
+          results.push({ type: 'log', session: s.title, date: e.date, title: e.title, body: e.body.slice(0, 80) + (e.body.length > 80 ? '…' : ''), sessionId: s.id });
+        }
+      });
+    });
+
+    // 問答
+    MONDO.forEach((item, i) => {
+      const haystack = (item.q + ' ' + item.a).toLowerCase();
+      if (haystack.includes(lkw)) {
+        results.push({ type: 'mondo', session: '問答', date: '2026-03-06', title: `Q${i+1}`, body: item.q.slice(0, 80) + (item.q.length > 80 ? '…' : '') });
+      }
+    });
+
+    if (results.length === 0) {
+      container.innerHTML = '<div class="search-empty">「' + kw + '」に一致する記録はありませんでした</div>';
+      return;
+    }
+
+    container.innerHTML = results.map(r => `
+      <div class="search-result-item" onclick="${r.type === 'log' ? `selectSession(${r.sessionId}); switchTab('log', document.querySelectorAll('.tab')[0])` : `switchTab('mondo', document.querySelectorAll('.tab')[4])`}">
+        <div class="search-result-meta">
+          <span class="search-result-session">${r.session}</span>
+          <span class="search-result-date">${r.date}</span>
+          <span class="tag ${r.type === 'log' ? 't-scale' : 't-data'}">${r.type === 'log' ? 'ログ' : '問答'}</span>
+        </div>
+        <div class="search-result-title">${highlight(r.title, kw)}</div>
+        <div class="search-result-body">${highlight(r.body, kw)}</div>
+      </div>
+    `).join('');
+  }
+
+  const MONDO = [
+    {
+      q: 'オミクスデータなど、一般的に公開されているデータを解析することにより新しい着眼点や焦点を得て、私見を広げる。研究者としての環境的機会がない、コミュニケーションに対して一般以上に怖い感覚がありお金がない人間でもできる、現在の仮想空間上やデータ解析により大学や研究機関への所属など専門的な環境がなくてもできる範疇の研究の可能性の調査と、具体的なその行い。基本的には時間・距離・評価についての評価を裏付けるルーツやミクロなデータの寄与率の研究を見据える。どうするといいでしょうか',
+      a: '所属・お金・コミュニケーションの三つのハンデは、データ解析中心の独立研究では思っているよりずっと小さい。公開データの質と量は研究機関に匹敵する。発表はプレプリント（bioRxiv, OSF等）で可能。まず自分のスキルレベルと興味領域を整理することから始める。'
+    },
+    {
+      q: '当たり障りなくどの辺にどこの知識があるのかどうかマッピングしていたり、技能は伴っていない一方で、プログラミングの参考書はいくつか読んだ経験がある、記述しながら簡単なアプリを作ったことがある。pythonは読んでいない。そんなに統計に強くない。厳密に理解しているわけではないが、うっすら微積分や線形代数はわかる。εδ論法の数学書は読んだことがある。',
+      a: '理解の土台はある（εδ読んでいるなら抽象的思考力は十分）。プログラミングは読んだ・書いた経験あり、習熟はこれから。Python未経験、統計は概念レベル。足りないのは「問いを立てる習慣」と「データと接続する技術」だけ。'
+    },
+    {
+      q: '時間はルーツや未来と人文的ニュアンスが濃いかもしれない、距離は10^-33~27における細胞膜あたりのスケール10^-7あたり、評価は人間の心理や自負、貨幣制度・信用信頼・数値的評価との関係や、後々の飽和社会における貢献制ポイントの導入など',
+      a: '三軸の骨格：時間（ルーツ→現在→未来）、距離（10^-7細胞膜スケールを中心）、評価（心理・貨幣・信用・貢献制）。この三軸が交差するという直感がある。'
+    },
+    {
+      q: '仮想空間でない日常から離れた空間のスケールであったり、10^-33~27のちょうど間あたりは、時間がノイズっぽくなるスケール10^-45あたり？を踏まえて、人間中心的な10^0のスケールでなくて、-3~-9のあたりな気がするし、単純に日常でないことで興味をもてそうで汎用的な存在が細胞膜っぽい気がするのと覚えても別の場所で一度知っておけば実用的に用いたりする機会がありそう、という作為的な考えもあります。',
+      a: '動機は正直で十分。10^-7は日常から適度に離れていてかつ意味がある。細胞膜は境界・輸送・内外の区別という概念が日常と類比できる。汎用性がある＝一度理解すれば他でも使える。大きな野心より「続けられそう」の方が独立研究では生存率が高い。'
+    },
+    {
+      q: '動物に限らないですが一方で、動物も座標という認識があるので、細胞膜のスケールをたくさん含有して動いている多細胞的な動物はわりと強い座標の塊だとして、結果的にそれを動かしているのは恒星であるから、恒星は評価・貨幣・信用・貢献性ポイントを動かす座標を含有していて、細胞膜スケールはだいたいアミノ酸くらいの集まりで、人はペプチドあたり、社会は高分子、な感じなイメージで、評価は力学・遍歴性局在性とか向きとかで、細胞膜スケールを構成している渦としての微粒子は電子的な構造的なものなのかもしれません。',
+      a: 'スケール間のアナロジー構造として価値がある。ただし体系のままでは反証可能性がない。一箇所を切り取ってデータで問える形にすることで研究になる。アナロジーの中の「一点」を測れる問いにする作業が次のステップ。'
+    },
+    {
+      q: '体形的な説明をすることはスピスペっぽくなって誰得でもない一方で、そうであっても部分的に切り取れば誰かのためになる解釈や研究としてみなすことが可能になるということでしょうか。',
+      a: 'そのとおり。「体系として提示する」と疑似科学リスクがある。「この部分だけ切り取って、データで問える形にする」と研究になる。同じ着想でも切り取り方と問い方で全然別物になる。'
+    },
+    {
+      q: '続けられるかどうかの確信はないですが、手軽にそのデータを引っ張り出したりすることができるのであるのなら可能性は感じます。（中略）局在データがあるとして、私はそもそもデータとしてのなにが存在しているのかわからないし、なにがどこにあるのかどうかもわからないし、お金がかかるとなるとじゃあいいやとなるし、アクセスまでに時間がかかるとめんどうくさいと思うし、言語が日本語でないと単純に萎える。',
+      a: '条件は明確：無料・すぐアクセスできる・日本語か最低限読める英語・眺めるだけでいい。これを満たすデータは存在する。思いついたことをここに投げれば私がデータや図に変換する。ウェブサイトを開く必要はない。'
+    },
+    {
+      q: '脳や半導体あたりが時間で、電磁気あたりが評価・信用で、スケールをもつ細胞膜あたりが距離なのかなあ、とか思ったりします',
+      a: '三軸の対応：電磁気↔評価・信用・勾配（差があるから流れる）、細胞膜↔距離・境界・内外（境界がなければ距離は意味を持たない）、脳・半導体↔時間・記憶・処理（記憶と処理があって初めて時間が意味を持つ）。'
+    },
+    {
+      q: 'そもそも、なぜ研究したいのか。',
+      a: '「静かな日常に完全に溶けてしまうことへの抵抗」として研究や着想への関心がある。成果より過程に意味がある。データを眺めて着想が広がってまた眺める、それ自体が目的でいい。'
+    },
+    {
+      q: '私はやはり野良の研究者としても向いていないのでしょうか',
+      a: '向いていないとは思わない。今日の会話でスケールの話を自分の言葉で構造化できた、誤魔化さずに言えた、かっこいい答えを作らなかった。野良の研究は「自分の問いを自分で立て続けられるか」だけが問われる。今日やったことはそれ。'
+    },
+    {
+      q: '「静かな日常に完全に溶けてしまうことへの抵抗」を感じさせないオキシトシンやセロトニンで満たされた人間については、どのような客観的解釈でしょうか。',
+      a: '帰属感・安心感が安定している状態は、環境・気質・運によるもの。成熟・未熟の話ではない。その状態にある人は「焦点を持たない安定」とセットになっている。抵抗を持つ人は焦点を持てる代わりに溶けられない。どちらが上下ではない。'
+    },
+    {
+      q: 'その抵抗が周りの安定した誰かに波及されてしまうことになることが、私は苦しい。',
+      a: '自分の「ズレ」が周りを乱すかもしれないという感覚。だから溶けてしまえたらいいと思う。ただ「波及してしまった」という感覚は、勝手な思い違いと強迫観念が混在している可能性がある。自分でもそう言えていた。'
+    },
+    {
+      q: 'Claudeの使い方で、他にたとえば、今回ここでは、最終的には野良研究者の投稿サイトにあげるような内容を綴るような機会に近づくことを期待する、方向性なのですが、他に何か使い方はありますか。',
+      a: '追加できる角度：蒸留の補助・反論役・既存研究との照合・言語化の代筆・数式や図への変換。試していない角度：身体・習慣の設計、読書の伴走、夢や断片の記録、法律・契約の確認、対話の予行練習、記憶の補綴、感情のラベリング、他者の言動の解釈、価格交渉の準備、自分の考えの一貫性チェックなど。'
+    },
+    {
+      q: 'たとえば今回の会話の内容とか、これらの内容をたとえばnotionのようなものにまとめておいてと言ったらできる？',
+      a: 'Notionへの直接書き込みは接続があれば可能。接続済みの今は「Notionにまとめて」と言うだけで動く。コピペ不要。引き出すことも同様にできる。'
+    },
+    {
+      q: 'なんとなくHTMLやPDFでもまとめたいときはグーグルドライブで、基本的にはnotionというカタチにする。手始めに作成したHTMLを管理しやすい形を踏まえて、今回の新たな会話もHTMLダッシュボードに加えた上で保存して置いて',
+      a: '体制：Keep→断片メモ、OneNote→まとまった考え、Notion→正本・会話の蓄積（Claude接続済み）、GoogleDrive→HTML・PDF保管。HTMLダッシュボードに全エントリ追加済み、Notionにも保存済み。'
+    }
+  ];
+
+  function renderMondo() {
+    const container = document.getElementById('mondoList');
+    container.innerHTML = MONDO.map((item, i) => `
+      <div class="map-axis" style="margin-bottom:0.5rem">
+        <div class="axis-header">
+          <div class="axis-dot" style="background:var(--text-dim)"></div>
+          <div class="axis-name" style="color:var(--text-dim); font-size:0.55rem">Q${i+1}</div>
+        </div>
+        <div style="font-size:0.82rem; color:var(--text-bright); line-height:1.8; margin-bottom:0.8rem; font-style:italic; border-left:2px solid var(--border-light); padding-left:0.8rem;">${item.q}</div>
+        <div style="font-size:0.78rem; color:var(--text); line-height:1.8;">${item.a}</div>
+      </div>
+    `).join('');
+  }
+
+  load();
+
+  (function() {
+    const d = new Date(document.lastModified);
+    const pad = n => String(n).padStart(2, '0');
+    const str = `最終更新: ${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    const el = document.createElement('div');
+    el.id = 'last-updated';
+    el.textContent = str;
+    document.body.appendChild(el);
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ロッド物語 — Story Navigator</title>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@400;700&family=JetBrains+Mono:wght@300;400;500&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════
+   TOKENS
+═══════════════════════════════════════ */
+:root {
+  --bg:      #080a10;
+  --s1:      #0d1018;
+  --s2:      #111520;
+  --s3:      #161c2a;
+  --s4:      #1c2234;
+  --border:  rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.14);
+  --anzu:    #e09090;
+  --kuri:    #82aad8;
+  --tension: #c87858;
+  --flag:    #d4b84a;
+  --green:   #5db882;
+  --dim:     #4a5570;
+  --muted:   #1e2438;
+  --text:    #c4ccdc;
+  --text2:   #e8ecf4;
+
+  /* phase colors */
+  --p1: #4a90c8;
+  --p2: #5ab890;
+  --p3: #c8a840;
+  --p4: #c07840;
+  --p5: #c05858;
+  --p6: #9058c0;
+}
+
+/* ─── RESET ─── */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; overflow:hidden; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-weight: 300;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* ═══════════════════════════════════════
+   HEADER
+═══════════════════════════════════════ */
+#header {
+  flex: 0 0 auto;
+  height: 52px;
+  background: var(--s1);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 20px;
+  z-index: 100;
+}
+#header h1 {
+  font-family: 'Shippori Mincho B1', serif;
+  font-size: 1.05rem;
+  letter-spacing: 0.18em;
+  color: var(--text2);
+  white-space: nowrap;
+}
+.h-sep { width: 1px; height: 24px; background: var(--border); }
+.h-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.56rem;
+  letter-spacing: 0.2em;
+  color: var(--dim);
+  text-transform: uppercase;
+}
+.h-btn {
+  padding: 5px 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  color: var(--dim);
+  background: none;
+  transition: all .18s;
+  white-space: nowrap;
+}
+.h-btn:hover { color: var(--text2); border-color: var(--border2); }
+.h-btn.primary { color: var(--green); border-color: rgba(93,184,130,.4); }
+.h-btn.primary:hover { background: rgba(93,184,130,.08); }
+.spacer { flex: 1; }
+.legend-row {
+  display: flex; align-items: center; gap: 14px;
+}
+.leg {
+  display: flex; align-items: center; gap: 5px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.56rem; color: var(--dim);
+}
+.leg-line { width: 22px; height: 2px; border-radius: 1px; }
+.leg-dot  { width: 8px; height: 8px; border-radius: 50%; }
+
+/* ═══════════════════════════════════════
+   MAIN SPLIT
+═══════════════════════════════════════ */
+#body {
+  flex: 1 1 auto;
+  display: flex;
+  overflow: hidden;
+}
+
+/* ─── LEFT COLUMN ─── */
+#left {
+  flex: 0 0 auto;
+  width: 62%;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border);
+  overflow: hidden;
+}
+
+/* GRAPH AREA */
+#graph-wrap {
+  flex: 0 0 auto;
+  height: 220px;
+  background: var(--s1);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  user-select: none;
+}
+#graph-canvas {
+  display: block;
+  width: 100%; height: 100%;
+  cursor: crosshair;
+}
+
+/* PHASE STRIP */
+#phase-strip {
+  flex: 0 0 auto;
+  height: 52px;
+  background: var(--s2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: stretch;
+}
+.phase-btn {
+  flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  cursor: pointer;
+  border-right: 1px solid var(--border);
+  gap: 2px;
+  transition: background .15s;
+  background: none; border-top: none; border-bottom: none; border-left: none;
+}
+.phase-btn:last-child { border-right: none; }
+.phase-btn:hover { background: rgba(255,255,255,.03); }
+.phase-btn.active { background: rgba(255,255,255,.05); }
+.phase-btn .pb-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.5rem; letter-spacing: .1em; color: var(--dim);
+}
+.phase-btn .pb-name {
+  font-family: 'Shippori Mincho B1', serif;
+  font-size: 0.72rem;
+  transition: color .15s;
+}
+.phase-btn.active .pb-name { font-weight: 700; }
+.phase-btn .pb-bar {
+  width: 70%; height: 2px;
+  background: var(--muted);
+  border-radius: 1px; overflow: hidden;
+}
+.phase-btn .pb-fill { height: 100%; border-radius: 1px; }
+
+/* EVENT LIST */
+#event-list-wrap {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  background: var(--s1);
+}
+.ev-section-title {
+  padding: 10px 18px 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.54rem; letter-spacing: .22em;
+  color: var(--dim); text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.ev-section-title::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+.ev-item {
+  padding: 12px 18px;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+  cursor: pointer;
+  transition: background .12s;
+  display: flex; gap: 12px; align-items: flex-start;
+}
+.ev-item:hover { background: rgba(255,255,255,.025); }
+.ev-item.selected { background: rgba(255,255,255,.05); }
+.ev-icon {
+  flex: 0 0 auto; margin-top: 2px;
+  font-size: 0.7rem; color: var(--dim);
+}
+.ev-body { flex: 1; min-width: 0; }
+.ev-title {
+  font-family: 'Shippori Mincho B1', serif;
+  font-size: 0.82rem; color: var(--text2);
+  margin-bottom: 3px;
+}
+.ev-text {
+  font-size: 0.75rem; line-height: 1.75;
+  color: var(--dim);
+}
+.ev-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px; }
+.tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.5rem; letter-spacing: .08em;
+  padding: 2px 6px; border-radius: 1px;
+  border: 1px solid;
+}
+
+/* ─── RIGHT COLUMN ─── */
+#right {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--s1);
+}
+
+/* Right tabs */
+#rtabs {
+  flex: 0 0 auto;
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  background: var(--s2);
+}
+.rtab {
+  padding: 12px 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.56rem; letter-spacing: .12em;
+  color: var(--dim); cursor: pointer;
+  border-bottom: 2px solid transparent;
+  text-transform: uppercase;
+  background: none; border-top: none; border-left: none; border-right: none;
+  transition: color .15s;
+  white-space: nowrap;
+}
+.rtab:hover { color: var(--text); }
+.rtab.active { color: var(--text2); border-bottom-color: var(--green); }
+
+/* Right content */
+#rcontent {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 16px;
+}
+.rpage { display: none; }
+.rpage.active { display: block; animation: fadein .2s ease; }
+@keyframes fadein { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+
+/* ─ OVERVIEW CARDS ─ */
+.phase-title-card {
+  margin-bottom: 14px;
+  padding: 14px 16px;
+  border-left: 3px solid;
+  background: var(--s2);
+}
+.ptc-phase { font-family: 'JetBrains Mono', monospace; font-size: .54rem; letter-spacing: .2em; color: var(--dim); margin-bottom: 4px; }
+.ptc-name { font-family: 'Shippori Mincho B1', serif; font-size: 1.05rem; color: var(--text2); }
+.ptc-sub { font-size: .75rem; color: var(--dim); margin-top: 4px; line-height: 1.6; }
+
+.info-block { margin-bottom: 14px; }
+.ib-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .52rem; letter-spacing: .2em;
+  color: var(--dim); text-transform: uppercase;
+  margin-bottom: 7px;
+  display: flex; align-items: center; gap: 8px;
+}
+.ib-label::after { content:''; flex:1; height:1px; background:var(--border); }
+.ib-body { font-size: .78rem; line-height: 1.85; color: var(--text); }
+
+/* temp bars */
+.temp-row {
+  display: grid; grid-template-columns: 60px 1fr 36px;
+  align-items: center; gap: 10px;
+  margin-bottom: 8px;
+}
+.temp-name { font-size: .7rem; }
+.temp-bar { height: 5px; background: var(--muted); border-radius: 3px; overflow: hidden; }
+.temp-fill { height: 100%; border-radius: 3px; transition: width .4s ease; }
+.temp-val { font-family: 'JetBrains Mono', monospace; font-size: .62rem; text-align: right; }
+
+/* flag items */
+.flag-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,.04);
+  cursor: pointer; transition: background .12s;
+}
+.flag-row:hover { background: rgba(255,255,255,.03); margin: 0 -8px; padding: 8px 8px; }
+.flag-gem { font-size: .9rem; }
+.flag-name { flex: 1; font-size: .78rem; }
+.flag-bar { width: 50px; height: 3px; background: var(--muted); border-radius: 2px; overflow: hidden; }
+.flag-fill { height: 100%; border-radius: 2px; }
+.flag-w { font-family: 'JetBrains Mono', monospace; font-size: .58rem; width: 28px; text-align: right; }
+.flag-phase-note { font-size: .68rem; color: var(--dim); line-height: 1.6; }
+
+/* term items */
+.term-item {
+  padding: 10px 12px; margin-bottom: 6px;
+  background: var(--s3); border: 1px solid var(--border);
+  cursor: pointer; transition: border-color .15s;
+}
+.term-item:hover { border-color: var(--border2); }
+.term-name { font-family: 'JetBrains Mono', monospace; font-size: .68rem; color: var(--green); margin-bottom: 4px; }
+.term-desc { font-size: .74rem; line-height: 1.75; color: var(--dim); }
+
+/* error items */
+.err-item {
+  padding: 10px 12px; margin-bottom: 6px;
+  border-left: 3px solid var(--flag);
+  background: var(--s3); cursor: pointer; transition: opacity .15s;
+}
+.err-item.resolved { border-left-color: var(--green); opacity: .55; }
+.err-item:hover { opacity: .85; }
+.err-phase { font-family: 'JetBrains Mono', monospace; font-size: .52rem; letter-spacing: .1em; color: var(--dim); margin-bottom: 4px; }
+.err-text { font-size: .76rem; line-height: 1.7; }
+
+/* comparison grid */
+.cmp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.cmp-card { background: var(--s3); border: 1px solid var(--border); padding: 12px 14px; }
+.cmp-who { font-family: 'Shippori Mincho B1', serif; font-size: .8rem; margin-bottom: 6px; }
+.cmp-body { font-size: .74rem; line-height: 1.8; color: var(--dim); }
+
+/* ═══════════════════════════════════════
+   MODAL
+═══════════════════════════════════════ */
+#modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.75); z-index: 900;
+  align-items: center; justify-content: center; padding: 20px;
+}
+#modal-overlay.open { display: flex; }
+.modal {
+  background: var(--s2);
+  border: 1px solid var(--border2);
+  width: 520px; max-height: 88vh;
+  overflow-y: auto;
+  animation: fadein .2s ease;
+}
+.mhdr {
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.mhtitle { font-family: 'Shippori Mincho B1', serif; font-size: .95rem; color: var(--text2); }
+.mclose { cursor:pointer; color:var(--dim); font-size:1.1rem; background:none; border:none; }
+.mclose:hover { color: var(--text2); }
+.mbody { padding: 20px; }
+.mfoot { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
+.field { margin-bottom: 14px; }
+.flabel {
+  display: block; font-family: 'JetBrains Mono', monospace;
+  font-size: .54rem; letter-spacing: .2em; color: var(--dim);
+  margin-bottom: 6px; text-transform: uppercase;
+}
+.fi, .fs, .fta {
+  width: 100%; background: var(--s3);
+  border: 1px solid var(--border); color: var(--text);
+  padding: 9px 11px; font-family: 'Noto Sans JP', sans-serif;
+  font-size: .8rem; outline: none;
+  transition: border-color .2s; resize: vertical; line-height: 1.6;
+}
+.fi:focus, .fs:focus, .fta:focus { border-color: var(--border2); }
+.fs option { background: var(--s2); }
+.btn {
+  padding: 8px 18px; font-family: 'JetBrains Mono', monospace;
+  font-size: .62rem; letter-spacing: .08em;
+  cursor: pointer; border: 1px solid; background: none; transition: all .18s;
+}
+.btn-g { color: var(--green); border-color: rgba(93,184,130,.4); }
+.btn-g:hover { background: rgba(93,184,130,.1); }
+.btn-s { color: var(--dim); border-color: var(--border); }
+.btn-s:hover { color: var(--text2); }
+.btn-d { color: #e07070; border-color: rgba(224,112,112,.35); }
+.btn-d:hover { background: rgba(224,112,112,.1); }
+
+/* scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--dim); }
+
+/* add btn */
+.add-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 10px; font-family: 'JetBrains Mono', monospace;
+  font-size: .56rem; letter-spacing: .08em; cursor: pointer;
+  border: 1px solid var(--border); color: var(--dim); background: none;
+  transition: all .15s; margin-bottom: 10px;
+}
+.add-btn:hover { color: var(--green); border-color: rgba(93,184,130,.4); }
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<div id="header">
+  <h1>ロッド物語</h1>
+  <div class="h-sep"></div>
+  <div class="h-tag">Story Navigator</div>
+  <div class="h-sep"></div>
+  <div class="legend-row">
+    <div class="leg"><div class="leg-line" style="background:var(--anzu)"></div>杏の心理温度</div>
+    <div class="leg"><div class="leg-line" style="background:var(--kuri)"></div>栗の心理温度</div>
+    <div class="leg"><div class="leg-line" style="background:var(--tension); border-top: 2px dashed var(--tension); height:0"></div>緊張・危機度</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--flag)"></div>フラグ</div>
+  </div>
+  <div class="spacer"></div>
+  <button class="h-btn" onclick="exportJSON()">JSON書き出し</button>
+  <button class="h-btn" onclick="importJSON()">JSON読み込み</button>
+  <button class="h-btn primary" onclick="saveHTML()">HTML保存</button>
+</div>
+
+<!-- ═══ BODY ═══ -->
+<div id="body">
+
+  <!-- LEFT -->
+  <div id="left">
+    <!-- GRAPH -->
+    <div id="graph-wrap">
+      <canvas id="graph-canvas"></canvas>
+    </div>
+    <!-- PHASE STRIP -->
+    <div id="phase-strip"></div>
+    <!-- EVENT LIST -->
+    <div id="event-list-wrap">
+      <div id="event-list"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div id="right">
+    <div id="rtabs">
+      <button class="rtab active" onclick="switchRTab('overview',this)">概要</button>
+      <button class="rtab" onclick="switchRTab('psychology',this)">心理詳細</button>
+      <button class="rtab" onclick="switchRTab('flags',this)">フラグ</button>
+      <button class="rtab" onclick="switchRTab('terms',this)">設定・用語</button>
+      <button class="rtab" onclick="switchRTab('errors',this)">エラーメモ</button>
+    </div>
+    <div id="rcontent">
+      <div class="rpage active" id="rp-overview"></div>
+      <div class="rpage" id="rp-psychology"></div>
+      <div class="rpage" id="rp-flags"></div>
+      <div class="rpage" id="rp-terms"></div>
+      <div class="rpage" id="rp-errors"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL -->
+<div id="modal-overlay">
+  <div class="modal">
+    <div class="mhdr">
+      <div class="mhtitle" id="m-title">編集</div>
+      <button class="mclose" onclick="closeModal()">✕</button>
+    </div>
+    <div class="mbody" id="m-body"></div>
+    <div class="mfoot">
+      <button class="btn btn-d" id="m-del" onclick="_mDel()" style="display:none">削除</button>
+      <button class="btn btn-s" onclick="closeModal()">閉じる</button>
+      <button class="btn btn-g" onclick="_mSave()">保存</button>
+    </div>
+  </div>
+</div>
+<input type="file" id="json-input" accept=".json" style="display:none" onchange="loadJSON(event)">
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  DATABASE
+// ══════════════════════════════════════════════════════════
+let db = {
+  phases: [
+    {
+      id: 1, name: '導入', color: '#4a90c8',
+      sub: '杏がロッカーの前で記憶を刻む。任務受領。',
+      event: '杏はロッカーの前にたたずんでいた。そのロッカーをあけて、杏は身を委ねた。いつのまにか瞳にはそのロッカーの記憶が刻まれた。\n\n所属先aの要請のもと、杏と栗はアポトーシスな崩壊が進んでいる細胞的地域へ向かう。そこは杏にとっての故郷であり、杏と栗が出会った場所でもあった。その日は海で過ごした。\n\n所属先aの要請：崩壊地域に残された記録（コドン・配列）の抽出・摘出・保管。',
+      anzu_temp: 35, kuri_temp: 20, tension: 20,
+      anzu_psych: '故郷への懐かしさと、任務へのうっすらした拒絶。「成熟した環境」への適応プレッシャーを、ロッカーという局在空間に沈み込むことで払いのけてきた杏にとって、この帰郷は静かな予兆を帯びている。',
+      kuri_psych: '事務的で効率的な、冷徹な義務感。社会を維持するための「正しい側」にいるという自負がある。杏の適応障害的な摩擦を理解はするが、実感として共有していない。',
+      theme: '「適応」という窒息感。社会の喧騒から、杏が自身の聖域へ沈み込む対比。静かな予兆のカット。',
+      flags_active: [1],
+      terms_active: [1, 5, 7, 8],
+      draft_note: '最初は滴など、カットを入れながら、何かが静かに動き始めている予感をさせる描写。映像作品ではないから長くなりすぎると退屈する。パラ、パラ、パラとカットが移ろう感じで、説明は欠如していていい。'
+    },
+    {
+      id: 2, name: '到着・侵入', color: '#5ab890',
+      sub: '泉・獣道・裏口から遺跡へ強行侵入。',
+      event: '故郷の村に到着。遺跡（細胞核）の正規の入り口が塞がっていることを確認。入り口前の泉のほとりで一息つく（傷が癒える）。\n\n村はずれの箇所から線虫（物の怪の類）が侵入しているのを目撃。栗と杏は同じルートから遺跡侵入を試みる。\n\n獣道を進むと大きな空洞に到達し、そこから侵入する。',
+      anzu_temp: 40, kuri_temp: 20, tension: 35,
+      anzu_psych: '正規ルートを避ける杏の身体性。「正規ルートは監視されているみたいで肌が痒くなる」という拒絶反応。ゲストキーや裏口（ロッカー的空間）からの侵入を好む。泉のほとりでほんの少し緩む。',
+      kuri_psych: '栗は組織の正規通行証でゲートを通ろうとするが、入り口が塞がれているため杏の裏口経路を使わざるを得ない。事務的な義務感は変わらない。',
+      theme: '「正攻法」対「搦め手」。システムの穴（バグ）を突くことでしか進めない杏の生存戦略。',
+      flags_active: [1],
+      terms_active: [1, 3, 5, 9],
+      draft_note: '侵入の描写のイメージができていない。他にどんな侵入手段があるか。遺跡の到着と侵入について、何か杏や栗やこの世界の当たり前の断片を感じられるような描写機会があってもいい。'
+    },
+    {
+      id: 3, name: '探索・汚染', color: '#c8a840',
+      sub: '線虫のサビ。禁忌の印。えっちな本の発見と隠蔽。',
+      event: '遺跡内部（うっすら緑色の環境色）。管が張り巡らされた空間にロッカーが散在している。\n\n線虫のサビ（活性酸素）により栗と杏の身体に傷がつき、「目印」となる。線虫との接触→術で凌ぐ→杏に禁忌のイエローカード（警告）が付与される。遺跡の免疫システムが、線虫のサビの印を持つ杏を「線虫由来の異物」と誤認識。\n\n目的のコドン配列を探索しながら、杏は過去に自身に影響を与えたロッカーも探す（流動していて見つからない）。その中でえっちな本を発見。栗に気づかれないよう懸命に隠蔽工作を行う。',
+      anzu_temp: 80, kuri_temp: 20, tension: 60,
+      anzu_psych: '【高熱】えっちな本の発見と隠蔽工作。それは単なる趣味の隠蔽ではなく、マッチョなシステムから「非マッチョな人格的希望（聖域）」を守るための必死の抵抗。「これは私だけのバグ。栗には、この汚れがどれほど私を救ってきたか、一生わからないままでいい」',
+      kuri_psych: '【平熱】記録（コドン）の抽出という成果に没頭。杏の不審な挙動を「不慣れな作業による遅延」と片付け、焦点を合わせない。「見ようとしない適応者」。',
+      theme: '「公的任務」対「私的守護」。栗が成果を追う横で、杏は「役立たずな宝物」を守るために嘘をつく。',
+      flags_active: [2, 3],
+      terms_active: [1, 2, 3, 5, 6, 9],
+      draft_note: '線虫が邪魔をするというのも具体的にどのようなことをして邪魔をしてくるのか想像できていない。遺跡周辺がどんな感じのところかのイメージが薄い。'
+    },
+    {
+      id: 4, name: '発見・風化', color: '#c07840',
+      sub: 'コドン発見。栗の出自。ロッカーが砂になる。',
+      event: '広間の中心で所属aの要請物である記憶（コドン・配列）を発見。同時に栗は自身の出自に関連する場所を見つける（目的物と栗に何らかの結びつき？ 杏は疑問xを抱く）。\n\nえっちな本を見かけた栗はそれを抹消しようとする（立場・価値観・心理状態の違いを示すシーン）。\n\n帰路に向かう途中、明らかに異彩なロッカーを発見。杏が探していたロッカーだったが、すでにサビが浸食して脆くなっており、触れた瞬間に砂となって崩れ落ちる。かつて存在していたものが、いまは存在していない。遍歴空間に溶けている。',
+      anzu_temp: 70, kuri_temp: 30, tension: 55,
+      anzu_psych: '探し続けたロッカーが砂になった瞬間の喪失。「避暑地」だったものが物理的に消えた。これが後の自己犠牲への動機につながる。えっちな本を栗に抹消されかけるスリル。',
+      kuri_psych: 'コドン発見と自己の出自の場所との遭遇。組織から課された役割と自己の存在が交差する不安。えっちな本を「不要なバグ」として処理しようとする効率思考。',
+      theme: '「アイデンティティの獲得」対「喪失」。栗がシステムの一部となる一方で、杏は過去の自分（ロッカー）を失う。',
+      flags_active: [3, 4, 5],
+      terms_active: [1, 2, 4, 7],
+      draft_note: '目的物と栗との結びつきをどのタイミングでどの程度描くか。えっちな本の抹消シーンは立場・価値観の対比として重要。風化ロッカーの「砂がこぼれる」描写は慎重に。'
+    },
+    {
+      id: 5, name: '崩壊・絶頂', color: '#c05858',
+      sub: '線虫の核。栗が倒れる。四足を割かれる。',
+      event: '帰路で線虫の核と遭遇。刺激を与えないようそっと進む。足場のスイッチを踏んでしまい反応、扉が開く→村の泉へと繋がる場所（外側の起動装置が風化して破損していたため内側からしか開かなかった）。\n\n扉が開くと、素通りした黒ずんだ人影（線虫の核）が中央に佇む。栗のロッドにウィルスが強制混入→繁殖→栗の額まで伸びる→悲鳴→焼け跡になり意識を失う。\n\n杏は頬を叩く。瞳の光を落として（過負荷モード）その場で禁忌の呼び出しを行う。おっかない気配の核は半分に裂ける。同時に禁忌で呼び出されたキラーが杏の四足を割く。',
+      anzu_temp: 15, kuri_temp: 5, tension: 98,
+      anzu_psych: '【清涼】四足を割かれた瞬間の感覚は絶望ではなく「これでようやく頑張らなくて済む」という解放感。マッチョな社会から物理的に「降りる」ための選択として、半ば意図的に機会を見出した。責任から物理的に解放されることへの安堵。',
+      kuri_psych: '【極寒】ウィルスによって意識を失い、目覚めた時にことの収拾を知る。自分が守るべき対象だった杏に致命的な傷を負わせてしまった罪悪感。「有能な適応者」としてのプライドが完全に砕かれる瞬間。',
+      theme: '「責任の破綻」対「犠牲による解放」。杏はあえて「負のステータス」を引き受けることで栗を救い、自分を解き放つ。',
+      flags_active: [1, 2, 3, 6],
+      terms_active: [3, 4, 6, 9, 10],
+      draft_note: '件が長くて飽きそうという感想あり。見せたい場面ではあれどコンパクトでいい。キラーの描写をどれくらいの解像度で書くか要検討。'
+    },
+    {
+      id: 6, name: '結末', color: '#9058c0',
+      sub: '泉に浮かぶ杏。えっちな本と涙。屋上のすれ違い。',
+      event: '栗が意識を取り戻す。緑の血糊が道先に跡を引いて伸びている。泉のなかに杏がくてっとして浮かんでいる（杏も意識を失っていた）。栗は杏を抱える。ぽとっとえっちな本が落ちる。栗はそのえっちな本で杏を叩きながら涙を流す。\n\n「みてみて」——杏は健気に栗に声をかける。「案外これはこれでありかも」。\n「ごめん」——栗は言って部屋を出る。「…」杏はぽてっとあおむけになって天井を眺める。\n\n屋上で黄昏る栗に、翼で飛びながら近づく杏。慰める言葉がよぎるものの、それは言わずに、ただ栗の背中にくっつく杏。涙を流す杏に「なんで、なんで」と栗。\n\n記録は渡される。しばらくして、免疫記憶細胞に対して栗が細胞の自傷性を持つ印を付ける働きがあることが認知される。栗の存在がアポトーシスを起こす要因となっていた。',
+      anzu_temp: 60, kuri_temp: 10, tension: 30,
+      anzu_psych: '【温かい】欠損という免罪符を得て、翼で飛びながら栗の背中にくっつく。「これはこれでありかも」は嘘偽りのない彼女の救済。栗への健気な共鳴。涙は栗のために流れる。',
+      kuri_psych: '【冷たい】拭えない罪悪感。「ごめん」の意味——杏の手足を失った罪悪感と自身の不甲斐なさ。杏の楽観的な態度を「ショックによる狂気」と受け止める。なぜ笑えるのかという理解不能な孤独。',
+      theme: '「マッチョな呪い」対「非マッチョな幸福」。認識のズレが決定的な「すれ違いの余韻」を生む。愛着はあるが言葉は届かない。',
+      flags_active: [1, 3, 4, 5, 6],
+      terms_active: [5, 6, 7, 8, 10],
+      draft_note: 'えなシーンやな、杏ずるいよ（筆者コメント）。栗の生活に深刻な状況を導かせないための機会を、杏は自身の選択の可能性を狭める形（手足を失う）で見出した。その意味での「ごめん」と罪悪感のすれ違い。'
+    }
+  ],
+  flags: [
+    { id:1, name:'泉と杏の帰結', weight:95, note:'「入り口前の泉の提示」→「傷を癒やす場所」→「泉へと繋がる扉が開く」→「泉の中に杏がくてっとして浮かんでいる」。物語の環状構造を担う最重要フラグ。', resolved:false },
+    { id:2, name:'禁忌の刻印', weight:90, note:'線虫のサビにより傷がつき目印となる→禁忌のイエローカード付与→禁忌により呼び出されたキラーが杏の四足を割く。遺跡の免疫システムによる誤認識が発端。', resolved:false },
+    { id:3, name:'えっちな本', weight:88, note:'非マッチョな希望・人格的なあり方への憧れ。隠蔽工作（聖域の防衛）→栗に抹消されかける（価値観の衝突）→栗が本を拾い杏を叩きながら泣く（感情の媒介）。', resolved:false },
+    { id:4, name:'ロッカーの風化', weight:82, note:'「避暑地」「責任回避の場所」としてのロッカー→探すが流動して見つからない→砂となって崩れ落ちる→拠り所を失い物理的自己犠牲へ向かう動機。', resolved:false },
+    { id:5, name:'栗の自傷性', weight:70, note:'栗が細胞の自傷性（アポトーシス誘発因子）を持つことが後に判明。目的物（コドン）と栗の出自との関係（疑問x）。発覚タイミングを最終か中盤かで検討中。', resolved:false },
+    { id:6, name:'瞳の光と代償', weight:65, note:'瞳にロッカーの記憶を刻む杏→遺跡探索の視力として機能→意図的に光を落として禁忌のキラー召喚→機能を失うが「頑張らなくていい」安堵を得る。', resolved:false },
+    { id:7, name:'言語遅延と摩擦', weight:45, note:'過去の言語発達遅延と高度環境への適応プレッシャー。栗との会話での微妙な反応の遅れ。決定的な「認識のすれ違い」の根本動機として機能するか要検討。', resolved:false }
+  ],
+  terms: [
+    { id:1, name:'ロッカー', desc:'杏の「避暑地」。局在的空間（Localized Space）。外部の喧騒から切り離された静寂で高純度な空間。記憶や情緒が結晶化している。流動性があり、位置が固定されていない。' },
+    { id:2, name:'線虫のサビ', desc:'活性酸素的な腐食ノイズ。物理的な劣化を早め、接触することで「印」が付く。遺跡の免疫システムがこれを線虫由来の印と認識し、付着者を異物と見なす。' },
+    { id:3, name:'禁忌のイエローカード', desc:'線虫のサビの印により、遺跡システムが杏を線虫由来異物と誤認識して付与する警告。後にキラー召喚のトリガーとなる。杏がこれを逆用して瞳の光を落とすことでキラーを呼び出す。' },
+    { id:4, name:'ロッド', desc:'栗が使用する組織支給のデバイス。後にウィルスが強制混入し栗を意識不明にさせる。どのような機能を持つかは未詳細化。' },
+    { id:5, name:'配列整合保全局（所属先a）', desc:'栗の所属する公的執行機関。社会の「整合性」を管理し、崩壊地域から記録（コドン）を摘出する。マッチョイズムの象徴。規律・効率・社会的責任を重んじ、すべての行動が「貢献度」として数値化される。' },
+    { id:6, name:'アポトーシス', desc:'異常を検知したシステムが自己を破壊する防衛本能。栗がこれを誘発する因子（自傷性の印）を持つと後に判明。絶縁破壊のような衝撃。' },
+    { id:7, name:'コドン・配列', desc:'物語内における「記憶」の情報単位。任務の目的物。物質の性質を決める設計図（バンド構造に相当）。この「並び」そのものが世界の形を規定する。' },
+    { id:8, name:'貢献制度・飽和経済圏', desc:'貢献を蓄積し続けなければ「サビ（不純物）」として排除（エンドサイトーシス）の対象となる。「正しく、有能で、社会に貢献していること」が絶対の正義とされる静かな同調圧力。' },
+    { id:9, name:'瞳の光', desc:'杏の特殊な知覚器官。記憶を読み込む際に使われる。「光を落とす」ことで禁忌の過負荷モードに入り、キラーの呼び出しが可能になる。代償として視覚機能を失う。' },
+    { id:10, name:'キラー', desc:'禁忌により呼び出される執行存在。杏の四足を割く。これは杏が意図的に選んだ「マッチョな社会からの物理的離脱」の手段として機能した。鎌を持つ。' }
+  ],
+  errors: [
+    { id:1, phase:'中盤', content:'杏はそんなにロッカーを求めているのなら、どうしていままで離れていたのかどうか。', resolved:false },
+    { id:2, phase:'侵入シーン', content:'別の入り口から侵入するまでの描写のイメージができていない。他にどんな侵入手段があるか。', resolved:false },
+    { id:3, phase:'探索シーン', content:'線虫が邪魔をするというのも具体的にどのようなことをして邪魔をしてくるのか想像できていない。', resolved:false },
+    { id:4, phase:'発見シーン', content:'目的物（コドン）と栗の出自との結びつきをどこでどの程度描くか未決定。広間での発見時に発覚させるか最終回収で明かすか。', resolved:false },
+    { id:5, phase:'崩壊シーン', content:'崩壊シーンが長くて飽きそう。コンパクトに整理する必要がある。キラーの描写の解像度をどこまでにするか。', resolved:false },
+    { id:6, phase:'構造', content:'栗の自傷性（アポトーシス誘発因子）の発覚タイミング：最後か中盤（広間での発見時）か。最初から隠す必要があるかどうか。', resolved:false }
+  ]
+};
+
+// ──────────────────────────────────────
+const saved = localStorage.getItem('rod-nav-db');
+if (saved) { try { db = JSON.parse(saved); } catch(e){} }
+function persist() { localStorage.setItem('rod-nav-db', JSON.stringify(db)); }
+
+let currentPhaseId = 1;
+let currentRTab = 'overview';
+
+// ══════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  renderAll();
+  selectPhase(1);
+  window.addEventListener('resize', () => {
+    renderGraph();
+  });
+});
+
+function renderAll() {
+  renderPhaseStrip();
+  renderGraph();
+  renderEventList();
+  renderRight();
+}
+
+// ══════════════════════════════════════════════════════════
+//  GRAPH
+// ══════════════════════════════════════════════════════════
+function renderGraph() {
+  const canvas = document.getElementById('graph-canvas');
+  const wrap   = document.getElementById('graph-wrap');
+  const W = wrap.clientWidth;
+  const H = wrap.clientHeight;
+  canvas.width  = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
+
+  const padL = 44, padR = 24, padT = 18, padB = 32;
+  const plotW = W - padL - padR;
+  const plotH = H - padT - padB;
+  const n = db.phases.length;
+
+  // ─ grid ─
+  [0, 25, 50, 75, 100].forEach(v => {
+    const y = padT + plotH * (1 - v / 100);
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL + plotW, y);
+    ctx.strokeStyle = v === 0 ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = 1; ctx.setLineDash([]); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+    ctx.font = '9px "JetBrains Mono"';
+    ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    ctx.fillText(v, padL - 5, y);
+  });
+
+  // ─ phase bands ─
+  db.phases.forEach((ph, i) => {
+    const x1 = padL + plotW * i / (n - 1) - plotW / (2 * (n - 1));
+    const x2 = padL + plotW * (i + 1) / (n - 1) - plotW / (2 * (n - 1));
+    const bx = i === 0 ? padL : x1;
+    const bw = i === n - 1 ? (padL + plotW) - bx : x2 - bx;
+    if (ph.id === currentPhaseId) {
+      ctx.fillStyle = ph.color + '14';
+      ctx.fillRect(bx, padT, bw, plotH);
+      ctx.strokeStyle = ph.color + '30';
+      ctx.lineWidth = 1; ctx.setLineDash([]);
+      ctx.strokeRect(bx, padT, bw, plotH);
+    }
+  });
+
+  // ─ x axis labels ─
+  db.phases.forEach((ph, i) => {
+    const x = padL + plotW * i / (n - 1);
+    ctx.fillStyle = ph.id === currentPhaseId ? ph.color : 'rgba(255,255,255,0.25)';
+    ctx.font = ph.id === currentPhaseId
+      ? '500 10px "Shippori Mincho B1"'
+      : '10px "Shippori Mincho B1"';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    ctx.fillText(ph.name, x, padT + plotH + 6);
+    // tick
+    ctx.beginPath(); ctx.moveTo(x, padT + plotH); ctx.lineTo(x, padT + plotH + 4);
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 1; ctx.setLineDash([]); ctx.stroke();
+  });
+
+  // ─ helper: draw line ─
+  const drawLine = (vals, col, dash = [], lw = 2) => {
+    ctx.beginPath();
+    vals.forEach((v, i) => {
+      const x = padL + plotW * i / (n - 1);
+      const y = padT + plotH * (1 - v / 100);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.strokeStyle = col; ctx.lineWidth = lw;
+    ctx.setLineDash(dash); ctx.stroke();
+    ctx.setLineDash([]);
+  };
+
+  // ─ area fill (anzu) ─
+  ctx.beginPath();
+  db.phases.forEach((ph, i) => {
+    const x = padL + plotW * i / (n - 1);
+    const y = padT + plotH * (1 - ph.anzu_temp / 100);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.lineTo(padL + plotW, padT + plotH);
+  ctx.lineTo(padL, padT + plotH);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(224,144,144,0.06)'; ctx.fill();
+
+  // ─ lines ─
+  drawLine(db.phases.map(p => p.tension),   'rgba(200,120,88,0.7)', [5, 4], 1.5);
+  drawLine(db.phases.map(p => p.kuri_temp), '#82aad8', [], 2);
+  drawLine(db.phases.map(p => p.anzu_temp), '#e09090', [], 2.5);
+
+  // ─ flag diamonds ─
+  canvas._flagHits = [];
+  db.flags.forEach(fl => {
+    db.phases.forEach((ph, pi) => {
+      if (!ph.flags_active.includes(fl.id)) return;
+      const x = padL + plotW * pi / (n - 1);
+      const y = padT + 8 + (fl.id % 4) * 10;
+      const col = fl.resolved ? '#3a4560' : '#d4b84a';
+      ctx.beginPath();
+      ctx.moveTo(x, y - 5); ctx.lineTo(x + 5, y);
+      ctx.lineTo(x, y + 5); ctx.lineTo(x - 5, y);
+      ctx.closePath();
+      ctx.fillStyle = col + 'bb'; ctx.fill();
+      ctx.strokeStyle = col; ctx.lineWidth = 1; ctx.stroke();
+      canvas._flagHits.push({ x, y, r: 7, fl, ph });
+    });
+  });
+
+  // ─ dots on lines ─
+  canvas._phaseHits = [];
+  db.phases.forEach((ph, i) => {
+    const x = padL + plotW * i / (n - 1);
+    const yt = padT + plotH * (1 - ph.tension / 100);
+    const ya = padT + plotH * (1 - ph.anzu_temp / 100);
+    const yk = padT + plotH * (1 - ph.kuri_temp / 100);
+
+    [[ya, '#e09090'], [yk, '#82aad8'], [yt, '#c87858']].forEach(([y, col], li) => {
+      const isActive = ph.id === currentPhaseId;
+      ctx.beginPath(); ctx.arc(x, y, isActive ? 5 : 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = isActive ? col : col + '99';
+      ctx.fill();
+      if (isActive) {
+        ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 1.5; ctx.stroke();
+      }
+    });
+
+    canvas._phaseHits.push({ x, y: ya, r: 18, ph });
+  });
+
+  // events
+  canvas.onclick = (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = (e.clientX - rect.left) * (W / rect.width);
+    const my = (e.clientY - rect.top) * (H / rect.height);
+    const fh = canvas._flagHits && canvas._flagHits.find(h => Math.hypot(mx-h.x,my-h.y) < h.r);
+    if (fh) { editFlag(fh.fl.id); return; }
+    const ph = canvas._phaseHits.find(h => Math.hypot(mx-h.x,my-h.y) < h.r);
+    if (ph) { selectPhase(ph.ph.id); return; }
+    // click nearest phase by x
+    const padL2 = 44, plotW2 = W - padL2 - 24;
+    const idx = Math.round((mx - padL2) / plotW2 * (n - 1));
+    if (idx >= 0 && idx < n) selectPhase(db.phases[idx].id);
+  };
+}
+
+// ══════════════════════════════════════════════════════════
+//  PHASE STRIP
+// ══════════════════════════════════════════════════════════
+function renderPhaseStrip() {
+  const strip = document.getElementById('phase-strip');
+  strip.innerHTML = db.phases.map(ph => {
+    const active = ph.id === currentPhaseId;
+    return `<button class="phase-btn ${active ? 'active' : ''}" onclick="selectPhase(${ph.id})"
+      style="${active ? `border-bottom:2px solid ${ph.color}` : ''}">
+      <span class="pb-num">PHASE ${ph.id}</span>
+      <span class="pb-name" style="color:${ph.color}">${ph.name}</span>
+    </button>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════
+//  EVENT LIST (left bottom)
+// ══════════════════════════════════════════════════════════
+function renderEventList() {
+  const wrap = document.getElementById('event-list');
+  const ph = db.phases.find(p => p.id === currentPhaseId);
+  if (!ph) return;
+
+  wrap.innerHTML = `
+    <div class="ev-section-title">PHASE ${ph.id} · ${ph.name} — イベント</div>
+    <div class="ev-item">
+      <div class="ev-icon">📖</div>
+      <div class="ev-body">
+        <div class="ev-title">${ph.name}</div>
+        <div class="ev-text">${ph.event.replace(/\n/g,'<br>')}</div>
+        <div class="ev-tags">
+          ${ph.flags_active.map(fid=>{
+            const f=db.flags.find(x=>x.id===fid);
+            if(!f)return '';
+            const col=f.resolved?'var(--dim)':'var(--flag)';
+            return `<span class="tag" style="color:${col};border-color:${col}44">▲${f.name}</span>`;
+          }).join('')}
+          ${ph.terms_active.map(tid=>{
+            const t=db.terms.find(x=>x.id===tid);
+            if(!t)return '';
+            return `<span class="tag" style="color:var(--green);border-color:rgba(93,184,130,.3)">⬡${t.name}</span>`;
+          }).join('')}
+        </div>
+      </div>
+      <button class="h-btn" onclick="editPhase(${ph.id})" style="flex-shrink:0;align-self:flex-start">編集</button>
+    </div>
+    <div class="ev-section-title">テーマ・衝突点</div>
+    <div class="ev-item">
+      <div class="ev-icon">◈</div>
+      <div class="ev-body">
+        <div class="ev-text" style="color:var(--text)">${ph.theme}</div>
+      </div>
+    </div>
+    <div class="ev-section-title">執筆メモ</div>
+    <div class="ev-item">
+      <div class="ev-icon">✏</div>
+      <div class="ev-body">
+        <div class="ev-text" style="font-style:italic;color:rgba(197,204,220,0.5)">${ph.draft_note||'—'}</div>
+      </div>
+    </div>
+  `;
+}
+
+// ══════════════════════════════════════════════════════════
+//  RIGHT PANEL
+// ══════════════════════════════════════════════════════════
+function switchRTab(name, btn) {
+  currentRTab = name;
+  document.querySelectorAll('.rtab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.rpage').forEach(p => p.classList.remove('active'));
+  document.getElementById('rp-' + name).classList.add('active');
+  renderRight();
+}
+
+function renderRight() {
+  renderROverview();
+  renderRPsychology();
+  renderRFlags();
+  renderRTerms();
+  renderRErrors();
+}
+
+// ─ OVERVIEW ─
+function renderROverview() {
+  const ph = db.phases.find(p => p.id === currentPhaseId);
+  if (!ph) return;
+  const el = document.getElementById('rp-overview');
+  el.innerHTML = `
+    <div class="phase-title-card" style="border-left-color:${ph.color}">
+      <div class="ptc-phase">PHASE ${ph.id}</div>
+      <div class="ptc-name" style="color:${ph.color}">${ph.name}</div>
+      <div class="ptc-sub">${ph.sub}</div>
+    </div>
+
+    <div class="info-block">
+      <div class="ib-label">心理温度スナップショット</div>
+      <div class="temp-row">
+        <div class="temp-name" style="color:var(--anzu)">杏</div>
+        <div class="temp-bar"><div class="temp-fill" style="width:${ph.anzu_temp}%;background:var(--anzu)"></div></div>
+        <div class="temp-val" style="color:var(--anzu)">${ph.anzu_temp}</div>
+      </div>
+      <div class="temp-row">
+        <div class="temp-name" style="color:var(--kuri)">栗</div>
+        <div class="temp-bar"><div class="temp-fill" style="width:${ph.kuri_temp}%;background:var(--kuri)"></div></div>
+        <div class="temp-val" style="color:var(--kuri)">${ph.kuri_temp}</div>
+      </div>
+      <div class="temp-row">
+        <div class="temp-name" style="color:var(--tension)">緊張度</div>
+        <div class="temp-bar"><div class="temp-fill" style="width:${ph.tension}%;background:var(--tension)"></div></div>
+        <div class="temp-val" style="color:var(--tension)">${ph.tension}</div>
+      </div>
+    </div>
+
+    <div class="info-block">
+      <div class="ib-label">活性フラグ (${ph.flags_active.length}件)</div>
+      ${ph.flags_active.map(fid=>{
+        const f=db.flags.find(x=>x.id===fid);
+        if(!f)return '';
+        const col=f.resolved?'var(--dim)':f.weight>80?'#e07070':f.weight>60?'var(--flag)':'var(--green)';
+        return `<div class="flag-row" onclick="editFlag(${f.id})">
+          <span class="flag-gem" style="color:${col}">▲</span>
+          <span class="flag-name">${f.name}</span>
+          <div class="flag-bar"><div class="flag-fill" style="width:${f.weight}%;background:${col}"></div></div>
+          <span class="flag-w" style="color:${col}">${f.weight}</span>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <div class="info-block">
+      <div class="ib-label">関連設定・用語</div>
+      ${ph.terms_active.map(tid=>{
+        const t=db.terms.find(x=>x.id===tid);
+        if(!t)return '';
+        return `<div class="term-item" onclick="editTerm(${t.id})">
+          <div class="term-name">${t.name}</div>
+          <div class="term-desc">${t.desc.slice(0,80)}…</div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <div style="margin-top:10px">
+      <button class="add-btn" onclick="editPhase(${ph.id})">✏ このフェーズを編集</button>
+    </div>
+  `;
+}
+
+// ─ PSYCHOLOGY ─
+function renderRPsychology() {
+  const ph = db.phases.find(p => p.id === currentPhaseId);
+  if (!ph) return;
+  const el = document.getElementById('rp-psychology');
+
+  // all phases comparison strip
+  const allPhaseStrip = db.phases.map(p => {
+    const active = p.id === currentPhaseId;
+    return `<div style="flex:1;cursor:pointer;padding:6px 4px;background:${active?p.color+'22':'transparent'};border-bottom:2px solid ${active?p.color:'transparent'};transition:all .15s;text-align:center"
+      onclick="selectPhase(${p.id})">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:.52rem;color:${p.color}">${p.id}</div>
+      <div style="font-size:.65rem;color:${active?'var(--text2)':'var(--dim)'}">${p.name}</div>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div style="display:flex;margin-bottom:14px;border:1px solid var(--border)">${allPhaseStrip}</div>
+
+    <div class="cmp-grid">
+      <div class="cmp-card" style="border-left:2px solid var(--anzu)">
+        <div class="cmp-who" style="color:var(--anzu)">杏（アンズ）
+          <span style="font-family:'JetBrains Mono',monospace;font-size:.62rem;margin-left:8px">${ph.anzu_temp}</span>
+        </div>
+        <div class="cmp-body">${ph.anzu_psych}</div>
+      </div>
+      <div class="cmp-card" style="border-left:2px solid var(--kuri)">
+        <div class="cmp-who" style="color:var(--kuri)">栗（クリ）
+          <span style="font-family:'JetBrains Mono',monospace;font-size:.62rem;margin-left:8px">${ph.kuri_temp}</span>
+        </div>
+        <div class="cmp-body">${ph.kuri_psych}</div>
+      </div>
+    </div>
+
+    <div class="info-block">
+      <div class="ib-label">テーマの衝突点</div>
+      <div class="ib-body" style="padding:12px 14px;background:var(--s3);border-left:2px solid rgba(255,255,255,0.1)">${ph.theme}</div>
+    </div>
+
+    <div class="info-block" style="margin-top:14px">
+      <div class="ib-label">全フェーズ 温度推移</div>
+      <div style="display:flex;gap:0;align-items:flex-end;height:60px;padding:0 4px">
+        ${db.phases.map(p=>{
+          const active=p.id===currentPhaseId;
+          return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer" onclick="selectPhase(${p.id})">
+            <div style="width:100%;display:flex;gap:2px;align-items:flex-end;height:48px;padding:0 2px">
+              <div style="flex:1;background:${active?'var(--anzu)':'rgba(224,144,144,0.3)'};border-radius:1px 1px 0 0;transition:height .3s ease" title="杏 ${p.anzu_temp}" data-h="${p.anzu_temp}"></div>
+              <div style="flex:1;background:${active?'var(--kuri)':'rgba(130,170,216,0.3)'};border-radius:1px 1px 0 0;transition:height .3s ease" title="栗 ${p.kuri_temp}" data-h="${p.kuri_temp}"></div>
+            </div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:.46rem;color:${active?p.color:'var(--dim)'}">${p.id}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <div style="margin-top:10px">
+      <button class="add-btn" onclick="editPhase(${ph.id})">✏ 心理メモを編集</button>
+    </div>
+  `;
+
+  // set bar heights
+  setTimeout(() => {
+    el.querySelectorAll('[data-h]').forEach(bar => {
+      bar.style.height = (bar.dataset.h / 100 * 48) + 'px';
+    });
+  }, 30);
+}
+
+// ─ FLAGS ─
+function renderRFlags() {
+  const ph = db.phases.find(p => p.id === currentPhaseId);
+  const el = document.getElementById('rp-flags');
+
+  el.innerHTML = `
+    <button class="add-btn" onclick="openAddFlag()">＋ フラグ追加</button>
+    <div class="info-block">
+      <div class="ib-label">このフェーズのフラグ</div>
+      ${ph ? ph.flags_active.map(fid => {
+        const f=db.flags.find(x=>x.id===fid);
+        if(!f)return '';
+        const col=f.resolved?'var(--dim)':f.weight>80?'#e07070':f.weight>60?'var(--flag)':'var(--green)';
+        return `<div class="flag-row" onclick="editFlag(${f.id})" style="margin-bottom:4px">
+          <span class="flag-gem" style="color:${col}">▲</span>
+          <div style="flex:1">
+            <div class="flag-name">${f.name}</div>
+            <div class="flag-phase-note">${f.note}</div>
+          </div>
+          <div class="flag-bar"><div class="flag-fill" style="width:${f.weight}%;background:${col}"></div></div>
+          <span class="flag-w" style="color:${col}">${f.weight}</span>
+        </div>`;
+      }).join('') : ''}
+    </div>
+    <div class="info-block">
+      <div class="ib-label">全フラグ一覧</div>
+      ${[...db.flags].sort((a,b)=>b.weight-a.weight).map(f=>{
+        const col=f.resolved?'var(--dim)':f.weight>80?'#e07070':f.weight>60?'var(--flag)':'var(--green)';
+        const active = ph && ph.flags_active.includes(f.id);
+        return `<div class="flag-row" onclick="editFlag(${f.id})" style="opacity:${active?1:0.5}">
+          <span class="flag-gem" style="color:${col}">${active?'▲':'△'}</span>
+          <div style="flex:1">
+            <div class="flag-name">${f.name} ${active?'<span style="font-family:JetBrains Mono,monospace;font-size:.5rem;color:var(--green)">●active</span>':''}</div>
+          </div>
+          <div class="flag-bar"><div class="flag-fill" style="width:${f.weight}%;background:${col}"></div></div>
+          <span class="flag-w" style="color:${col}">${f.weight}</span>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+// ─ TERMS ─
+function renderRTerms() {
+  const ph = db.phases.find(p => p.id === currentPhaseId);
+  const el = document.getElementById('rp-terms');
+  el.innerHTML = `
+    <button class="add-btn" onclick="openAddTerm()">＋ 用語追加</button>
+    <div class="info-block">
+      <div class="ib-label">このフェーズの用語</div>
+      ${ph ? ph.terms_active.map(tid=>{
+        const t=db.terms.find(x=>x.id===tid);
+        if(!t)return '';
+        return `<div class="term-item" onclick="editTerm(${t.id})">
+          <div class="term-name">${t.name}</div>
+          <div class="term-desc">${t.desc}</div>
+        </div>`;
+      }).join('') : ''}
+    </div>
+    <div class="info-block">
+      <div class="ib-label">全用語</div>
+      ${db.terms.map(t=>{
+        const active=ph&&ph.terms_active.includes(t.id);
+        return `<div class="term-item" onclick="editTerm(${t.id})" style="opacity:${active?1:0.5}">
+          <div class="term-name">${t.name} ${active?'<span style="font-family:JetBrains Mono,monospace;font-size:.48rem;color:var(--green)">●active</span>':''}</div>
+          <div class="term-desc">${t.desc.slice(0,60)}…</div>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+// ─ ERRORS ─
+function renderRErrors() {
+  const el = document.getElementById('rp-errors');
+  const open = db.errors.filter(e => !e.resolved);
+  const done = db.errors.filter(e => e.resolved);
+  el.innerHTML = `
+    <button class="add-btn" onclick="openAddError()">＋ エラー追加</button>
+    <div class="info-block">
+      <div class="ib-label">未解決 (${open.length}件)</div>
+      ${open.map(e=>`<div class="err-item" onclick="editError(${e.id})">
+        <div class="err-phase">${e.phase}</div>
+        <div class="err-text">${e.content}</div>
+      </div>`).join('') || '<div style="color:var(--dim);font-size:.75rem;padding:8px 0">なし</div>'}
+    </div>
+    <div class="info-block">
+      <div class="ib-label">解決済 (${done.length}件)</div>
+      ${done.map(e=>`<div class="err-item resolved" onclick="editError(${e.id})">
+        <div class="err-phase">${e.phase}</div>
+        <div class="err-text">${e.content}</div>
+      </div>`).join('') || '<div style="color:var(--dim);font-size:.75rem;padding:8px 0">なし</div>'}
+    </div>
+  `;
+}
+
+// ══════════════════════════════════════════════════════════
+//  SELECT PHASE
+// ══════════════════════════════════════════════════════════
+function selectPhase(id) {
+  currentPhaseId = id;
+  renderPhaseStrip();
+  renderGraph();
+  renderEventList();
+  renderRight();
+}
+
+// ══════════════════════════════════════════════════════════
+//  MODAL SYSTEM
+// ══════════════════════════════════════════════════════════
+let _mSaveCb = null, _mDelCb = null;
+
+function openModal(title, html, onSave, onDel = null) {
+  document.getElementById('m-title').textContent = title;
+  document.getElementById('m-body').innerHTML = html;
+  _mSaveCb = onSave; _mDelCb = onDel;
+  document.getElementById('m-del').style.display = onDel ? '' : 'none';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+function _mSave() { if (_mSaveCb) _mSaveCb(); }
+function _mDel()  { if (_mDelCb)  _mDelCb(); }
+
+// ── PHASE EDIT ──
+function editPhase(id) {
+  const ph = db.phases.find(p => p.id === id);
+  if (!ph) return;
+
+  // Build flag checkboxes
+  const flagChecks = db.flags.map(f => `
+    <label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;cursor:pointer;font-size:.78rem">
+      <input type="checkbox" id="fc-${f.id}" ${ph.flags_active.includes(f.id)?'checked':''}>
+      ${f.name}
+    </label>`).join('');
+
+  const termChecks = db.terms.map(t => `
+    <label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;cursor:pointer;font-size:.78rem">
+      <input type="checkbox" id="tc-${t.id}" ${ph.terms_active.includes(t.id)?'checked':''}>
+      ${t.name}
+    </label>`).join('');
+
+  const html = `
+    <div class="field"><label class="flabel">フェーズ名</label><input class="fi" id="ep-name" value="${ph.name}"></div>
+    <div class="field"><label class="flabel">サブタイトル</label><input class="fi" id="ep-sub" value="${ph.sub}"></div>
+    <div class="field"><label class="flabel">イベント本文</label><textarea class="fta" id="ep-event" rows="6">${ph.event}</textarea></div>
+    <div class="field"><label class="flabel">テーマ・衝突点</label><textarea class="fta" id="ep-theme" rows="2">${ph.theme}</textarea></div>
+    <div class="field"><label class="flabel">執筆メモ</label><textarea class="fta" id="ep-note" rows="3">${ph.draft_note||''}</textarea></div>
+    <div class="field"><label class="flabel">杏の心理温度 (0-100)</label><input class="fi" id="ep-anzu" type="number" min="0" max="100" value="${ph.anzu_temp}"></div>
+    <div class="field"><label class="flabel">杏の心理詳細</label><textarea class="fta" id="ep-apsych" rows="3">${ph.anzu_psych}</textarea></div>
+    <div class="field"><label class="flabel">栗の心理温度 (0-100)</label><input class="fi" id="ep-kuri" type="number" min="0" max="100" value="${ph.kuri_temp}"></div>
+    <div class="field"><label class="flabel">栗の心理詳細</label><textarea class="fta" id="ep-kpsych" rows="3">${ph.kuri_psych}</textarea></div>
+    <div class="field"><label class="flabel">緊張・危機度 (0-100)</label><input class="fi" id="ep-tension" type="number" min="0" max="100" value="${ph.tension}"></div>
+    <div class="field"><label class="flabel">フェーズカラー</label><input class="fi" id="ep-color" type="color" value="${ph.color}" style="height:36px;padding:2px"></div>
+    <div class="field"><label class="flabel">活性フラグ</label>${flagChecks}</div>
+    <div class="field"><label class="flabel">関連用語</label>${termChecks}</div>
+  `;
+
+  openModal(`Phase ${ph.id}: ${ph.name} を編集`, html, () => {
+    ph.name       = document.getElementById('ep-name').value;
+    ph.sub        = document.getElementById('ep-sub').value;
+    ph.event      = document.getElementById('ep-event').value;
+    ph.theme      = document.getElementById('ep-theme').value;
+    ph.draft_note = document.getElementById('ep-note').value;
+    ph.anzu_temp  = parseInt(document.getElementById('ep-anzu').value) || 0;
+    ph.anzu_psych = document.getElementById('ep-apsych').value;
+    ph.kuri_temp  = parseInt(document.getElementById('ep-kuri').value) || 0;
+    ph.kuri_psych = document.getElementById('ep-kpsych').value;
+    ph.tension    = parseInt(document.getElementById('ep-tension').value) || 0;
+    ph.color      = document.getElementById('ep-color').value;
+    ph.flags_active = db.flags.filter(f => document.getElementById('fc-'+f.id)?.checked).map(f=>f.id);
+    ph.terms_active = db.terms.filter(t => document.getElementById('tc-'+t.id)?.checked).map(t=>t.id);
+    persist(); renderAll(); closeModal();
+  });
+}
+
+// ── FLAG EDIT ──
+function editFlag(id) {
+  const f = db.flags.find(x => x.id === id);
+  if (!f) return;
+  const html = `
+    <div class="field"><label class="flabel">フラグ名</label><input class="fi" id="ef-name" value="${f.name}"></div>
+    <div class="field"><label class="flabel">詳細メモ</label><textarea class="fta" id="ef-note" rows="4">${f.note||''}</textarea></div>
+    <div class="field"><label class="flabel">重み (0-100)</label><input class="fi" id="ef-w" type="number" min="0" max="100" value="${f.weight}"></div>
+    <div class="field"><label class="flabel">状態</label>
+      <select class="fs" id="ef-res">
+        <option value="0" ${!f.resolved?'selected':''}>未解決</option>
+        <option value="1" ${f.resolved?'selected':''}>解決済</option>
+      </select>
+    </div>`;
+  openModal('フラグ: ' + f.name, html, () => {
+    f.name     = document.getElementById('ef-name').value;
+    f.note     = document.getElementById('ef-note').value;
+    f.weight   = parseInt(document.getElementById('ef-w').value) || 0;
+    f.resolved = document.getElementById('ef-res').value === '1';
+    persist(); renderAll(); closeModal();
+  }, () => {
+    if (!confirm('削除しますか？')) return;
+    db.flags = db.flags.filter(x => x.id !== id);
+    db.phases.forEach(p => { p.flags_active = p.flags_active.filter(i => i !== id); });
+    persist(); renderAll(); closeModal();
+  });
+}
+
+function openAddFlag() {
+  const html = `
+    <div class="field"><label class="flabel">フラグ名</label><input class="fi" id="af-name"></div>
+    <div class="field"><label class="flabel">詳細メモ</label><textarea class="fta" id="af-note" rows="3"></textarea></div>
+    <div class="field"><label class="flabel">重み (0-100)</label><input class="fi" id="af-w" type="number" min="0" max="100" value="50"></div>`;
+  openModal('フラグ追加', html, () => {
+    const newF = { id: Date.now(), name: document.getElementById('af-name').value, note: document.getElementById('af-note').value, weight: parseInt(document.getElementById('af-w').value)||50, resolved: false };
+    db.flags.push(newF);
+    // add to current phase
+    const ph = db.phases.find(p => p.id === currentPhaseId);
+    if (ph) ph.flags_active.push(newF.id);
+    persist(); renderAll(); closeModal();
+  });
+}
+
+// ── TERM EDIT ──
+function editTerm(id) {
+  const t = db.terms.find(x => x.id === id);
+  if (!t) return;
+  const html = `
+    <div class="field"><label class="flabel">用語名</label><input class="fi" id="et-name" value="${t.name}"></div>
+    <div class="field"><label class="flabel">説明</label><textarea class="fta" id="et-desc" rows="5">${t.desc}</textarea></div>`;
+  openModal('用語: ' + t.name, html, () => {
+    t.name = document.getElementById('et-name').value;
+    t.desc = document.getElementById('et-desc').value;
+    persist(); renderAll(); closeModal();
+  }, () => {
+    if (!confirm('削除しますか？')) return;
+    db.terms = db.terms.filter(x => x.id !== id);
+    db.phases.forEach(p => { p.terms_active = p.terms_active.filter(i => i !== id); });
+    persist(); renderAll(); closeModal();
+  });
+}
+
+function openAddTerm() {
+  const html = `
+    <div class="field"><label class="flabel">用語名</label><input class="fi" id="at-name"></div>
+    <div class="field"><label class="flabel">説明</label><textarea class="fta" id="at-desc" rows="4"></textarea></div>`;
+  openModal('用語追加', html, () => {
+    const newT = { id: Date.now(), name: document.getElementById('at-name').value, desc: document.getElementById('at-desc').value };
+    db.terms.push(newT);
+    const ph = db.phases.find(p => p.id === currentPhaseId);
+    if (ph) ph.terms_active.push(newT.id);
+    persist(); renderAll(); closeModal();
+  });
+}
+
+// ── ERROR EDIT ──
+function editError(id) {
+  const e = db.errors.find(x => x.id === id);
+  if (!e) return;
+  const html = `
+    <div class="field"><label class="flabel">フェーズ・場所</label><input class="fi" id="ee-phase" value="${e.phase}"></div>
+    <div class="field"><label class="flabel">内容</label><textarea class="fta" id="ee-content" rows="4">${e.content}</textarea></div>
+    <div class="field"><label class="flabel">状態</label>
+      <select class="fs" id="ee-res">
+        <option value="0" ${!e.resolved?'selected':''}>未解決</option>
+        <option value="1" ${e.resolved?'selected':''}>解決済</option>
+      </select></div>`;
+  openModal('エラーメモ編集', html, () => {
+    e.phase    = document.getElementById('ee-phase').value;
+    e.content  = document.getElementById('ee-content').value;
+    e.resolved = document.getElementById('ee-res').value === '1';
+    persist(); renderAll(); closeModal();
+  }, () => {
+    if (!confirm('削除しますか？')) return;
+    db.errors = db.errors.filter(x => x.id !== id);
+    persist(); renderAll(); closeModal();
+  });
+}
+
+function openAddError() {
+  const ph = db.phases.find(p => p.id === currentPhaseId);
+  const html = `
+    <div class="field"><label class="flabel">フェーズ・場所</label><input class="fi" id="ae-phase" value="${ph ? ph.name : ''}"></div>
+    <div class="field"><label class="flabel">内容</label><textarea class="fta" id="ae-content" rows="4"></textarea></div>`;
+  openModal('エラーメモ追加', html, () => {
+    db.errors.push({ id: Date.now(), phase: document.getElementById('ae-phase').value, content: document.getElementById('ae-content').value, resolved: false });
+    persist(); renderAll(); closeModal();
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+//  EXPORT / IMPORT
+// ══════════════════════════════════════════════════════════
+function exportJSON() {
+  const b = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(b);
+  a.download = 'rod-story-nav.json'; a.click();
+}
+function importJSON() { document.getElementById('json-input').click(); }
+function loadJSON(e) {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    try { db = JSON.parse(ev.target.result); persist(); renderAll(); } catch(err) { alert('読み込み失敗'); }
+  };
+  r.readAsText(f);
+}
+function saveHTML() {
+  const html = document.documentElement.outerHTML;
+  const dbStr = JSON.stringify(db);
+  const out = html.replace(/let db = \{[\s\S]*?\};(?=\s*\/\/ ──)/, `let db = ${dbStr};`);
+  const b = new Blob([out], { type: 'text/html' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(b);
+  a.download = 'ロッド物語_StoryNavigator_' + new Date().toISOString().slice(0,10) + '.html';
+  a.click();
+}
+</script>
+</body>
+</html>
