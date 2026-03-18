@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>投機・投資系 — magazine</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;1,300&family=Noto+Sans+JP:wght@300;400&display=swap');
+
+  :root {
+    --bg: #0e0e0e;
+    --bg2: #161616;
+    --bg3: #1e1e1e;
+    --line: #2a2a2a;
+    --muted: #444;
+    --dim: #666;
+    --text: #c8c8c8;
+    --hi: #e8e8e8;
+    --accent: #a0a0ff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+  }
+
+  /* ── STICKY TOC ── */
+  #toc {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  #toc::-webkit-scrollbar { display: none; }
+
+  .toc-home {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .2em;
+    color: var(--muted);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color .15s;
+    padding: 4px 0;
+  }
+  .toc-home:hover { color: var(--text); }
+
+  .toc-sep {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  .toc-link {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .1em;
+    color: var(--dim);
+    text-decoration: none;
+    white-space: nowrap;
+    padding: 3px 9px;
+    border-radius: 2px;
+    border: 1px solid transparent;
+    transition: color .15s, border-color .15s;
+  }
+  .toc-link:hover {
+    color: var(--text);
+    border-color: var(--line);
+  }
+  .toc-link.active {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  /* ── MAIN ── */
+  #app {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 48px 24px 120px;
+  }
+
+  /* page header */
+  .page-header {
+    margin-bottom: 64px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+  .page-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    letter-spacing: .25em;
+    color: var(--dim);
+  }
+  .page-updated {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  /* ── SECTION ── */
+  .mag-section {
+    margin-bottom: 72px;
+    scroll-margin-top: 60px;
+  }
+
+  .section-heading {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .3em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+  .section-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  /* ── ENTRY CARD ── */
+  .entry-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .entry-card {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: start;
+    text-decoration: none;
+    color: inherit;
+    transition: background .1s;
+    cursor: pointer;
+  }
+  .entry-card:hover { background: var(--bg2); margin: 0 -14px; padding: 16px 14px; border-radius: 4px; border-bottom-color: transparent; }
+
+  .entry-title {
+    font-size: 14px;
+    color: var(--hi);
+    line-height: 1.5;
+    margin-bottom: 6px;
+  }
+  .entry-summary {
+    font-size: 12px;
+    color: var(--dim);
+    line-height: 1.7;
+  }
+
+  .entry-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .entry-date {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .entry-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: flex-end;
+  }
+  .entry-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 2px;
+    background: var(--bg3);
+    color: var(--dim);
+  }
+  .entry-source {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+  }
+
+  /* empty state */
+  .empty {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    padding: 20px 0;
+    letter-spacing: .05em;
+  }
+
+  /* ── BACK TO TOP ── */
+  #back-top {
+    position: fixed;
+    bottom: 32px;
+    right: 24px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 7px 12px;
+    cursor: pointer;
+    text-decoration: none;
+    opacity: 0;
+    transition: opacity .2s, color .15s;
+    letter-spacing: .1em;
+  }
+  #back-top.visible { opacity: 1; }
+  #back-top:hover { color: var(--text); }
+</style>
+</head>
+<body>
+
+<!-- sticky toc (JSで動的生成) -->
+<nav id="toc">
+  <a class="toc-home" href="../index.html">← index</a>
+  <span class="toc-sep">/</span>
+</nav>
+
+<div id="app">
+  <header class="page-header">
+    <span class="page-title" id="page-title">— magazine</span>
+    <span class="page-updated" id="page-updated"></span>
+  </header>
+  <div id="sections"></div>
+</div>
+
+<a id="back-top" href="#" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">↑ top</a>
+
+<script>
+// ── CONFIG ──
+// このファイルがどのセクションキーを担当するか
+const SECTION_KEY = 'investment';
+
+// ── LOAD ──
+async function load() {
+  let data;
+  try {
+    const res = await fetch('../data.json');
+    data = await res.json();
+  } catch {
+    data = null;
+  }
+
+  const mag = data && data[SECTION_KEY];
+  if (!mag) {
+    document.getElementById('sections').innerHTML =
+      '<div class="empty">data.json が見つかりません</div>';
+    return;
+  }
+
+  // header
+  document.title = (mag._label || SECTION_KEY) + ' — magazine';
+  document.getElementById('page-title').textContent = '— ' + (mag._label || SECTION_KEY);
+  if (data._meta && data._meta.updated) {
+    document.getElementById('page-updated').textContent = data._meta.updated;
+  }
+
+  buildToc(mag.sections || []);
+  buildSections(mag.sections || []);
+}
+
+// ── TOC ──
+function buildToc(sections) {
+  const toc = document.getElementById('toc');
+  sections.forEach(sec => {
+    const a = document.createElement('a');
+    a.className = 'toc-link';
+    a.href = '#' + sec.id;
+    a.textContent = sec.label;
+    a.dataset.id = sec.id;
+    toc.appendChild(a);
+  });
+}
+
+// ── SECTIONS ──
+function buildSections(sections) {
+  const container = document.getElementById('sections');
+  sections.forEach(sec => {
+    const el = document.createElement('div');
+    el.className = 'mag-section';
+    el.id = sec.id;
+
+    const entries = sec.entries || [];
+
+    el.innerHTML = `
+      <div class="section-heading">
+        <div class="section-label">${sec.label}</div>
+        <div class="section-line"></div>
+        <div class="section-count">${entries.length}</div>
+      </div>
+      <div class="entry-list" id="list-${sec.id}"></div>
+    `;
+    container.appendChild(el);
+
+    const list = document.getElementById('list-' + sec.id);
+    if (!entries.length) {
+      list.innerHTML = '<div class="empty">— エントリなし</div>';
+      return;
+    }
+    entries.forEach(e => list.appendChild(makeEntry(e)));
+  });
+}
+
+function makeEntry(e) {
+  const card = document.createElement('a');
+  card.className = 'entry-card';
+  if (e.url) { card.href = e.url; card.target = '_blank'; card.rel = 'noopener'; }
+
+  const tags = (e.tags || []).map(t =>
+    `<span class="entry-tag">${t}</span>`).join('');
+
+  card.innerHTML = `
+    <div>
+      <div class="entry-title">${e.title || '—'}</div>
+      ${e.summary ? `<div class="entry-summary">${e.summary}</div>` : ''}
+    </div>
+    <div class="entry-meta">
+      <div class="entry-date">${e.date || ''}</div>
+      ${tags ? `<div class="entry-tags">${tags}</div>` : ''}
+      ${e.source ? `<div class="entry-source">${e.source}</div>` : ''}
+    </div>
+  `;
+  return card;
+}
+
+// ── SCROLL SPY ──
+function initScrollSpy() {
+  const links = document.querySelectorAll('.toc-link');
+  const sections = document.querySelectorAll('.mag-section');
+  const backTop = document.getElementById('back-top');
+
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        links.forEach(l => l.classList.toggle('active', l.dataset.id === entry.target.id));
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  sections.forEach(s => obs.observe(s));
+
+  window.addEventListener('scroll', () => {
+    backTop.classList.toggle('visible', window.scrollY > 300);
+  }, { passive: true });
+}
+
+load().then(() => initScrollSpy());
+</script>
+</body>
+</html>

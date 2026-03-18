@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VRC雑談 & 投機盤面 早見ダッシュボード｜Vol.1 2026.03.03</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700;900&family=Rajdhani:wght@300;500;700&family=Space+Mono:wght@400;700&display=swap');
+
+  :root {
+    --bg: #060a0f;
+    --surface: #0d1520;
+    --surface2: #111c2a;
+    --border: #1a2d45;
+    --accent1: #00d4ff;
+    --accent2: #ff6b35;
+    --accent3: #39ff14;
+    --accent4: #c77dff;
+    --danger: #ff3c3c;
+    --warn: #ffb300;
+    --text: #d4e4f0;
+    --text-dim: #5a7a94;
+    --text-bright: #ffffff;
+    --bear: #ff4040;
+    --bull: #00e676;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 13px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── ヘッダー ── */
+  header {
+    background: linear-gradient(135deg, #060a0f 0%, #0a1628 50%, #060e1c 100%);
+    border-bottom: 1px solid var(--accent1);
+    padding: 18px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 0 40px rgba(0,212,255,0.12);
+  }
+
+  header .logo {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--accent1);
+    text-shadow: 0 0 20px rgba(0,212,255,0.6);
+  }
+
+  header .meta {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: right;
+  }
+
+  header .meta span {
+    color: var(--accent3);
+    display: block;
+  }
+
+  /* ── レイアウト ── */
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px 20px 40px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: auto;
+    gap: 16px;
+  }
+
+  /* ── セクションヘッダーバッジ ── */
+  .section-label {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 2px;
+    display: inline-block;
+    margin-bottom: 10px;
+  }
+
+  .label-blue  { background: rgba(0,212,255,0.15); color: var(--accent1); border: 1px solid rgba(0,212,255,0.3); }
+  .label-orange{ background: rgba(255,107,53,0.15); color: var(--accent2); border: 1px solid rgba(255,107,53,0.3); }
+  .label-green { background: rgba(57,255,20,0.12); color: var(--accent3); border: 1px solid rgba(57,255,20,0.25); }
+  .label-purple{ background: rgba(199,125,255,0.12); color: var(--accent4); border: 1px solid rgba(199,125,255,0.25); }
+  .label-red   { background: rgba(255,60,60,0.15); color: var(--bear); border: 1px solid rgba(255,60,60,0.3); }
+
+  /* ── カード ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+
+  .card.blue::before   { background: linear-gradient(90deg, var(--accent1), transparent); }
+  .card.orange::before { background: linear-gradient(90deg, var(--accent2), transparent); }
+  .card.green::before  { background: linear-gradient(90deg, var(--accent3), transparent); }
+  .card.purple::before { background: linear-gradient(90deg, var(--accent4), transparent); }
+  .card.red::before    { background: linear-gradient(90deg, var(--bear), transparent); }
+
+  .card-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-bright);
+    margin-bottom: 14px;
+    letter-spacing: 1px;
+  }
+
+  /* ── 全幅 ── */
+  .full-width  { grid-column: 1 / -1; }
+  .half-width  { grid-column: span 2; }
+
+  /* ── 数値表示 ── */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .stat-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    text-align: center;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .stat-value {
+    font-family: 'Space Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-bright);
+  }
+
+  .stat-value.up   { color: var(--bull); }
+  .stat-value.down { color: var(--bear); }
+  .stat-value.warn { color: var(--warn); }
+  .stat-value.blue { color: var(--accent1); }
+
+  .stat-sub {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 2px;
+    font-family: 'Space Mono', monospace;
+  }
+
+  /* ── テキストリスト ── */
+  .info-list { list-style: none; }
+  .info-list li {
+    padding: 7px 0;
+    border-bottom: 1px solid rgba(26,45,69,0.8);
+    font-size: 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .info-list li:last-child { border-bottom: none; }
+
+  .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 5px;
+  }
+  .dot-blue   { background: var(--accent1); box-shadow: 0 0 6px var(--accent1); }
+  .dot-orange { background: var(--accent2); box-shadow: 0 0 6px var(--accent2); }
+  .dot-green  { background: var(--accent3); box-shadow: 0 0 6px var(--accent3); }
+  .dot-purple { background: var(--accent4); box-shadow: 0 0 6px var(--accent4); }
+  .dot-red    { background: var(--bear);    box-shadow: 0 0 6px var(--bear);    }
+  .dot-warn   { background: var(--warn);    box-shadow: 0 0 6px var(--warn);    }
+
+  /* ── タグ ── */
+  .tag {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 20px;
+    font-family: 'Space Mono', monospace;
+    white-space: nowrap;
+  }
+  .tag-blue  { background: rgba(0,212,255,0.12);  color: var(--accent1); border: 1px solid rgba(0,212,255,0.25); }
+  .tag-bear  { background: rgba(255,60,60,0.12);   color: var(--bear);    border: 1px solid rgba(255,60,60,0.25); }
+  .tag-bull  { background: rgba(0,230,118,0.12);   color: var(--bull);    border: 1px solid rgba(0,230,118,0.25); }
+  .tag-warn  { background: rgba(255,179,0,0.12);   color: var(--warn);    border: 1px solid rgba(255,179,0,0.25); }
+
+  /* ── センチメントバー ── */
+  .sentiment-bar {
+    background: var(--surface2);
+    border-radius: 4px;
+    height: 14px;
+    position: relative;
+    overflow: hidden;
+    margin: 4px 0 8px;
+    border: 1px solid var(--border);
+  }
+  .sentiment-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.8s ease;
+  }
+  .sentiment-label {
+    font-size: 10px;
+    color: var(--text-dim);
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2px;
+  }
+
+  /* ── 要約ボックス ── */
+  .summary-box {
+    background: rgba(0,212,255,0.04);
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 6px;
+    padding: 12px 14px;
+    font-size: 12px;
+    line-height: 1.8;
+    margin-top: 12px;
+    color: var(--text);
+  }
+
+  .summary-box.warn-box {
+    background: rgba(255,179,0,0.05);
+    border-color: rgba(255,179,0,0.25);
+  }
+
+  .summary-box.bear-box {
+    background: rgba(255,60,60,0.05);
+    border-color: rgba(255,60,60,0.2);
+  }
+
+  /* ── ワールド表 ── */
+  .world-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .world-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+  }
+
+  .world-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent1);
+    margin-bottom: 3px;
+  }
+
+  .world-desc {
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  /* ── 2カラムリスト ── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  /* ── 注意書き ── */
+  .disclaimer {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+    line-height: 1.6;
+  }
+
+  /* ── タイムスタンプ区切り ── */
+  .divider-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: var(--text-dim);
+    text-align: center;
+    padding: 4px 0;
+    letter-spacing: 2px;
+  }
+
+  /* ── 見出しバッジ inline ── */
+  .inline-bear { color: var(--bear); font-weight: 700; }
+  .inline-bull { color: var(--bull); font-weight: 700; }
+  .inline-warn { color: var(--warn); font-weight: 700; }
+  .inline-blue { color: var(--accent1); }
+
+  /* ── アニメーション ── */
+  @keyframes pulse-border {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(0,212,255,0.3); }
+    50%       { box-shadow: 0 0 0 4px rgba(0,212,255,0.05); }
+  }
+  .card.blue { animation: pulse-border 4s ease infinite; }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.3; }
+  }
+  .blink { animation: blink 1.5s ease infinite; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">▐ VRC BRIEFING DASHBOARD</div>
+  <div class="meta">
+    <span>VOL.001 — 2026.03.03</span>
+    初回記録 ／ 定点観測ベースライン
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 1: VRChat 最新情報
+  ══════════════════════════════════════════════ -->
+  <div class="card blue full-width">
+    <div class="section-label label-blue">🎮 VRChat — Latest Update</div>
+    <div class="card-title">VRChat 最新アップデート状況 ／ 2026.02.24 Build 1800</div>
+    <div class="stat-grid">
+      <div class="stat-item">
+        <div class="stat-label">最新バージョン</div>
+        <div class="stat-value blue">2026.1.2</div>
+        <div class="stat-sub">2026-02-24 Live</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">最大同時接続 (史上最高)</div>
+        <div class="stat-value up">156,716</div>
+        <div class="stat-sub">2026-02-15 超かぐや姫ショック</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">VRC+ お気に入り上限</div>
+        <div class="stat-value blue">800</div>
+        <div class="stat-sub">400 → 800 (2倍 2026.1.1〜)</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">日本市場ポジション</div>
+        <div class="stat-value up">最重要</div>
+        <div class="stat-sub">コンテンツ・ユーザー両面で成長</div>
+      </div>
+    </div>
+    <ul class="info-list">
+      <li><span class="dot dot-blue"></span><strong>Discord連携強化 (2026.1.2)</strong>　DiscordとVRChatを連携するとソーシャル欄にDiscordフレンドが表示。フレンドリクエスト・Discord招待が可能に。プライバシー設定でオプトアウト可。</li>
+      <li><span class="dot dot-green"></span><strong>AMD Radeonパフォーマンス改善</strong>　Radeon向けの2つの不具合回避策が廃止。AMDドライバー側修正完了により、VR負荷軽減・動画ハードウェアデコード使用可能に。</li>
+      <li><span class="dot dot-blue"></span><strong>三人称視点 / グループ進捗バー (実験的)</strong>　一部ユーザーに三人称視点のテスト機能。15グループ未加入ユーザーにはグループ参加促進バーを表示（onboarding改善）。</li>
+      <li><span class="dot dot-purple"></span><strong>安全性ロードマップ 2026</strong>　年齢確認・制度改善を柱に自由と安全の両立方針を発表。日本クリエイターエコシステム強化・多言語対応も推進中。</li>
+      <li><span class="dot dot-orange"></span><strong>Sanrio Virtual Festival 2026 (〜3/8)</strong>　2/8〜3/8開催。超かぐや姫公演で史上最大同時接続を更新。マクドナルド・日産等大手企業の活用も活発化。</li>
+      <li><span class="dot dot-green"></span><strong>Space Jam 3 コンテスト開催中</strong>　宇宙テーマのワールド・映像作品募集。1位には賞金＋オーストラリア展示も。</li>
+    </ul>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 2: おすすめワールド
+  ══════════════════════════════════════════════ -->
+  <div class="card purple half-width">
+    <div class="section-label label-purple">🌍 World Picks</div>
+    <div class="card-title">おすすめワールド 2026年版</div>
+    <div class="world-grid">
+      <div class="world-item">
+        <div class="world-name">📸 Endless hug / 永遠の抱擁</div>
+        <div class="world-desc">2/5 Dev Update Featured World。幻想的な抱擁空間。写真映え◎</div>
+      </div>
+      <div class="world-item">
+        <div class="world-name">🔭 Exoplanet Journey</div>
+        <div class="world-desc">2/19 Dev Featured。宇宙惑星探索系チルワールド。星空が絶景。</div>
+      </div>
+      <div class="world-item">
+        <div class="world-name">🇯🇵 VRCJP初心者プラザ</div>
+        <div class="world-desc">来場60万人超。案内＋ワールド紹介＋アバター試着が1か所で完結。2月は無料衣装配布中。</div>
+      </div>
+      <div class="world-item">
+        <div class="world-name">🌿 厳島神社（2026年始公開）</div>
+        <div class="world-desc">フォトグラメトリで現実再現。鎌倉ワールド制作者の最新作。</div>
+      </div>
+      <div class="world-item">
+        <div class="world-name">💬 EN-JP Language Exchange</div>
+        <div class="world-desc">日英言語交換ワールド。外国人との交流に最適。</div>
+      </div>
+      <div class="world-item">
+        <div class="world-name">⚔️ VR桜降る代に決闘を</div>
+        <div class="world-desc">クラファン達成率2500%超。ボードゲームがVRで遊べる。</div>
+      </div>
+      <div class="world-item">
+        <div class="world-name">🎮 JoinWars</div>
+        <div class="world-desc">最大同時接続200人超のゲームワールド。大規模戦が熱い。</div>
+      </div>
+      <div class="world-item">
+        <div class="world-name">🎵 月白 累 特設ライブワールド</div>
+        <div class="world-desc">3/15に単独ライブ開催予定。バーチャルアーティスト系。</div>
+      </div>
+    </div>
+    <div class="disclaimer">💡 ワールド検索には「Astro Lens」（AI検索）が便利。X の #VRChatワールド紹介 タグも参考に。</div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 3: 大衆娯楽トレンド
+  ══════════════════════════════════════════════ -->
+  <div class="card orange">
+    <div class="section-label label-orange">🎭 Pop Culture</div>
+    <div class="card-title">大衆娯楽トレンド 2026冬</div>
+    <ul class="info-list">
+      <li><span class="dot dot-orange"></span><strong>アニメ 冬2026注目作</strong>　呪術廻戦3期（死滅回游）、葬送のフリーレン2期、推しの子3期、ゴールデンカムイ5期（最終章）。海外MALランキングでフリーレンが上位独走。</li>
+      <li><span class="dot dot-orange"></span><strong>チェンソーマン レゼ篇</strong>　米津玄師「IRIS OUT」がグローバル歴代最高週間再生数を記録。YouTube再生9,200万回超。劇場版興収約90億円超。</li>
+      <li><span class="dot dot-orange"></span><strong>90〜00年代リメイクブーム</strong>　地獄先生ぬ〜べ〜、キャッツアイリメイク成功。2026年もこのトレンドが継続予測。懐かし成人世代がコア視聴者。</li>
+      <li><span class="dot dot-warn"></span><strong>超かぐや姫！（Netflix）</strong>　VRChatに156,716人を集めたアニメ。仮想世界を舞台にした作品。映画上映も決定。VRC内でサンリオ公式コラボ実施。</li>
+      <li><span class="dot dot-purple"></span><strong>ゲーム: NS2ソフト</strong>　Switch 2向けにトモダチコレクション（10年ぶり）、リズム天国ミラクルスターズ（11年ぶり）発売予定。世代直撃。</li>
+      <li><span class="dot dot-orange"></span><strong>バーチャルホビーフェス2026</strong>　スターウォーズ・エヴァンゲリオン・トランスフォーマーなど全22社がVRChatに集結。まもなく開幕。</li>
+    </ul>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 4: 時事・科学・技術
+  ══════════════════════════════════════════════ -->
+  <div class="card green full-width">
+    <div class="section-label label-green">🌐 Global Affairs + Tech</div>
+    <div class="card-title">時事 ／ 科学技術 ／ 地政学トレンド 2026</div>
+    <div class="two-col">
+      <ul class="info-list">
+        <li><span class="dot dot-warn"></span><strong>パクス・アメリカーナの限界（PwC / EY分析）</strong>　トランプ政権2年目。「ターンベリー体制」（米EU通商合意）を軸にディール外交継続。2026年中間選挙前に対中融和演出の可能性あり。</li>
+        <li><span class="dot dot-red"></span><strong>米国のイラン核施設爆撃（2025年6月）</strong>　「力による平和」の前例。北朝鮮・金正恩に衝撃。中東緊張再燃リスクは残存。イスラエルとの直接衝突シナリオも。</li>
+        <li><span class="dot dot-red"></span><strong>ベネズエラ攻撃・大統領拘束（2026年初）</strong>　国際法違反指摘あり。「危険な前例」として武力行使ハードルを下げる懸念。米国のモンロー主義的傾向が鮮明化。</li>
+        <li><span class="dot dot-warn"></span><strong>米中関係：小康状態</strong>　2025年相互関税の応酬→小康。2026年首脳会談予定。レアアース・造船・大豆で中国依存が露呈。米国は日本・豪・韓との重要鉱物連携を強化。</li>
+      </ul>
+      <ul class="info-list">
+        <li><span class="dot dot-green"></span><strong>AI・デジタルワーカー元年（2026）</strong>　生成AI/AIエージェント普及加速。雇用影響が顕在化フェーズへ。米中AI覇権争いが激化。日本は外国製AI依存リスクを意識しつつデータ基盤整備へ。</li>
+        <li><span class="dot dot-green"></span><strong>世界経済：緩やかな回復軌道</strong>　OECD予測: 2025年+3.2%→2026年+2.9%。トランプ関税影響で米国成長が2025年2.0%→2026年1.7%に低下見込み。貿易量+1.8%に留まる。</li>
+        <li><span class="dot dot-purple"></span><strong>EU：防衛産業・サプライチェーン強靭化</strong>　ポーランド・バルト三国を中心にNATO防衛投資が長期拡大。欧州政治は極右台頭でEU意思決定が停滞気味。</li>
+        <li><span class="dot dot-blue"></span><strong>排出量取引制度（2026年4月）</strong>　日本で本格始動。カーボンプライシングが企業経営に直接影響。エネルギー・素材セクターに注目。</li>
+      </ul>
+    </div>
+    <div class="summary-box">
+      💬 <strong>雑談ネタ要点：</strong>
+      「トランプ慣れ」が進んでいる中で、中間選挙前の米中融和演出と、中東での「次の火種」がどこで起きるかが最大の注目点。AI雇用問題は2026年にいよいよ身近になってくる。日本の政治的変化（高市政権・女性首相）はVRC民の関心も高い。
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 5: 投機盤面 — 主要指標
+  ══════════════════════════════════════════════ -->
+  <div class="card red full-width">
+    <div class="section-label label-red">📊 Market Snapshot — 2026.03.03</div>
+    <div class="card-title">投機盤面 主要指標 <span class="blink" style="color:var(--bear); font-size:11px;">● LIVE DATA</span></div>
+    <div class="stat-grid">
+      <div class="stat-item">
+        <div class="stat-label">USD/JPY 現在値</div>
+        <div class="stat-value warn">¥157.47</div>
+        <div class="stat-sub">+0.05% / 52W幅 139.88〜159.46</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">日経平均</div>
+        <div class="stat-value down">53,606</div>
+        <div class="stat-sub">▼330 (-0.61%) 本日</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">VIX (恐怖指数)</div>
+        <div class="stat-value warn">~19〜20</div>
+        <div class="stat-sub">警戒域 20前後 / 中東激化懸念↑</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">日経VI</div>
+        <div class="stat-value down">~30〜35</div>
+        <div class="stat-sub">52W: 18.77〜62.46</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">裁定買い残（直近）</div>
+        <div class="stat-value up">3,602億円</div>
+        <div class="stat-sub">2/10時点 ▼381億 (2週連続減)</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">裁定売り残（直近）</div>
+        <div class="stat-value down">572億円</div>
+        <div class="stat-sub">2/10時点 ▼1,769億 (4週連続減)</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">1月最大裁定買い残</div>
+        <div class="stat-value warn">2兆8,473億円</div>
+        <div class="stat-sub">1/23時点（ピーク付近）</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">安全圏の目安</div>
+        <div class="stat-value blue">〜2兆円</div>
+        <div class="stat-sub">0.8兆を底値目安に2兆が安全圏</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 6: 投機盤面 — センチメント分析
+  ══════════════════════════════════════════════ -->
+  <div class="card red half-width">
+    <div class="section-label label-red">🧠 Sentiment Analysis</div>
+    <div class="card-title">投資主体別センチメント（現況）</div>
+    
+    <div style="margin-bottom: 12px;">
+      <div class="sentiment-label">
+        <span>海外投資家</span>
+        <span class="tag tag-bear">BEAR ↓</span>
+      </div>
+      <div class="sentiment-bar">
+        <div class="sentiment-fill" style="width:25%; background: linear-gradient(90deg, #ff4040, #ff6060);"></div>
+      </div>
+    </div>
+
+    <div style="margin-bottom: 12px;">
+      <div class="sentiment-label">
+        <span>証券・金融機関（投機専門家）</span>
+        <span class="tag tag-bear">BEAR ↓</span>
+      </div>
+      <div class="sentiment-bar">
+        <div class="sentiment-fill" style="width:20%; background: linear-gradient(90deg, #ff4040, #ff6060);"></div>
+      </div>
+    </div>
+
+    <div style="margin-bottom: 12px;">
+      <div class="sentiment-label">
+        <span>個人投資家・事業法人</span>
+        <span class="tag tag-bull">BULL ↑</span>
+      </div>
+      <div class="sentiment-bar">
+        <div class="sentiment-fill" style="width:65%; background: linear-gradient(90deg, #00e676, #00ff8a);"></div>
+      </div>
+    </div>
+
+    <div style="margin-bottom: 4px;">
+      <div class="sentiment-label">
+        <span>総合センチメント</span>
+        <span class="tag tag-bear">OVERALL BEAR</span>
+      </div>
+      <div class="sentiment-bar">
+        <div class="sentiment-fill" style="width:30%; background: linear-gradient(90deg, #ff4040, rgba(255,64,64,0.6));"></div>
+      </div>
+    </div>
+
+    <ul class="info-list" style="margin-top: 14px;">
+      <li><span class="dot dot-warn"></span><strong>海外投資家シェア</strong>　保有比率30%・売買シェア20%。先物主導で相場を動かす最大プレイヤー。直近は売り優勢で推移中。</li>
+      <li><span class="dot dot-red"></span><strong>裁定買い残の推移（重要）</strong>　1/23にかけて2兆8,473億円まで膨張後、急速に縮小。2/10時点で3,602億円まで低下。クリアランスが進行中。</li>
+      <li><span class="dot dot-green"></span><strong>個人・法人は買い越し</strong>　逆張り的な動きが継続。ただし相場を動かす力は海外・機関勢に劣る。</li>
+      <li><span class="dot dot-red"></span><strong>中東リスク（イラン・イスラエル衝突継続）</strong>　2/28米国・イスラエルがイランを攻撃しハメネイ師を殺害との報道。VIX急騰リスクが現実化しつつある。</li>
+    </ul>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 7: 投機 総合見解
+  ══════════════════════════════════════════════ -->
+  <div class="card red">
+    <div class="section-label label-red">📋 Strategic View</div>
+    <div class="card-title">投機盤面 総合見解（初回ベースライン）</div>
+
+    <div class="summary-box bear-box">
+      <strong>📌 現況サマリー（2026.03.03時点）</strong><br><br>
+      ・裁定買い残はピーク（1/23時点：約2.8兆円）から急速に縮小し、2/10時点で約3,602億円まで低下。安全圏目安「2兆円」を下回り始めており、整理はかなり進行した状態。<br><br>
+      ・海外投資家・機関投資家（投機専門家）ともに<span class="inline-bear">ベア（弱気）</span>転換済み。個人・法人のみブルで全体としては弱気優勢。<br><br>
+      ・日経平均は続落トレンド。本日も▼330円。追い風になる材料が乏しい。<br><br>
+      ・最大リスク：中東緊張の激化。VIXが20前後の警戒域で、ここに「恐怖トリガー」が加わると<span class="inline-bear">急速な売りの連鎖（暴落フラグ）</span>が起きる可能性がある状態。<br><br>
+      ・USD/JPYは157円台。日銀の追加利上げシグナル（高田委員・植田総裁）が円高圧力としてくすぶる一方、高市首相・リフレ派委員指名が利上げ慎重論を後押し。方向感が定まらない膠着局面。
+    </div>
+
+    <div class="summary-box warn-box" style="margin-top: 10px;">
+      <strong>⚠️ 1990年比較基準からの視点</strong><br>
+      1990年は日経平均が38,915円の史上最高値をつけた年。現在の53,000円台はそれを既に上回っており、当時を超える水準で「膨張→収縮」のサイクルが起きていることを示す。裁定買い残の急減は「膨張の解消フェーズ」に入っているが、何かトリガーがあると収縮が一気に加速するリスクは依然として存在する。安全圏の目安として0.8兆円（底値目安）〜2兆円が目標水準。
+    </div>
+
+    <div class="disclaimer">⚠️ 本資料は雑談用の情報整理資料です。投資・取引の推奨ではありません。意思決定は自己責任で行ってください。</div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 8: 経営・投機雑談ネタ
+  ══════════════════════════════════════════════ -->
+  <div class="card purple full-width">
+    <div class="section-label label-purple">💼 Business Talk</div>
+    <div class="card-title">経営 ／ 投機雑談ネタ セレクション</div>
+    <div class="two-col">
+      <ul class="info-list">
+        <li><span class="dot dot-purple"></span><strong>日本企業のトランプ関税対応</strong>　約70%が影響を受け、販売価格・SCM・事業戦略を見直し中。半導体はレガシー品の価格転嫁が困難。自動車は日米関税引き下げ合意で大幅な生産拠点変更は見送り。</li>
+        <li><span class="dot dot-blue"></span><strong>VRChatのビジネス活用加速</strong>　マクドナルド・サンリオ・日産・横須賀市・倉吉市などが参入。「メタバースは終わった」の言説に反し、VRChatは課金が回るエコシステムとして成立中。</li>
+        <li><span class="dot dot-warn"></span><strong>世界貿易：有害措置3,505件（2024年）</strong>　保護主義が高止まり。WTOは機能不全。「ルールよりディール」の時代が定着しつつある。</li>
+      </ul>
+      <ul class="info-list">
+        <li><span class="dot dot-green"></span><strong>AI投資のリターン問題</strong>　OECDはAI関連投資が2026年以降の成長を支えると予測する一方、「期待を下回るリターン」をリスクとして明示。AIバブル論が出始めるフェーズ。</li>
+        <li><span class="dot dot-purple"></span><strong>「地経学的対立」が2026年最大リスク（WEF）</strong>　経済を武器化した国家間対立。昨年から8ランク上昇。米中のレアアース争い・輸出規制が典型例。</li>
+        <li><span class="dot dot-blue"></span><strong>欧州：防衛産業に長期投資機会</strong>　NATO強化でドイツ・フランス・ポーランド・バルト三国での防衛関連投資が長期拡大トレンド。ESGと安保の交差点。</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       FOOTER: 定点観測メモ
+  ══════════════════════════════════════════════ -->
+  <div class="card blue full-width">
+    <div class="section-label label-blue">📁 Baseline Record — Vol.001</div>
+    <div class="card-title">定点観測ベースライン記録（初回）</div>
+    <div class="stat-grid">
+      <div class="stat-item">
+        <div class="stat-label">記録日</div>
+        <div class="stat-value blue" style="font-size:16px;">2026.03.03</div>
+        <div class="stat-sub">Vol.001 初回</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">USD/JPY (基準値)</div>
+        <div class="stat-value warn">157.47</div>
+        <div class="stat-sub">52W安値: 139.88</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">日経平均 (基準値)</div>
+        <div class="stat-value down">53,606</div>
+        <div class="stat-sub">続落中</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">VIX (基準値)</div>
+        <div class="stat-value warn">~19〜20</div>
+        <div class="stat-sub">警戒域水準</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">裁定買い残 (基準値)</div>
+        <div class="stat-value up">3,602億</div>
+        <div class="stat-sub">2/10時点 ピーク比▼96%</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">VRC最大同時接続 (基準値)</div>
+        <div class="stat-value up">156,716</div>
+        <div class="stat-sub">2026-02-15 史上最高</div>
+      </div>
+    </div>
+    <div class="summary-box" style="margin-top: 12px;">
+      📋 <strong>次回以降の参照ポイント：</strong>
+      裁定買い残が再び2兆円超に膨らむようであれば上昇転換サイン。USD/JPYが155円を割り込むと日銀利上げ観測強まり→株式市場への下押し圧力。VIXが25超で中東リスク増大判断。VRChat同時接続数は次回大型イベント（サンリオVfes最終日など）で更新される可能性あり。
+    </div>
+    <div class="disclaimer">
+      本ダッシュボードはVRChatでの雑談用情報整理を目的として作成されました。掲載データは公開情報に基づく参考値です。投資に関する意思決定は必ず自己判断・自己責任で行ってください。次回更新: 随時（新規記録は別ファイルで保存推奨）。
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
