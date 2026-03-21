@@ -105,7 +105,28 @@
     }
   ],
   "links": {
-    "magazine": [],
+    "magazine": [
+      {
+        "label": "文化系",
+        "href": "magazine/culture.html"
+      },
+      {
+        "label": "投機・投資系",
+        "href": "magazine/investment.html"
+      },
+      {
+        "label": "法律・統計系",
+        "href": "magazine/policy.html"
+      },
+      {
+        "label": "政治・国際系",
+        "href": "magazine/politics.html"
+      },
+      {
+        "label": "科学系",
+        "href": "magazine/science.html"
+      }
+    ],
     "vrc": [
       {
         "label": "Culture",
