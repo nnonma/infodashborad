@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>pixiv — dashboard</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Space+Mono:wght@400;700&family=Noto+Sans+JP:wght@300;400;700&display=swap');
+:root{--bg:#07070f;--surface:#0f0f1c;--surface2:#151525;--border:rgba(100,100,200,.12);--accent:#0096fa;--pink:#ff5f87;--purple:#b87aff;--teal:#3de8b0;--warn:#ffc94a;--orange:#ff8c42;--text:#dde0f0;--dim:#8888b0}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:13px;line-height:1.6}
+.header{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--accent);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 24px rgba(0,150,250,0.15)}
+.header-title{font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;color:var(--accent);letter-spacing:2px}
+.header-meta{font-family:'Space Mono',monospace;font-size:9px;color:var(--dim)}
+.container{max-width:100%;padding:16px 20px 40px}
+.section-title{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);margin:20px 0 10px;display:flex;align-items:center;gap:6px}
+.section-title::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--accent);flex-shrink:0}
+.kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:14px}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;position:relative;overflow:hidden}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.kpi-label{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-bottom:3px}
+.kpi-value{font-family:'Space Mono',monospace;font-size:16px;font-weight:700;line-height:1}
+.kpi-delta{font-size:9px;color:var(--teal);font-weight:600;margin-top:2px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+.px-br{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.px-bl{font-size:9px;color:var(--dim);width:120px;flex-shrink:0;text-align:right;line-height:1.3}
+.px-bt{flex:1;height:18px;background:#0a0a18;border-radius:3px;overflow:hidden}
+.px-bf{height:100%;border-radius:3px;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;font-size:9px;font-family:'Space Mono',monospace;font-weight:700;color:rgba(255,255,255,.85);white-space:nowrap}
+.sd-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin:7px 0}
+.sd-box{border-radius:6px;padding:5px 8px;text-align:center}
+.sd-lbl{font-size:8px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:2px;color:var(--dim)}
+.sd-val{font-family:'Space Mono',monospace;font-size:14px;font-weight:700}
+.niche-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:14px}
+.niche-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;position:relative;overflow:hidden}
+.niche-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.niche-icon{font-size:16px;margin-bottom:3px}
+.niche-name{font-size:10px;font-weight:700;margin-bottom:3px;color:var(--text)}
+.niche-stats{font-size:8px;color:var(--dim);line-height:1.4}
+.badge{display:inline-block;font-size:8px;font-weight:700;letter-spacing:.05em;padding:1px 6px;border-radius:100px;text-transform:uppercase;margin-top:4px}
+.badge-hot{background:rgba(255,95,135,.15);color:var(--pink)}
+.badge-grow{background:rgba(61,232,176,.15);color:var(--teal)}
+.badge-stable{background:rgba(184,122,255,.15);color:var(--purple)}
+.badge-new{background:rgba(255,201,74,.15);color:var(--warn)}
+.fetish-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.fetish-col{display:flex;flex-direction:column;gap:8px}
+.fetish-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;position:relative;overflow:hidden}
+.fetish-item::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.fetish-rank{font-family:'Space Mono',monospace;font-size:9px;color:var(--dim);margin-bottom:3px;display:flex;justify-content:space-between}
+.fetish-name{font-size:11px;font-weight:700;color:var(--text);margin-bottom:4px}
+.fetish-bar{height:4px;background:#1c1c30;border-radius:100px;overflow:hidden;margin:4px 0}
+.fetish-fill{height:100%;border-radius:100px}
+.fetish-note{font-size:9px;color:var(--dim);line-height:1.45}
+.baseline-bar{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;gap:20px;flex-wrap:wrap;font-family:'Space Mono',monospace;font-size:9px;color:var(--dim);margin-top:28px}
+.baseline-bar span{color:var(--accent);font-weight:700}
+@media(max-width:900px){.kpi-grid,.niche-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:700px){.kpi-grid,.niche-grid,.grid2,.grid3,.fetish-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.kpi-grid,.niche-grid,.grid2,.grid3,.fetish-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <div class="header-title">🎨 pixiv市場調査</div>
+    <div class="header-meta" id="hd-meta">loading...</div>
+  </div>
+</div>
+<div class="container" id="app">
+  <div style="color:var(--dim);font-size:11px;padding:40px;text-align:center">loading...</div>
+</div>
+<script>
+const KPI_COLORS={k1:'#0096fa',k2:'#ff5f87',k3:'#b87aff',k4:'#3de8b0',k5:'#ffc94a',k6:'#ff8c42'};
+const STATUS_BADGE={hot:'badge-hot',grow:'badge-grow',stable:'badge-stable',new:'badge-new'};
+const STATUS_LABEL={hot:'🔥爆発的',grow:'📈高収益',stable:'🔷安定',new:'⭐成長中'};
+
+async function load(){
+  let d;
+  try{const r=await fetch('pixiv.json');d=await r.json();}
+  catch{document.getElementById('app').innerHTML='<div style="color:#ff5f87;padding:40px;text-align:center">pixiv.json が見つかりません</div>';return;}
+  document.getElementById('hd-meta').textContent=`updated: ${d._meta.updated}  survey: ${d._meta.survey_date}`;
+  const app=document.getElementById('app');app.innerHTML='';
+
+  // ── KPI ──
+  app.insertAdjacentHTML('beforeend','<div class="section-title">📊 KPI</div><div class="kpi-grid" id="kpi-grid"></div>');
+  const kg=document.getElementById('kpi-grid');
+  Object.entries(d.kpi).forEach(([k,v],i)=>{
+    const ci=`k${i+1}`;const c=KPI_COLORS[ci];
+    const el=document.createElement('div');el.className='kpi-card';
+    el.style.setProperty('--kc',c);
+    el.querySelector ? null : null;
+    el.innerHTML=`<style>#kpi-grid .kpi-card:nth-child(${i+1})::before{background:${c}}#kpi-grid .kpi-card:nth-child(${i+1}) .kpi-value{color:${c}}</style><div class="kpi-label">${v.label}</div><div class="kpi-value">${v.value}</div><div class="kpi-delta">${v.delta}</div>`;
+    kg.appendChild(el);
+  });
+
+  // ── SUPPLY/DEMAND ──
+  app.insertAdjacentHTML('beforeend','<div class="section-title">需要×供給ねじれ構造</div><div class="card" style="margin-bottom:14px"><div id="sd-rows"></div></div>');
+  const sdr=document.getElementById('sd-rows');
+  d.supply_demand.forEach(s=>{
+    const oc=s.ocean==='blue'?'var(--teal)':s.ocean==='red'?'var(--pink)':'var(--warn)';
+    sdr.insertAdjacentHTML('beforeend',`<div class="px-br"><div class="px-bl">${s.label}</div><div class="px-bt" style="position:relative"><div class="px-bf" style="width:${s.supply}%;background:var(--pink)">${s.supply}% 供給</div></div><div style="font-size:8px;color:var(--dim);width:40px;text-align:center">${s.demand}%需要</div><div style="font-size:9px;font-weight:700;color:${oc};width:60px;flex-shrink:0">${s.ocean==='blue'?'🔵ブルー':s.ocean==='red'?'🔴レッド':'🟡ミドル'}</div><div style="font-size:9px;color:var(--dim)">${s.note}</div></div>`);
+  });
+
+  // ── NICHE COMMUNITIES ──
+  app.insertAdjacentHTML('beforeend','<div class="section-title">ニッチコミュニティマップ — VRChat × pixiv接点</div><div class="niche-grid" id="niche-grid"></div>');
+  const ng=document.getElementById('niche-grid');
+  const STATUS_BORDER={hot:'var(--pink)',grow:'var(--teal)',stable:'var(--purple)',new:'var(--warn)'};
+  d.niche_communities.forEach(n=>{
+    const bc=STATUS_BORDER[n.status]||'var(--dim)';
+    const el=document.createElement('div');el.className='niche-card';
+    el.style.setProperty('--nb',bc);
+    el.innerHTML=`<style>.niche-card:nth-of-type(${ng.children.length+1})::before{background:${bc}}</style><div class="niche-icon">${n.icon}</div><div class="niche-name">${n.name}</div><div class="niche-stats">${n.stats}</div><span class="badge ${STATUS_BADGE[n.status]}">${STATUS_LABEL[n.status]}</span>`;
+    ng.appendChild(el);
+  });
+
+  // ── FETISH ANALYSIS ──
+  app.insertAdjacentHTML('beforeend',`<div class="section-title">性癖動向 ── マジョリティ記号的欲求 vs マイノリティ構造的欲求</div><div class="fetish-grid"><div class="fetish-col" id="maj-col"></div><div class="fetish-col" id="min-col"></div></div>`);
+  const majCol=document.getElementById('maj-col');
+  const minCol=document.getElementById('min-col');
+
+  majCol.insertAdjacentHTML('beforeend',`<div style="font-size:11px;font-weight:700;color:var(--pink);margin-bottom:4px;padding-left:4px">👥 マジョリティ人気性癖 ── 大勢が好む「記号的欲求」</div>`);
+  d.fetish_majority.forEach(f=>{
+    const el=document.createElement('div');el.className='fetish-item';
+    el.innerHTML=`<style>.fetish-item:nth-of-type(${majCol.children.length})::before{background:var(--pink)}</style><div class="fetish-rank"><span>DLsite ${f.dlsite}</span><span style="color:var(--teal)">${f.trend}</span></div><div class="fetish-name">${f.name}</div><div class="fetish-bar"><div class="fetish-fill" style="width:${f.bar}%;background:${f.color}"></div></div><div class="fetish-note">${f.note}</div>`;
+    majCol.appendChild(el);
+  });
+
+  minCol.insertAdjacentHTML('beforeend',`<div style="font-size:11px;font-weight:700;color:var(--purple);margin-bottom:4px;padding-left:4px">🔍 マイノリティ人気性癖 ── 少数派が深くハマる「構造的欲求」</div>`);
+  d.fetish_minority.forEach(f=>{
+    const el=document.createElement('div');el.className='fetish-item';
+    el.innerHTML=`<style>.fetish-item:nth-of-type(${minCol.children.length})::before{background:var(--purple)}</style><div class="fetish-rank"><span>DLsite ${f.dlsite}（${f.sd}）</span><span style="color:var(--teal)">${f.trend}</span></div><div class="fetish-name">${f.name}</div><div class="fetish-bar"><div class="fetish-fill" style="width:${f.bar}%;background:${f.color}"></div></div><div class="fetish-note">${f.note}</div>`;
+    minCol.appendChild(el);
+  });
+
+  // ── BASELINE ──
+  const b=d.baseline;
+  app.insertAdjacentHTML('beforeend',`<div class="baseline-bar"><div>調査日: <span>${b.survey_date}</span></div><div>累計ユーザー: <span>${b.total_users}</span></div><div>月間訪問: <span>${b.monthly_visits}</span></div><div>BOOTH 3D: <span>${b.booth_3d}</span></div><div>AI生成割合: <span>${b.ai_ratio}</span></div><div>R-18需要/供給: <span>${b.r18_sd}</span></div><div>最高効率ジャンル: <span>${b.top_genre}</span></div><div>出典: <span>${b.source}</span></div></div>`);
+}
+load();
+</script>
+</body>
+</html>

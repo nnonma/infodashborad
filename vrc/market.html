@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market — dashboard</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Space+Mono:wght@400;700&family=Noto+Sans+JP:wght@300;400;700&display=swap');
+:root{--bg:#060A0F;--surface:#0D1520;--surface2:#111C2A;--border:#1A2D45;--accent1:#00D4FF;--accent2:#FF6B35;--accent3:#39FF14;--accent4:#C77DFF;--danger:#FF3C3C;--warn:#FFB300;--bull:#00E676;--bear:#FF4040;--text:#D4E4F0;--textdim:#5A7A94}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:13px;line-height:1.6}
+.header{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--danger);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 24px rgba(255,60,60,0.15)}
+.header-title{font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;color:var(--danger);letter-spacing:2px}
+.header-meta{font-family:'Space Mono',monospace;font-size:9px;color:var(--textdim)}
+.container{max-width:100%;padding:16px 20px 40px}
+.section-title{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;padding:8px 0 8px 12px;border-left:3px solid;margin-bottom:12px;margin-top:24px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.grid6{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.card{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:12px 14px;position:relative}
+.card-accent{position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:6px 0 0 6px}
+.card-title{font-weight:700;font-size:12px;margin-bottom:5px;padding-left:10px}
+.card-body{font-size:11px;color:var(--text);line-height:1.65;padding-left:10px}
+.stat-card{background:var(--surface2);border-radius:6px;padding:12px 10px;text-align:center;border:1px solid var(--border)}
+.stat-label{font-size:9px;color:var(--textdim);letter-spacing:1.5px;margin-bottom:3px;font-family:'Space Mono',monospace}
+.stat-value{font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;line-height:1.1}
+.stat-sub{font-size:9px;color:var(--textdim);margin-top:3px}
+.sentiment-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.sentiment-label{font-size:11px;width:220px;flex-shrink:0}
+.bar-track{flex:1;height:14px;background:var(--surface);border-radius:2px;border:1px solid var(--border);overflow:hidden}
+.bar-fill{height:100%;border-radius:2px}
+.sentiment-tag{font-family:'Space Mono',monospace;font-size:9px;font-weight:700;width:110px;flex-shrink:0}
+.risk-box{background:rgba(255,60,60,0.06);border:1px solid var(--danger);border-radius:6px;padding:14px 16px}
+.risk-title{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;color:var(--danger);margin-bottom:8px}
+.risk-item{display:flex;gap:8px;margin-bottom:6px;font-size:11px;line-height:1.55}
+.risk-dot{color:var(--danger);flex-shrink:0;margin-top:2px}
+.industry-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.industry-card{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:9px 10px;position:relative}
+.industry-name{font-weight:700;font-size:11px;margin-bottom:3px;margin-top:4px}
+.industry-scale{font-family:'Space Mono',monospace;font-size:9px;font-weight:700;margin-bottom:4px}
+.industry-body{font-size:9px;color:var(--textdim);line-height:1.5}
+.trend-bar-wrap{background:var(--surface);border-radius:2px;height:4px;margin:4px 0;overflow:hidden}
+.trend-bar{height:100%;border-radius:2px}
+.company-box{margin-top:6px;border-radius:4px;padding:5px 7px;font-size:9px;line-height:1.6}
+.country-card{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:9px 12px}
+.country-flag{font-size:16px}
+.country-name{font-weight:700;font-size:11px}
+.country-body{font-size:10px;color:var(--textdim);line-height:1.5;margin-top:4px}
+.rel-ally{border-left:3px solid var(--bull)!important}
+.rel-partner{border-left:3px solid var(--accent1)!important}
+.rel-rival{border-left:3px solid var(--warn)!important}
+.rel-hostile{border-left:3px solid var(--danger)!important}
+.tbl{width:100%;border-collapse:collapse;font-size:11px}
+.tbl th{background:var(--surface);color:var(--textdim);padding:7px 10px;text-align:left;font-size:9px;letter-spacing:1px;border-bottom:1px solid var(--border);font-family:'Space Mono',monospace}
+.tbl td{padding:8px 10px;border-bottom:1px solid rgba(26,45,69,0.5);vertical-align:top}
+.c-cyan{color:var(--accent1)}.c-green{color:var(--accent3)}.c-red{color:var(--danger)}.c-warn{color:var(--warn)}.c-purple{color:var(--accent4)}.c-bull{color:var(--bull)}.c-bear{color:var(--bear)}.c-dim{color:var(--textdim)}
+.b-red{border-color:var(--danger)!important}.b-cyan{border-color:var(--accent1)!important}.b-warn{border-color:var(--warn)!important}.b-green{border-color:var(--accent3)!important}.b-purple{border-color:var(--accent4)!important}
+@media(max-width:900px){.grid6,.industry-grid{grid-template-columns:1fr 1fr 1fr}}
+@media(max-width:700px){.grid2,.grid3,.grid6,.industry-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.grid2,.grid3,.grid6,.industry-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <div class="header-title">📊 Market & Geopolitics</div>
+    <div class="header-meta" id="hd-meta">loading...</div>
+  </div>
+</div>
+<div class="container" id="app">
+  <div style="color:var(--textdim);font-size:11px;padding:40px;text-align:center">loading...</div>
+</div>
+<script>
+const CM={cyan:'var(--accent1)',green:'var(--accent3)',purple:'var(--accent4)',warn:'var(--warn)',red:'var(--danger)',orange:'var(--accent2)',bull:'var(--bull)',bear:'var(--bear)'};
+
+async function load(){
+  let d;
+  try{const r=await fetch('market.json');d=await r.json();}
+  catch{document.getElementById('app').innerHTML='<div style="color:var(--danger);padding:40px;text-align:center">market.json が見つかりません</div>';return;}
+  document.getElementById('hd-meta').textContent=`updated: ${d._meta.updated}  survey: ${d._meta.survey_date}`;
+  const app=document.getElementById('app');app.innerHTML='';
+
+  // ── SNAPSHOT ──
+  app.insertAdjacentHTML('beforeend',`<div class="section-title b-red c-red">📊 投機盤面 主要指標スナップショット ── ${d._meta.survey_date}</div><div class="grid6" id="snap-grid" style="margin-bottom:14px"></div>`);
+  const sg=document.getElementById('snap-grid');
+  const SIGNAL_COLOR={bull:'var(--bull)',bear:'var(--bear)',warn:'var(--warn)',neutral:'var(--accent1)'};
+  Object.entries(d.snapshot).forEach(([k,v])=>{
+    const c=SIGNAL_COLOR[v.signal]||'var(--textdim)';
+    const el=document.createElement('div');
+    el.className='stat-card';el.style.borderColor=c;
+    el.innerHTML=`<div class="stat-label">${k.toUpperCase()}</div><div class="stat-value" style="color:${c}">${v.value}</div><div class="stat-sub">${v.sub}</div>`;
+    sg.appendChild(el);
+  });
+
+  // ── ARB HISTORY ──
+  app.insertAdjacentHTML('beforeend',`<div class="card b-cyan" style="margin-bottom:14px"><div class="card-accent" style="background:var(--accent1)"></div><div class="card-title c-cyan">裁定買い残 定点観測履歴</div><div style="padding-left:12px;overflow-x:auto"><table class="tbl" id="arb-tbl"><thead><tr><th>観測日</th><th>裁定買い残</th><th>前週比</th><th>状況</th></tr></thead><tbody id="arb-body"></tbody></table></div></div>`);
+  const ab=document.getElementById('arb-body');
+  d.arb_history.forEach(h=>{
+    const c=h.highlight?`style="color:${CM[h.highlight]||'inherit'};font-weight:700"`:'';
+    ab.insertAdjacentHTML('beforeend',`<tr><td class="c-dim">${h.date}</td><td ${c}>${h.value}</td><td style="color:${h.change.includes('↑')||h.change.includes('急増')?'var(--bull)':'var(--bear)'}">${h.change}</td><td>${h.status}</td></tr>`);
+  });
+
+  // ── SENTIMENT ──
+  app.insertAdjacentHTML('beforeend',`<div class="card" style="margin-bottom:14px" id="sent-card"><div class="card-title c-red" style="margin-bottom:12px">投資主体別センチメント概況</div><div id="sent-rows"></div><div style="margin-top:8px;font-size:10px;color:var(--textdim)">※ バー幅はBULL方向の強さのイメージを示す相対値。</div></div>`);
+  const sr=document.getElementById('sent-rows');
+  d.sentiment.rows.forEach(r=>{
+    const bc=r.color==='bear'?'var(--bear)':'var(--bull)';
+    sr.insertAdjacentHTML('beforeend',`<div class="sentiment-row"><div class="sentiment-label">${r.label}</div><div class="bar-track"><div class="bar-fill" style="width:${r.pct}%;background:${bc}"></div></div><div class="sentiment-tag" style="color:${bc}">${r.signal}</div></div>`);
+  });
+  sr.insertAdjacentHTML('beforeend',`<div class="sentiment-row"><div class="sentiment-label">総合センチメント（加重）</div><div class="bar-track"><div class="bar-fill" style="width:${d.sentiment.overall_pct}%;background:var(--bear)"></div></div><div class="sentiment-tag" style="color:var(--bear)">${d.sentiment.overall}</div></div>`);
+
+  // ── USD/JPY & RISKS ──
+  app.insertAdjacentHTML('beforeend',`<div class="grid2" style="margin-bottom:14px"><div class="card b-warn"><div class="card-accent" style="background:var(--warn)"></div><div class="card-title c-warn">${d.usdjpy_analysis.title}</div><div class="card-body">${d.usdjpy_analysis.body}</div></div><div class="risk-box" id="risk-box"><div class="risk-title">⚠ 主要リスクシナリオ</div></div></div>`);
+  const rb=document.getElementById('risk-box');
+  d.risks.forEach(r=>{
+    const c=CM[r.color]||'var(--textdim)';
+    rb.insertAdjacentHTML('beforeend',`<div class="risk-item"><div class="risk-dot">▶</div><div><strong style="color:${c}">${r.title}：</strong>${r.body}</div></div>`);
+  });
+
+  // ── OVERALL VIEW ──
+  app.insertAdjacentHTML('beforeend',`<div class="risk-box" style="border-color:var(--danger);margin-bottom:14px" id="ov-box"><div class="risk-title">📋 投機盤面 総合見解 ── Vol.001 ベースライン</div></div>`);
+  const ov=document.getElementById('ov-box');
+  d.overall_view.forEach(v=>{
+    const c=CM[v.color]||'var(--textdim)';
+    ov.insertAdjacentHTML('beforeend',`<div class="risk-item"><div class="risk-dot">▶</div><div><strong style="color:${c}">${v.title}：</strong>${v.body}</div></div>`);
+  });
+
+  // ── GEOPOLITICS ──
+  app.insertAdjacentHTML('beforeend',`<hr style="border:none;border-top:1px solid var(--border);margin:24px 0"><div class="section-title b-green c-green">🌐 時事／科学技術／地政学トレンド</div><div class="grid2" id="geo-grid" style="margin-bottom:14px"></div>`);
+  const gg=document.getElementById('geo-grid');
+  d.geopolitics.forEach(g=>{
+    const c=CM[g.color]||'var(--textdim)';
+    const el=document.createElement('div');el.className='card';el.style.borderColor=c;
+    el.innerHTML=`<div class="card-accent" style="background:${c}"></div><div class="card-title" style="color:${c}">${g.title}</div><div class="card-body">${g.body}</div>`;
+    gg.appendChild(el);
+  });
+
+  // ── TALK TOPICS ──
+  app.insertAdjacentHTML('beforeend',`<div class="section-title b-purple c-purple">💼 経営・投機 大人の雑談ネタ</div><div class="grid3" id="talk-grid" style="margin-bottom:14px"></div>`);
+  const tg=document.getElementById('talk-grid');
+  d.talk_topics.forEach(t=>{
+    const c=CM[t.color]||'var(--textdim)';
+    const el=document.createElement('div');el.className='card';el.style.borderColor=c;
+    el.innerHTML=`<div class="card-accent" style="background:${c}"></div><div class="card-title" style="color:${c}">${t.title}</div><div class="card-body">${t.body}</div>`;
+    tg.appendChild(el);
+  });
+
+  // ── INDUSTRIES ──
+  app.insertAdjacentHTML('beforeend',`<hr style="border:none;border-top:1px solid var(--border);margin:24px 0"><div class="section-title b-cyan c-cyan">🏭 業界地図 ── 注目分野 2026</div><div class="industry-grid" id="ind-grid" style="margin-bottom:14px"></div>`);
+  const ig=document.getElementById('ind-grid');
+  d.industries.forEach(ind=>{
+    const c=CM[ind.color]||'var(--textdim)';
+    const companies=ind.companies.map(co=>`<span style="color:${c}">${co.name}（${co.code}）</span> ${co.note}`).join(' ／ ');
+    const el=document.createElement('div');el.className='industry-card';
+    el.style.borderTop=`3px solid ${c}`;
+    el.innerHTML=`<div style="font-size:12px">${ind.weather}</div><div class="industry-name" style="color:${c}">${ind.name}</div><div class="industry-scale" style="color:${c}">${ind.scale}</div><div class="trend-bar-wrap"><div class="trend-bar" style="width:${ind.growth}%;background:${c}"></div></div><div class="industry-body">${ind.body}</div><div class="company-box" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06)"><div style="font-size:9px;font-weight:700;color:${c};margin-bottom:3px">🏢 注目企業</div><div style="font-size:9px;color:var(--text);line-height:1.6">${companies}</div></div>`;
+    ig.appendChild(el);
+  });
+
+  // ── WORLDMAP (country cards) ──
+  app.insertAdjacentHTML('beforeend',`<hr style="border:none;border-top:1px solid var(--border);margin:24px 0"><div class="section-title b-green c-green">🗺 国際関係 早見</div><div class="grid3" id="world-grid"></div>`);
+  const wg=document.getElementById('world-grid');
+  d.worldmap.forEach(w=>{
+    const el=document.createElement('div');
+    el.className=`country-card rel-${w.relation}`;
+    el.innerHTML=`<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><span class="country-flag">${w.flag}</span><span class="country-name">${w.name}</span><span style="font-size:9px;color:var(--textdim);margin-left:auto">${w.govt}</span></div><div class="country-body">${w.summary}</div>`;
+    wg.appendChild(el);
+  });
+}
+load();
+</script>
+</body>
+</html>

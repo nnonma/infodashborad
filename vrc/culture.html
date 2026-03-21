@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Culture — dashboard</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Space+Mono:wght@400;700&family=Noto+Sans+JP:wght@300;400;700&display=swap');
+:root{--bg:#060A0F;--surface:#0D1520;--surface2:#111C2A;--border:#1A2D45;--accent1:#00D4FF;--accent2:#FF6B35;--accent3:#39FF14;--accent4:#C77DFF;--danger:#FF3C3C;--warn:#FFB300;--bull:#00E676;--text:#D4E4F0;--textdim:#5A7A94}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:13px;line-height:1.6}
+.header{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--accent2);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 24px rgba(255,107,53,0.15)}
+.header-title{font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;color:var(--accent2);letter-spacing:2px}
+.header-meta{font-family:'Space Mono',monospace;font-size:9px;color:var(--textdim)}
+.container{max-width:100%;padding:16px 20px 40px}
+.section-title{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;padding:8px 0 8px 12px;border-left:3px solid;margin-bottom:12px;margin-top:24px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.card{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:12px 14px;position:relative}
+.card-accent{position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:6px 0 0 6px}
+.card-title{font-weight:700;font-size:12px;margin-bottom:5px;padding-left:10px}
+.card-body{font-size:11px;color:var(--text);line-height:1.65;padding-left:10px}
+.book-row{display:grid;grid-template-columns:auto 1fr auto;gap:4px 10px;align-items:baseline}
+.book-star{font-family:'Space Mono',monospace;font-size:11px;font-weight:700}
+.book-title{font-size:11px;font-weight:700;color:var(--text)}
+.book-note{font-size:9px;color:var(--textdim);margin-top:2px}
+.book-date{font-size:9px;color:var(--textdim)}
+.prize-box{background:var(--surface2);border-radius:7px;padding:10px 12px;margin-bottom:8px}
+.prize-label{font-size:9px;font-weight:700;letter-spacing:.08em;margin-bottom:5px}
+.prize-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px}
+.prize-body{font-size:10px;color:var(--text);line-height:1.6}
+.tl-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.tl-grid2{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+.tl-box{background:var(--surface2);border-radius:8px;padding:10px 12px}
+.tl-span{font-family:'Space Mono',monospace;font-size:16px;font-weight:700;line-height:1.1}
+.tl-year{font-size:9px;color:var(--textdim);margin-left:4px}
+.tl-items{font-size:10px;color:var(--text);line-height:1.7;margin-top:7px}
+.c-cyan{color:var(--accent1)}.c-orange{color:var(--accent2)}.c-green{color:var(--accent3)}.c-purple{color:var(--accent4)}.c-warn{color:var(--warn)}.c-red{color:var(--danger)}
+.b-orange{border-color:var(--accent2)!important}.b-purple{border-color:var(--accent4)!important}.b-cyan{border-color:var(--accent1)!important}
+@media(max-width:700px){.grid2,.grid3,.tl-grid,.tl-grid2{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.grid2,.grid3,.tl-grid,.tl-grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <div class="header-title">🎭 Culture & Trend</div>
+    <div class="header-meta" id="hd-meta">loading...</div>
+  </div>
+</div>
+<div class="container" id="app">
+  <div style="color:var(--textdim);font-size:11px;padding:40px;text-align:center">loading...</div>
+</div>
+<script>
+const COLOR_MAP={cyan:'var(--accent1)',orange:'var(--accent2)',green:'var(--accent3)',purple:'var(--accent4)',warn:'var(--warn)',red:'var(--danger)'};
+const TL_COLORS={green:'var(--accent3)',cyan:'var(--accent1)',purple:'var(--accent4)',orange:'var(--accent2)',warn:'var(--warn)',red:'var(--danger)',dim:'var(--textdim)'};
+
+async function load(){
+  let d;
+  try{const r=await fetch('culture.json');d=await r.json();}
+  catch{document.getElementById('app').innerHTML='<div style="color:var(--danger);padding:40px;text-align:center">culture.json が見つかりません</div>';return;}
+  document.getElementById('hd-meta').textContent=`updated: ${d._meta.updated}`;
+  const app=document.getElementById('app');
+  app.innerHTML='';
+
+  // ── ENTERTAINMENT ──
+  app.insertAdjacentHTML('beforeend','<div class="section-title b-orange c-orange">🎭 大衆娯楽トレンド</div><div class="grid3" id="ent-grid"></div>');
+  const eg=document.getElementById('ent-grid');
+  d.entertainment.forEach(e=>{
+    const el=document.createElement('div');
+    el.className='card b-orange';
+    el.innerHTML=`<div class="card-accent" style="background:var(--accent2)"></div><div class="card-title c-orange">${e.title}</div><div class="card-body">${e.body}</div>`;
+    eg.appendChild(el);
+  });
+
+  // ── BOOKS ──
+  app.insertAdjacentHTML('beforeend','<div class="section-title b-purple c-purple" style="margin-top:28px">📚 トレンド棚 ── 書籍・文学賞</div><div class="grid2" id="books-grid"></div>');
+  const bg=document.getElementById('books-grid');
+
+  // 本屋大賞
+  const bcard=document.createElement('div');
+  bcard.className='card b-cyan';
+  let bhtml=`<div class="card-accent" style="background:var(--accent1)"></div><div class="card-title c-cyan">📖 書店ベスト & 本屋大賞2026ノミネート</div><div class="book-row" style="padding-left:6px;margin-top:4px">`;
+  d.books.honnya_taisho.forEach(b=>{
+    const c=COLOR_MAP[b.color]||'var(--textdim)';
+    bhtml+=`<span class="book-star" style="color:${c}">${b.star}</span><div><div class="book-title">${b.title}　${b.author}</div><div class="book-note">${b.note}</div></div><span class="book-date">${b.date}</span>`;
+  });
+  bhtml+='</div>';
+  bcard.innerHTML=bhtml;
+  bg.appendChild(bcard);
+
+  // 芥川・直木賞
+  const pcard=document.createElement('div');
+  pcard.className='card b-purple';
+  let phtml=`<div class="card-accent" style="background:var(--accent4)"></div><div class="card-title c-purple">🏆 第174回 芥川賞・直木賞 — 2026.01.14</div>`;
+  [...d.books.akutagawa,...d.books.naoki].forEach(p=>{
+    const c=p.prize.includes('直木')?'var(--accent2)':'var(--accent4)';
+    phtml+=`<div class="prize-box" style="border-top:2px solid ${c}"><div class="prize-label" style="color:${c}">${p.prize}</div><div class="prize-title">${p.title}　${p.author}（${p.publisher}）</div><div class="prize-body">${p.summary}</div></div>`;
+  });
+  pcard.innerHTML=phtml;
+  bg.appendChild(pcard);
+
+  // ── FUTURE TIMELINE ──
+  app.insertAdjacentHTML('beforeend','<div class="section-title b-cyan c-cyan" style="margin-top:28px">🔭 専門家の未来年表 ── 1年後〜1000年後</div><div class="tl-grid" id="tl-grid"></div><div class="tl-grid2" id="tl-grid2"></div>');
+  const tg=document.getElementById('tl-grid');
+  const tg2=document.getElementById('tl-grid2');
+  d.future_timeline.forEach((t,i)=>{
+    const c=TL_COLORS[t.color]||'var(--textdim)';
+    const el=document.createElement('div');
+    el.className='tl-box';
+    el.style.borderTop=`3px solid ${c}`;
+    el.innerHTML=`<div style="display:flex;align-items:center;margin-bottom:6px"><span class="tl-span" style="color:${c}">${t.span}</span><span class="tl-year">${t.year}</span></div><div class="tl-items">${t.items.map(x=>`<div>・${x}</div>`).join('')}</div>`;
+    (i<4?tg:tg2).appendChild(el);
+  });
+}
+load();
+</script>
+</body>
+</html>
