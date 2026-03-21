@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>✦ my dashboard</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Noto+Sans+JP:wght@300;400;500&display=swap');
+:root{--bg:#fdf6f0;--bg2:#fff9f5;--pink:#ffb5c8;--pink2:#ffd6e0;--mint:#b5ead7;--mint2:#d4f5e9;--lav:#c9b8f0;--lav2:#e4dcf7;--peach:#ffc8a0;--peach2:#ffe4cc;--sky:#a8d8ea;--sky2:#d4eef7;--text:#5c4a5a;--text2:#8a7a88;--text3:#b8a8b6;--done:#c8bcc6;--shadow:rgba(180,140,160,0.12)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-serif;font-weight:300;min-height:100vh}
+#lock{position:fixed;inset:0;background:linear-gradient(135deg,#fdf0f5 0%,#f0f5ff 50%,#f5fff0 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;z-index:200;transition:opacity .5s,visibility .5s}
+#lock.hidden{opacity:0;visibility:hidden;pointer-events:none}
+.lock-flower{font-size:48px;animation:bloom 3s ease-in-out infinite}
+@keyframes bloom{0%,100%{transform:scale(1) rotate(0deg)}50%{transform:scale(1.08) rotate(5deg)}}
+.lock-title{font-family:'Nunito',sans-serif;font-size:18px;font-weight:700;color:var(--text);letter-spacing:.05em}
+#pw-input{background:white;border:2px solid var(--pink);border-radius:50px;color:var(--text);font-family:'Nunito',sans-serif;font-size:20px;letter-spacing:.3em;text-align:center;width:220px;padding:10px 20px;outline:none;transition:border-color .2s,box-shadow .2s;-webkit-text-security:disc;text-security:disc;box-shadow:0 4px 16px var(--shadow)}
+#pw-input:focus{border-color:var(--lav);box-shadow:0 4px 20px rgba(180,140,200,0.2)}
+#pw-input.shake{animation:shake .3s ease;border-color:#ff8fa0}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+#lock-msg{font-size:11px;color:var(--text2);min-height:16px;font-family:'Nunito',sans-serif}
+#lock-msg.err{color:#e06080}
+#app{max-width:720px;margin:0 auto;padding:32px 20px 100px}
+.site-header{text-align:center;margin-bottom:40px}
+.site-icon{font-size:36px;display:block;margin-bottom:6px}
+.site-title{font-family:'Nunito',sans-serif;font-size:22px;font-weight:800;color:var(--text);letter-spacing:.05em}
+.site-date{font-size:11px;color:var(--text3);margin-top:4px;font-family:'Nunito',sans-serif}
+.section{margin-bottom:36px}
+.section-label{font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;letter-spacing:.15em;color:var(--text2);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.section-label::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:currentColor;opacity:.5}
+.task-list{display:flex;flex-direction:column;gap:6px}
+.task-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:16px;background:white;box-shadow:0 2px 12px var(--shadow);cursor:pointer;transition:transform .15s,box-shadow .15s,background .2s;user-select:none;-webkit-tap-highlight-color:transparent;border:1.5px solid transparent}
+.task-item:hover{transform:translateY(-1px);box-shadow:0 4px 18px var(--shadow)}
+.task-item.done{background:var(--bg2);box-shadow:none}
+.task-check{flex-shrink:0;width:22px;height:22px;border-radius:50%;border:2px solid var(--pink);display:flex;align-items:center;justify-content:center;transition:all .2s;font-size:12px}
+.task-item.done .task-check{background:var(--mint);border-color:var(--mint);color:white}
+.task-text{flex:1;font-size:13px;line-height:1.5;color:var(--text);transition:color .2s}
+.task-item.done .task-text{text-decoration:line-through;color:var(--done)}
+.task-tag{flex-shrink:0;font-size:9px;font-family:'Nunito',sans-serif;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:.05em}
+.tag-setup{background:var(--sky2);color:#5a8ea8}.tag-vrchat{background:var(--lav2);color:#7a60c0}.tag-infra{background:var(--mint2);color:#4a9070}.tag-svg{background:var(--peach2);color:#c07040}.tag-default{background:var(--pink2);color:#c06080}
+.add-task{display:flex;align-items:center;gap:10px;padding:10px 16px;margin-top:8px;background:white;border-radius:16px;border:1.5px dashed var(--pink);opacity:.7;transition:opacity .2s}
+.add-task:focus-within{opacity:1}
+.add-task-plus{font-size:16px;color:var(--pink);flex-shrink:0}
+#new-task-input{flex:1;background:transparent;border:none;color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none}
+#new-task-input::placeholder{color:var(--text3);font-size:12px}
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.stat-card{background:white;border-radius:16px;padding:14px 12px;text-align:center;box-shadow:0 2px 10px var(--shadow)}
+.stat-num{font-family:'Nunito',sans-serif;font-size:28px;font-weight:800;line-height:1;margin-bottom:4px}
+.stat-lbl{font-size:10px;color:var(--text2);font-family:'Nunito',sans-serif}
+.deco-row{display:flex;justify-content:center;gap:16px;font-size:20px;margin:24px 0;opacity:.4}
+.link-sec{margin-bottom:16px}
+.link-sec-lbl{font-family:'Nunito',sans-serif;font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px}
+.link-grid{display:flex;flex-wrap:wrap;gap:8px}
+.link-chip{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:50px;text-decoration:none;font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;transition:transform .15s,box-shadow .15s;box-shadow:0 2px 10px var(--shadow)}
+.link-chip:hover{transform:translateY(-2px);box-shadow:0 4px 16px var(--shadow)}
+.chip-magazine{background:var(--pink2);color:#c06080}.chip-vrc{background:var(--lav2);color:#7060c0}.chip-docs{background:var(--mint2);color:#409070}.chip-editor{background:var(--peach2);color:#c07040}.chip-rss{background:var(--sky2);color:#4080b0}
+.chip-dot{width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.6}
+@media(max-width:480px){.stat-row{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div id="lock">
+  <span class="lock-flower">🌸</span>
+  <div class="lock-title">welcome back ✦</div>
+  <input id="pw-input" type="password" inputmode="numeric" autocomplete="off" placeholder="· · · · ·" autofocus />
+  <div id="lock-msg"></div>
+</div>
+<div id="app" style="display:none">
+  <header class="site-header">
+    <span class="site-icon">🌿</span>
+    <div class="site-title">my dashboard</div>
+    <div class="site-date" id="header-date"></div>
+  </header>
+  <div class="section">
+    <div class="section-label">progress</div>
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-num" id="stat-total" style="color:var(--lav)">–</div><div class="stat-lbl">total</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-done"  style="color:var(--mint)">–</div><div class="stat-lbl">done ✓</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-left"  style="color:var(--pink)">–</div><div class="stat-lbl">left</div></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-label">tasks</div>
+    <div class="task-list" id="task-list"></div>
+    <div class="add-task">
+      <span class="add-task-plus">＋</span>
+      <input id="new-task-input" type="text" placeholder="新しいタスクを追加…" />
+    </div>
+  </div>
+  <div class="deco-row">🌸 ✦ 🍀 ✦ 🌸</div>
+  <div class="section">
+    <div class="section-label">navigate</div>
+    <div id="link-area"></div>
+  </div>
+</div>
+<script>
+const CORRECT='2820285082126';
+let attempts=0,lockUntil=null;
+const lockEl=document.getElementById('lock'),appEl=document.getElementById('app'),pwInput=document.getElementById('pw-input'),lockMsg=document.getElementById('lock-msg');
+function fmt(d){return d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
+pwInput.addEventListener('keydown',e=>{
+  if(e.key!=='Enter')return;
+  const now=Date.now();
+  if(lockUntil&&now<lockUntil){lockMsg.textContent='あと'+Math.ceil((lockUntil-now)/1000)+'秒待ってね 🌙';lockMsg.className='err';return}
+  if(pwInput.value.trim()===CORRECT){attempts=0;lockEl.classList.add('hidden');appEl.style.display='block';initApp();}
+  else{attempts++;pwInput.value='';pwInput.classList.add('shake');setTimeout(()=>pwInput.classList.remove('shake'),300);const ts=fmt(new Date());if(attempts>=3){lockUntil=now+5*60*1000;attempts=0;}lockMsg.textContent='入力記録: '+ts;lockMsg.className='err';}
+});
+setInterval(()=>{if(lockUntil&&Date.now()<lockUntil){lockMsg.textContent='あと'+Math.ceil((lockUntil-Date.now())/1000)+'秒待ってね 🌙';lockMsg.className='err';}},1000);
+function initApp(){const d=new Date();const days=['日','月','火','水','木','金','土'];document.getElementById('header-date').textContent=d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日（'+days[d.getDay()]+'）';loadData();}
+async function loadData(){let data;try{data=await(await fetch('data.json')).json();}catch{data={tasks:[],links:{magazine:[],vrc:[],docs:[],editor:[]}};}renderStats(data.tasks||[]);renderTasks(data.tasks||[]);renderLinks(data.links||{});}
+function renderStats(tasks){const done=tasks.filter(t=>t.done).length;document.getElementById('stat-total').textContent=tasks.length;document.getElementById('stat-done').textContent=done;document.getElementById('stat-left').textContent=tasks.length-done;}
+let tasks=[];
+function renderTasks(data){tasks=data;restoreState();const list=document.getElementById('task-list');list.innerHTML='';tasks.forEach(t=>list.appendChild(makeTask(t)));}
+const TC={setup:'tag-setup',vrchat:'tag-vrchat',infra:'tag-infra',svg:'tag-svg'};
+function makeTask(t){const row=document.createElement('div');row.className='task-item'+(t.done?' done':'');row.dataset.id=t.id;const chk=document.createElement('div');chk.className='task-check';if(t.done)chk.textContent='✓';const txt=document.createElement('div');txt.className='task-text';txt.textContent=t.text;row.appendChild(chk);row.appendChild(txt);if(t.tag){const tg=document.createElement('div');tg.className='task-tag '+(TC[t.tag]||'tag-default');tg.textContent=t.tag;row.appendChild(tg);}row.addEventListener('click',()=>toggleTask(t.id));return row;}
+function toggleTask(id){const t=tasks.find(x=>x.id===id);if(!t)return;t.done=!t.done;const el=document.querySelector('.task-item[data-id="'+id+'"]');if(el){el.className='task-item'+(t.done?' done':'');el.querySelector('.task-check').textContent=t.done?'✓':'';}renderStats(tasks);saveState();}
+document.getElementById('new-task-input').addEventListener('keydown',e=>{if(e.key!=='Enter')return;const txt=e.target.value.trim();if(!txt)return;const nt={id:Date.now(),text:txt,done:false,tag:''};tasks.push(nt);document.getElementById('task-list').appendChild(makeTask(nt));e.target.value='';renderStats(tasks);saveState();});
+function saveState(){const s={};tasks.forEach(t=>s[t.id]=t.done);try{localStorage.setItem('ts',JSON.stringify(s));}catch{}}
+function restoreState(){try{const s=JSON.parse(localStorage.getItem('ts')||'{}');tasks.forEach(t=>{if(s[t.id]!==undefined)t.done=s[t.id];});}catch{}}
+const GROUPS=[{key:'magazine',label:'📰 magazine',cls:'chip-magazine'},{key:'vrc',label:'🎮 vrc world',cls:'chip-vrc'},{key:'docs',label:'📚 docs',cls:'chip-docs'},{key:'editor',label:'✏️ editor',cls:'chip-editor'}];
+function renderLinks(linksData){
+  const area=document.getElementById('link-area');area.innerHTML='';
+  const rssSec=document.createElement('div');rssSec.className='link-sec';rssSec.innerHTML='<div class="link-sec-lbl">🔴 live feed</div>';
+  const rssGrid=document.createElement('div');rssGrid.className='link-grid';
+  const rssA=document.createElement('a');rssA.className='link-chip chip-rss';rssA.href='rss.html';rssA.innerHTML='<span class="chip-dot"></span>RSS リアルタイム';
+  rssGrid.appendChild(rssA);rssSec.appendChild(rssGrid);area.appendChild(rssSec);
+  GROUPS.forEach(g=>{const items=linksData[g.key]||[];if(!items.length)return;const sec=document.createElement('div');sec.className='link-sec';sec.innerHTML='<div class="link-sec-lbl">'+g.label+'</div>';const grid=document.createElement('div');grid.className='link-grid';items.forEach(item=>{const a=document.createElement('a');a.className='link-chip '+g.cls;a.href=item.href;a.innerHTML='<span class="chip-dot"></span>'+item.label;grid.appendChild(a);});sec.appendChild(grid);area.appendChild(sec);});
+}
+</script>
+</body>
+</html>
