@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VRC Terminal</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@700&family=Space+Mono:wght@400&display=swap');
+:root{--bg:#060A0F;--surface:#0D1520;--border:#1A2D45;--accent1:#00D4FF;--accent4:#C77DFF;--text:#D4E4F0;--textdim:#5A7A94}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;background:var(--bg);color:var(--text)}
+
+/* ── TOC ── */
+#toc{position:sticky;top:0;z-index:200;background:var(--surface);border-bottom:2px solid var(--accent1);padding:10px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;box-shadow:0 4px 20px rgba(0,212,255,0.12)}
+.toc-home{font-family:'Space Mono',monospace;font-size:9px;color:var(--textdim);text-decoration:none;letter-spacing:.15em;white-space:nowrap;transition:color .15s}
+.toc-home:hover{color:var(--text)}
+.toc-sep{font-family:'Space Mono',monospace;font-size:9px;color:var(--border)}
+.toc-btn{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.1em;color:var(--textdim);background:transparent;border:1px solid transparent;border-radius:3px;padding:3px 10px;cursor:pointer;white-space:nowrap;transition:all .15s}
+.toc-btn:hover{color:var(--text);border-color:var(--border)}
+.toc-btn.active{color:var(--accent1);border-color:var(--accent1)}
+
+/* ── SECTIONS ── */
+#sections{padding:0}
+.sec-wrapper{margin-bottom:0;border-bottom:1px solid var(--border)}
+.sec-wrapper:last-child{border-bottom:none}
+
+/* iframe */
+.sec-iframe{
+  width:100%;
+  display:block;
+  border:none;
+  background:var(--bg);
+  min-height:300px;
+  transition:height .1s;
+}
+
+/* ── LOADING ── */
+.sec-loading{
+  padding:40px 20px;
+  text-align:center;
+  font-family:'Space Mono',monospace;
+  font-size:10px;
+  color:var(--textdim);
+  letter-spacing:.1em;
+}
+</style>
+</head>
+<body>
+
+<nav id="toc">
+  <a class="toc-home" href="../index.html">← index</a>
+  <span class="toc-sep">/</span>
+</nav>
+
+<div id="sections"></div>
+
+<script>
+const PAGES = [
+  { id: 'vrchat',     src: 'vrc/vrchat.html',     label: 'VRChat' },
+  { id: 'culture',    src: 'vrc/culture.html',     label: 'Culture' },
+  { id: 'market',     src: 'vrc/market.html',      label: 'Market' },
+  { id: 'pixiv',      src: 'vrc/pixiv.html',       label: 'pixiv' },
+];
+
+const toc   = document.getElementById('toc');
+const secs  = document.getElementById('sections');
+
+PAGES.forEach(p => {
+  // TOC ボタン
+  const btn = document.createElement('button');
+  btn.className = 'toc-btn';
+  btn.dataset.id = p.id;
+  btn.textContent = p.label;
+  btn.onclick = () => {
+    document.getElementById('wrap-' + p.id)?.scrollIntoView({ behavior: 'smooth' });
+  };
+  toc.appendChild(btn);
+
+  // セクション wrapper
+  const wrap = document.createElement('div');
+  wrap.className = 'sec-wrapper';
+  wrap.id = 'wrap-' + p.id;
+  wrap.style.scrollMarginTop = '52px';
+
+  const loading = document.createElement('div');
+  loading.className = 'sec-loading';
+  loading.textContent = '— loading ' + p.label + ' —';
+  wrap.appendChild(loading);
+
+  const iframe = document.createElement('iframe');
+  iframe.className = 'sec-iframe';
+  iframe.src = p.src;
+  iframe.title = p.label;
+  iframe.style.display = 'none';
+
+  // iframeの高さをコンテンツに合わせる
+  iframe.onload = () => {
+    loading.style.display = 'none';
+    iframe.style.display = 'block';
+    resizeIframe(iframe);
+    iframe.contentWindow.addEventListener('resize', () => resizeIframe(iframe));
+  };
+
+  wrap.appendChild(iframe);
+  secs.appendChild(wrap);
+});
+
+function resizeIframe(iframe) {
+  try {
+    const h = iframe.contentDocument?.documentElement?.scrollHeight || 600;
+    iframe.style.height = h + 'px';
+  } catch { iframe.style.height = '800px'; }
+}
+
+// スクロールスパイ
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    const id = e.target.id.replace('wrap-', '');
+    const btn = toc.querySelector(`[data-id="${id}"]`);
+    if (btn) btn.classList.toggle('active', e.isIntersecting);
+  });
+}, { rootMargin: '-10% 0px -80% 0px' });
+
+document.querySelectorAll('.sec-wrapper').forEach(w => observer.observe(w));
+
+// 定期的にiframeの高さを再チェック（コンテンツが遅延レンダリングする場合）
+setInterval(() => {
+  document.querySelectorAll('.sec-iframe').forEach(f => {
+    if (f.style.display !== 'none') resizeIframe(f);
+  });
+}, 1000);
+</script>
+</body>
+</html>

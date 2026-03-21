@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VRChat動向 — dashboard</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Space+Mono:wght@400;700&family=Noto+Sans+JP:wght@300;400;700&display=swap');
+:root{--bg:#060A0F;--surface:#0D1520;--surface2:#111C2A;--border:#1A2D45;--accent1:#00D4FF;--accent2:#FF6B35;--accent3:#39FF14;--accent4:#C77DFF;--danger:#FF3C3C;--warn:#FFB300;--bull:#00E676;--bear:#FF4040;--text:#D4E4F0;--textdim:#5A7A94;--textbrt:#FFFFFF}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:13px;line-height:1.6}
+.header{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--accent1);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 24px rgba(0,212,255,0.15)}
+.header-title{font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;color:var(--accent1);letter-spacing:2px}
+.header-meta{font-family:'Space Mono',monospace;font-size:9px;color:var(--textdim)}
+.container{max-width:100%;padding:16px 20px 40px}
+.section-title{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;padding:8px 0 8px 12px;border-left:3px solid;margin-bottom:12px;margin-top:24px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.card{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:12px 14px;position:relative}
+.card-accent{position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:6px 0 0 6px}
+.card-title{font-weight:700;font-size:12px;margin-bottom:5px;padding-left:2px}
+.card-body{font-size:11px;color:var(--text);line-height:1.65}
+.stat-card{background:var(--surface2);border-radius:6px;padding:12px 10px;text-align:center;border:1px solid var(--border)}
+.stat-label{font-size:9px;color:var(--textdim);letter-spacing:1.5px;margin-bottom:3px;font-family:'Space Mono',monospace}
+.stat-value{font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;line-height:1.1}
+.stat-sub{font-size:9px;color:var(--textdim);margin-top:3px}
+.world-card{background:var(--surface2);border:1px solid rgba(199,125,255,0.25);border-radius:6px;padding:9px 12px;display:flex;gap:9px;align-items:flex-start}
+.world-dot{width:7px;height:7px;border-radius:50%;margin-top:4px;flex-shrink:0;background:var(--accent4);box-shadow:0 0 5px var(--accent4)}
+.world-name{font-weight:700;font-size:11px;color:var(--accent4)}
+.world-desc{font-size:10px;color:var(--textdim);margin-top:2px}
+.c-cyan{color:var(--accent1)}.c-green{color:var(--accent3)}.c-purple{color:var(--accent4)}.c-warn{color:var(--warn)}.c-red{color:var(--danger)}
+.b-cyan{border-color:var(--accent1)!important}.b-green{border-color:var(--accent3)!important}.b-purple{border-color:var(--accent4)!important}.b-warn{border-color:var(--warn)!important}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--bull);box-shadow:0 0 5px var(--bull);animation:pulse 2s infinite;margin-right:4px;vertical-align:middle}
+@media(max-width:700px){.grid2,.grid4{grid-template-columns:1fr 1fr}.grid4{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.grid2,.grid4{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <div class="header-title" id="hd-title">▶ VRChat動向</div>
+    <div class="header-meta" id="hd-meta">loading...</div>
+  </div>
+  <span class="live-dot"></span>
+</div>
+<div class="container" id="app">
+  <div style="color:var(--textdim);font-size:11px;padding:40px 0;text-align:center">loading...</div>
+</div>
+
+<script>
+const COLOR_MAP = {
+  cyan:'var(--accent1)', green:'var(--accent3)', purple:'var(--accent4)',
+  warn:'var(--warn)', red:'var(--danger)', orange:'var(--accent2)'
+};
+
+async function load() {
+  let d;
+  try {
+    const r = await fetch('vrchat.json');
+    d = await r.json();
+  } catch {
+    document.getElementById('app').innerHTML = '<div style="color:var(--danger);padding:40px;text-align:center">vrchat.json が見つかりません</div>';
+    return;
+  }
+
+  document.getElementById('hd-meta').textContent = `updated: ${d._meta.updated}  vol: ${d._meta.vol}  survey: ${d._meta.survey_date}`;
+  document.title = `VRChat動向 — vol${d._meta.vol}`;
+
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+
+  // ── STATS ──
+  app.insertAdjacentHTML('beforeend', `
+    <div class="section-title b-cyan c-cyan">🎮 VRChat 最新情報 ── ${d.stats.version} Build ${d.stats.build}</div>
+    <div class="grid4" style="margin-bottom:12px" id="stats-grid"></div>
+  `);
+  const sg = document.getElementById('stats-grid');
+  const stats = [
+    { label:'最新バージョン', value: d.stats.version, sub: `Build ${d.stats.build} · Live`, color:'var(--accent1)' },
+    { label:'史上最大同時接続', value: d.stats.peak_concurrent, sub: d.stats.peak_event, color:'var(--bull)' },
+    { label:'VRC+ お気に入り上限', value: d.stats.vrcplus_favorites, sub: '400 → 800（2026.1.1〜 2倍）', color:'var(--accent1)' },
+    { label: d.stats.event_name, value: d.stats.event_period, sub: '開催中', color:'var(--accent4)' },
+  ];
+  stats.forEach(s => {
+    const el = document.createElement('div');
+    el.className = 'stat-card';
+    el.style.borderColor = s.color;
+    el.innerHTML = `<div class="stat-label">${s.label}</div><div class="stat-value" style="color:${s.color}">${s.value}</div><div class="stat-sub">${s.sub}</div>`;
+    sg.appendChild(el);
+  });
+
+  // ── UPDATES ──
+  app.insertAdjacentHTML('beforeend', `<div class="grid2" id="updates-grid"></div>`);
+  const ug = document.getElementById('updates-grid');
+  d.updates.forEach(u => {
+    const c = COLOR_MAP[u.color] || 'var(--accent1)';
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.style.borderColor = c;
+    el.innerHTML = `<div class="card-accent" style="background:${c}"></div><div class="card-title" style="color:${c};padding-left:10px">${u.title}</div><div class="card-body" style="padding-left:10px">${u.body}</div>`;
+    ug.appendChild(el);
+  });
+
+  // ── WORLDS ──
+  app.insertAdjacentHTML('beforeend', `
+    <div class="section-title b-purple c-purple" style="margin-top:28px">🌍 おすすめワールド</div>
+    <div class="grid2" id="worlds-grid"></div>
+  `);
+  const wg = document.getElementById('worlds-grid');
+  d.worlds.forEach(w => {
+    const el = document.createElement('div');
+    el.className = 'world-card';
+    el.innerHTML = `<div class="world-dot"></div><div><div class="world-name">${w.name}</div><div class="world-desc">${w.desc}</div></div>`;
+    wg.appendChild(el);
+  });
+}
+
+load();
+</script>
+</body>
+</html>

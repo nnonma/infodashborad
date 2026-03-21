@@ -1,0 +1,55 @@
+{
+  "_meta": { "updated": "2026-03-21", "survey_date": "2026-03-03" },
+  "kpi": {
+    "total_users":    { "label": "累計ユーザー",     "value": "1.19億",   "delta": "+3.2%",  "color": "k1" },
+    "monthly_visits": { "label": "月間訪問",         "value": "300-400M", "delta": "安定",   "color": "k2" },
+    "booth_3d":       { "label": "BOOTH 3D売上",     "value": "58億円+",  "delta": "+187%",  "color": "k3" },
+    "overseas":       { "label": "海外ユーザー比率", "value": "50%",      "delta": "↑拡大",  "color": "k4" },
+    "ai_ratio":       { "label": "AI生成割合",       "value": "〜25%",    "delta": "↑増加中","color": "k5" },
+    "r18_efficiency": { "label": "最高効率ジャンル", "value": "R-18手描き","delta": "独占可", "color": "k6" }
+  },
+  "supply_demand": [
+    { "id": "sd001", "label": "一般向け手描き",     "supply": 55, "demand": 45, "ocean": "red",    "note": "供給過多・競合激化" },
+    { "id": "sd002", "label": "R-18手描きオリジナル","supply": 20, "demand": 35, "ocean": "blue",   "note": "最高効率ジャンル" },
+    { "id": "sd003", "label": "AI生成（全般）",      "supply": 70, "demand": 30, "ocean": "red",    "note": "急速な供給過剰" },
+    { "id": "sd004", "label": "VRC 3Dアバター",      "supply": 30, "demand": 65, "ocean": "blue",   "note": "BOOTH爆発的成長" },
+    { "id": "sd005", "label": "BL・GL",              "supply": 35, "demand": 50, "ocean": "mid",    "note": "固定ファン厚い" },
+    { "id": "sd006", "label": "ニッチ特殊性癖",      "supply": 10, "demand": 55, "ocean": "blue",   "note": "職人が独占できる" }
+  ],
+  "niche_communities": [
+    { "id": "nc001", "icon": "🎮", "name": "VRChat 3Dアバター",  "stats": "BOOTH 3D 58億円超 / 前年比187%",    "status": "hot" },
+    { "id": "nc002", "icon": "🔞", "name": "R-18 特定CP",        "stats": "FANBOX最大収益源 / 需要:供給=7:3",  "status": "hot" },
+    { "id": "nc003", "icon": "👗", "name": "VRC衣装・着せ替え",  "stats": "アバター改変文化 / 急拡大中",       "status": "hot" },
+    { "id": "nc004", "icon": "📖", "name": "BL（ボーイズラブ）", "stats": "女性高支出層 / 高エンゲージメント", "status": "grow" },
+    { "id": "nc005", "icon": "🎙️", "name": "ASMR・耳舐め",       "stats": "音声市場連動 / 需要が供給超過",    "status": "grow" },
+    { "id": "nc006", "icon": "🎭", "name": "VTuber二次創作",     "stats": "権利グレーだが需要爆発中",          "status": "grow" },
+    { "id": "nc007", "icon": "⚔️", "name": "東方Project",        "stats": "7,000+作品 / 同人文化の聖地",      "status": "stable" },
+    { "id": "nc008", "icon": "🌸", "name": "百合（GL）",         "stats": "12,000+作品 / 固定ファン厚い",     "status": "stable" },
+    { "id": "nc009", "icon": "🤖", "name": "AI絵描きコミュニティ","stats": "NovelAI/SD / 専用ランキング分離",   "status": "new" },
+    { "id": "nc010", "icon": "🌍", "name": "海外発オリジナル",   "stats": "投稿の1/3が海外から / 急拡大",      "status": "new" }
+  ],
+  "fetish_majority": [
+    { "rank": 1, "name": "中出し",           "dlsite": "154,330件", "trend": "↑ AI生成で急増",    "bar": 95, "color": "#ff5f87", "note": "成人向けの「基本形」。ほぼ必須タグ。AI生成が最も浸透している。" },
+    { "rank": 2, "name": "巨乳／爆乳",       "dlsite": "109,504件", "trend": "↑ 不変の王道",      "bar": 88, "color": "#ff5f87", "note": "最大の「記号的欲求」。AI生成が特に得意とする領域で供給が加速。" },
+    { "rank": 3, "name": "フェラチオ／おっぱい","dlsite": "80,000件超","trend": "→ 定常的人気",    "bar": 80, "color": "#ff8c42", "note": "シチュエーション定番。多くの作品に必ず含まれる「汎用タグ」化している。" },
+    { "rank": 4, "name": "制服／少女",       "dlsite": "多数",      "trend": "↑ 需要優位",        "bar": 72, "color": "#b87aff", "note": "「年齢×属性」の組み合わせ。普遍的な人気を持ち、全年齢コンテンツへのスライドも容易。" },
+    { "rank": 5, "name": "ラブラブ／あまあま","dlsite": "58,559件", "trend": "↑ 安定需要",        "bar": 65, "color": "#ffc94a", "note": "女性ユーザー・ライト層が多い。BL・百合との融合でさらに需要が拡大。" }
+  ],
+  "fetish_minority": [
+    { "rank": 1, "name": "断面図／内部透過", "dlsite": "16,319件", "sd": "需要8:供給2", "trend": "↑↑ 強ブルー",  "bar": 85, "color": "#b87aff", "note": "描ける人が限られ希少性が高い。AI生成が苦手な複雑な構造描写。" },
+    { "rank": 2, "name": "常識改変／洗脳",   "dlsite": "396件",    "sd": "需要9:供給1", "trend": "↑↑↑ 独占級",  "bar": 90, "color": "#3de8b0", "note": "漫画・小説との親和性が高くAI静止画が極めて苦手な領域。" },
+    { "rank": 3, "name": "感覚遮断／拘束系特殊","dlsite": "76件",  "sd": "独占市場",    "trend": "独占市場",      "bar": 95, "color": "#3de8b0", "note": "競合ほぼゼロ。継続FANBOX支援率が最高クラス。" },
+    { "rank": 4, "name": "寝取られ（NTR）",  "dlsite": "26,600件", "sd": "需要6:供給4", "trend": "↑ 固定ファン厚い","bar": 78, "color": "#ffc94a", "note": "「ハマると抜けられない」ファン層が厚く、継続需要が非常に安定。" },
+    { "rank": 5, "name": "BL受け／TS／フタナリ","dlsite": "BL 33,428件","sd": "根強い需要", "trend": "↑ 根強い需要", "bar": 70, "color": "#b87aff", "note": "VRChatの性別流動的な文化とも接点が多い。" }
+  ],
+  "baseline": {
+    "survey_date": "2026.03.03",
+    "total_users": "1.19億",
+    "monthly_visits": "300-400M",
+    "booth_3d": "58億円+ (YoY+187%)",
+    "ai_ratio": "〜25%",
+    "r18_sd": "35% / 20%",
+    "top_genre": "R-18手描きオリジナル",
+    "source": "ピクシブ公式・DLsite実データ・SimilarWeb"
+  }
+}
