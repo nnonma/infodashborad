@@ -1,12 +1,9 @@
 # auto-push.ps1 - ポーリング方式
 $watchPath = "C:\Users\nonma\Documents\infodashborad"
-
 Set-Location $watchPath
-Write-Host "監視開始: $watchPath"
-Write-Host "Ctrl+C で停止"
-
+Write-Host "check start: $watchPath"
+Write-Host "Ctrl+C stop commund"
 $lastHash = ""
-
 while ($true) {
     Start-Sleep -Seconds 5
     $status = git status --porcelain
@@ -16,6 +13,7 @@ while ($true) {
         $lastHash = $currentHash
         git add .
         git commit -m "auto: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+        git pull --no-edit origin main
         git push
         Write-Host "[$(Get-Date -Format 'HH:mm:ss')] pushed"
     }
