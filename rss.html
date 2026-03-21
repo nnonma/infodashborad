@@ -14,46 +14,36 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-seri
 .back-btn{text-decoration:none;font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;color:var(--text2);padding:5px 12px;border-radius:20px;background:white;box-shadow:0 2px 8px var(--shadow);transition:transform .15s}
 .back-btn:hover{transform:translateY(-1px)}
 .header-title{font-family:'Nunito',sans-serif;font-size:16px;font-weight:800;color:var(--text)}
-.live-badge{font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--pink2);color:#c06080;font-family:'Nunito',sans-serif;animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
-.refresh-btn{background:white;border:1.5px solid var(--mint);border-radius:20px;padding:5px 14px;font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;color:#4a9070;cursor:pointer;transition:transform .15s;box-shadow:0 2px 8px var(--shadow)}
-.refresh-btn:hover{transform:translateY(-1px)}
+.live-badge{font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--pink2);color:#c06080;font-family:'Nunito',sans-serif}
+.updated-tag{font-size:10px;color:var(--text3);font-family:'Nunito',sans-serif}
 .container{max-width:720px;margin:0 auto;padding:20px 20px 80px}
 .feed-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
 .tab-btn{font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;padding:6px 14px;border-radius:20px;border:1.5px solid transparent;cursor:pointer;transition:all .15s;background:white;color:var(--text2);box-shadow:0 2px 8px var(--shadow)}
 .tab-btn.active{border-color:currentColor}
+.tab-all{color:#c07040}.tab-all.active{background:var(--peach2)}
 .tab-riken{color:#c06080}.tab-riken.active{background:var(--pink2)}
 .tab-nhk{color:#7060c0}.tab-nhk.active{background:var(--lav2)}
 .tab-arxiv{color:#4080b0}.tab-arxiv.active{background:var(--sky2)}
 .tab-jst{color:#409070}.tab-jst.active{background:var(--mint2)}
-.tab-all{color:#c07040}.tab-all.active{background:var(--peach2)}
 .feed-section{margin-bottom:28px}
-.feed-label{font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;color:var(--text2);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.feed-label{font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px}
 .feed-label::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:currentColor;opacity:.5}
 .article-list{display:flex;flex-direction:column;gap:8px}
 .article-card{background:white;border-radius:16px;padding:14px 16px;box-shadow:0 2px 12px var(--shadow);text-decoration:none;color:inherit;display:block;transition:transform .15s,box-shadow .15s;border-left:3px solid transparent}
 .article-card:hover{transform:translateY(-1px);box-shadow:0 4px 18px var(--shadow)}
+.article-card.is-read{opacity:.6}
 .article-title{font-size:13px;font-weight:500;color:var(--text);line-height:1.6;margin-bottom:5px}
 .article-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .article-source{font-family:'Nunito',sans-serif;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px}
 .article-date{font-size:10px;color:var(--text3);font-family:'Nunito',sans-serif}
 .article-desc{font-size:11px;color:var(--text2);line-height:1.6;margin-top:5px}
-.src-riken{background:var(--pink2);color:#c06080}
-.src-nhk{background:var(--lav2);color:#7060c0}
-.src-arxiv{background:var(--sky2);color:#4080b0}
-.src-jst{background:var(--mint2);color:#409070}
-.src-riken-card{border-left-color:var(--pink)}
-.src-nhk-card{border-left-color:var(--lav)}
-.src-arxiv-card{border-left-color:var(--sky)}
-.src-jst-card{border-left-color:var(--mint)}
-.loading-box{text-align:center;padding:40px;font-family:'Nunito',sans-serif;font-size:13px;color:var(--text3)}
-.loading-box .spin{font-size:28px;display:block;animation:spin 1.5s linear infinite;margin-bottom:8px}
+.read-btn{font-size:10px;font-family:'Nunito',sans-serif;font-weight:700;padding:2px 8px;border-radius:10px;background:var(--bg);color:var(--text3);border:1px solid var(--pink2);cursor:pointer;margin-left:auto;flex-shrink:0}
+.read-btn.done{background:var(--mint2);color:#409070;border-color:var(--mint)}
+.loading-box{text-align:center;padding:60px;font-family:'Nunito',sans-serif;font-size:13px;color:var(--text3)}
+.loading-spin{font-size:32px;display:block;animation:spin 1.5s linear infinite;margin-bottom:10px}
 @keyframes spin{to{transform:rotate(360deg)}}
-.error-box{background:var(--pink2);border-radius:16px;padding:16px;font-size:12px;color:#c06080;font-family:'Nunito',sans-serif;text-align:center;margin-bottom:10px}
-.last-updated{font-family:'Nunito',sans-serif;font-size:10px;color:var(--text3);text-align:right;margin-bottom:12px}
-.read-btn{font-size:10px;font-family:'Nunito',sans-serif;font-weight:700;padding:2px 8px;border-radius:10px;background:var(--bg);color:var(--text3);border:1px solid var(--pink2);cursor:pointer;margin-left:auto}
-.read-btn.read-done{background:var(--mint2);color:#409070;border-color:var(--mint)}
-.empty-state{text-align:center;padding:40px 20px;font-size:13px;color:var(--text3);font-family:'Nunito',sans-serif}
+.error-box{background:var(--pink2);border-radius:16px;padding:20px;text-align:center;font-family:'Nunito',sans-serif;font-size:13px;color:#c06080;line-height:1.8}
+.empty-state{text-align:center;padding:40px;color:var(--text3);font-family:'Nunito',sans-serif;font-size:13px}
 </style>
 </head>
 <body>
@@ -61,11 +51,10 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-seri
   <div class="header-left">
     <a class="back-btn" href="index.html">← back</a>
     <span class="header-title">🔴 RSS Live</span>
-    <span class="live-badge">LIVE</span>
+    <span class="live-badge">CACHED</span>
   </div>
-  <button class="refresh-btn" onclick="fetchAll()">↻ 更新</button>
+  <span class="updated-tag" id="updated-tag"></span>
 </div>
-
 <div class="container">
   <div class="feed-tabs">
     <button class="tab-btn tab-all active" onclick="filterFeed('all',this)">✦ すべて</button>
@@ -74,176 +63,89 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-seri
     <button class="tab-btn tab-arxiv" onclick="filterFeed('arxiv',this)">📄 arXiv</button>
     <button class="tab-btn tab-jst" onclick="filterFeed('jst',this)">🧪 JST</button>
   </div>
-
-  <div class="last-updated" id="last-updated"></div>
-  <div id="feed-container"></div>
+  <div id="feed-container">
+    <div class="loading-box">
+      <span class="loading-spin">🌸</span>読み込み中...
+    </div>
+  </div>
 </div>
-
 <script>
-// RSS フィードの定義
-// CORS制限のためRSSはCORSプロキシ経由で取得
-const PROXY = 'https://api.allorigins.win/get?url=';
+const FEED_ORDER = ['riken','nhk','arxiv','jst'];
+const SOURCE_STYLES = {
+  riken: {cls:'src-riken', border:'#ffb5c8', bg:'#ffd6e0', color:'#c06080'},
+  nhk:   {cls:'src-nhk',   border:'#c9b8f0', bg:'#e4dcf7', color:'#7060c0'},
+  arxiv: {cls:'src-arxiv', border:'#a8d8ea', bg:'#d4eef7', color:'#4080b0'},
+  jst:   {cls:'src-jst',   border:'#b5ead7', bg:'#d4f5e9', color:'#409070'},
+};
 
-const FEEDS = [
-  {
-    id: 'riken',
-    label: '🔬 理化学研究所',
-    url: 'https://www.riken.jp/press/index.html',
-    rssUrl: 'https://www.riken.jp/medialibrary/riken/press/rss.xml',
-    cls: 'src-riken',
-    cardCls: 'src-riken-card',
-    color: '#c06080'
-  },
-  {
-    id: 'nhk',
-    label: '📺 NHK サイエンス',
-    url: 'https://www3.nhk.or.jp/news/',
-    rssUrl: 'https://www3.nhk.or.jp/rss/news/cat05.xml',
-    cls: 'src-nhk',
-    cardCls: 'src-nhk-card',
-    color: '#7060c0'
-  },
-  {
-    id: 'arxiv',
-    label: '📄 arXiv cs.AI',
-    url: 'https://arxiv.org/',
-    rssUrl: 'https://rss.arxiv.org/rss/cs.AI',
-    cls: 'src-arxiv',
-    cardCls: 'src-arxiv-card',
-    color: '#4080b0'
-  },
-  {
-    id: 'jst',
-    label: '🧪 JST 最新情報',
-    url: 'https://www.jst.go.jp/',
-    rssUrl: 'https://www.jst.go.jp/pr/announce/rss.xml',
-    cls: 'src-jst',
-    cardCls: 'src-jst-card',
-    color: '#409070'
-  }
-];
-
-let allArticles = [];
-let readIds = new Set(JSON.parse(localStorage.getItem('read_ids') || '[]'));
+let cache = null;
+let readIds = new Set(JSON.parse(localStorage.getItem('rss_read') || '[]'));
 let currentFilter = 'all';
 
-async function fetchFeed(feed) {
-  try {
-    const proxyUrl = PROXY + encodeURIComponent(feed.rssUrl);
-    const res = await fetch(proxyUrl);
-    if (!res.ok) throw new Error('fetch failed');
-    const data = await res.json();
-    const xml = new DOMParser().parseFromString(data.contents, 'text/xml');
-
-    const items = xml.querySelectorAll('item');
-    const articles = [];
-    items.forEach((item, i) => {
-      if (i >= 8) return; // 各フィード最大8件
-      const title = item.querySelector('title')?.textContent?.trim() || '';
-      const link  = item.querySelector('link')?.textContent?.trim() ||
-                    item.querySelector('link')?.getAttribute('href') || '#';
-      const desc  = item.querySelector('description')?.textContent?.replace(/<[^>]+>/g,'').trim().slice(0,120) || '';
-      const pubDate = item.querySelector('pubDate')?.textContent?.trim() || '';
-      const dateStr = pubDate ? new Date(pubDate).toLocaleDateString('ja-JP', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
-
-      if (title) {
-        articles.push({
-          id: feed.id + '_' + i + '_' + title.slice(0,10),
-          feedId: feed.id,
-          title,
-          link,
-          desc,
-          date: dateStr,
-          cls: feed.cls,
-          cardCls: feed.cardCls,
-          label: feed.label,
-          color: feed.color
-        });
-      }
-    });
-    return articles;
-  } catch(e) {
-    console.warn('Feed error:', feed.id, e);
-    return [];
-  }
-}
-
-async function fetchAll() {
+async function load() {
   const container = document.getElementById('feed-container');
-  container.innerHTML = `<div class="loading-box"><span class="spin">🌸</span>フィードを取得中...</div>`;
-  document.getElementById('last-updated').textContent = '';
-
-  const results = await Promise.all(FEEDS.map(fetchFeed));
-  allArticles = results.flat();
-
-  // 取得できなかった場合のフォールバック
-  if (allArticles.length === 0) {
+  try {
+    const res = await fetch('rss_cache.json?t=' + Date.now());
+    if (!res.ok) throw new Error('not found');
+    cache = await res.json();
+    document.getElementById('updated-tag').textContent = '更新: ' + (cache.updated || '不明');
+    renderFeed(currentFilter);
+  } catch(e) {
     container.innerHTML = `
       <div class="error-box">
-        🌧 フィードの取得に失敗しました<br>
-        <small>ネットワーク環境によってはCORSエラーが発生します。<br>
-        ローカル環境では制限があるため、GitHub Pages上でアクセスしてください。</small>
+        🌧 rss_cache.json が見つかりません<br>
+        <small>GitHub Actionsが実行されるとフィードが取得されます。<br>
+        リポジトリにpushするとbuild.ymlが自動でRSSを取得・保存します。</small>
       </div>
-      ${getFallbackHTML()}
     `;
-    return;
   }
-
-  document.getElementById('last-updated').textContent =
-    '最終更新: ' + new Date().toLocaleString('ja-JP');
-
-  renderFeed(currentFilter);
 }
 
 function renderFeed(filter) {
   const container = document.getElementById('feed-container');
   container.innerHTML = '';
+  if (!cache) return;
 
-  const filtered = filter === 'all'
-    ? allArticles
-    : allArticles.filter(a => a.feedId === filter);
+  const feedIds = filter === 'all' ? FEED_ORDER : [filter];
 
-  if (!filtered.length) {
+  let hasContent = false;
+  feedIds.forEach(id => {
+    const feed = cache.feeds[id];
+    if (!feed || !feed.articles.length) return;
+    hasContent = true;
+    renderSection(container, id, feed);
+  });
+
+  if (!hasContent) {
     container.innerHTML = '<div class="empty-state">🌿 記事がありません</div>';
-    return;
-  }
-
-  if (filter === 'all') {
-    // フィード別にグループ化して表示
-    FEEDS.forEach(feed => {
-      const arts = filtered.filter(a => a.feedId === feed.id);
-      if (!arts.length) return;
-      renderSection(container, feed.label, arts);
-    });
-  } else {
-    const feedDef = FEEDS.find(f => f.id === filter);
-    renderSection(container, feedDef?.label || filter, filtered);
   }
 }
 
-function renderSection(container, label, articles) {
+function renderSection(container, feedId, feed) {
+  const style = SOURCE_STYLES[feedId] || {border:'#ccc',bg:'#eee',color:'#666'};
   const sec = document.createElement('div');
   sec.className = 'feed-section';
-  sec.innerHTML = `<div class="feed-label" style="color:${articles[0]?.color}">${label}</div>`;
+  sec.innerHTML = `<div class="feed-label" style="color:${feed.color||style.color}">${feed.label}</div>`;
 
   const list = document.createElement('div');
   list.className = 'article-list';
 
-  articles.forEach(a => {
+  feed.articles.forEach(a => {
+    const isRead = readIds.has(a.id);
     const card = document.createElement('a');
-    card.className = 'article-card ' + a.cardCls;
-    card.href = a.link;
+    card.className = 'article-card' + (isRead ? ' is-read' : '');
+    card.href = a.link || '#';
     card.target = '_blank';
     card.rel = 'noopener';
-
-    const isRead = readIds.has(a.id);
+    card.style.borderLeftColor = style.border;
 
     card.innerHTML = `
-      <div class="article-title" style="opacity:${isRead?'.6':'1'}">${a.title}</div>
+      <div class="article-title">${a.title}</div>
       <div class="article-meta">
-        <span class="article-source ${a.cls}">${a.feedId.toUpperCase()}</span>
-        <span class="article-date">${a.date}</span>
-        <button class="read-btn ${isRead?'read-done':''}" data-id="${a.id}" onclick="toggleRead(event,'${a.id}',this)">${isRead?'✓ 既読':'既読にする'}</button>
+        <span class="article-source" style="background:${style.bg};color:${style.color}">${feedId.toUpperCase()}</span>
+        <span class="article-date">${a.date || ''}</span>
+        <button class="read-btn ${isRead?'done':''}" data-id="${a.id}"
+          onclick="toggleRead(event,'${a.id}',this)">${isRead?'✓ 既読':'既読'}</button>
       </div>
       ${a.desc ? `<div class="article-desc">${a.desc}…</div>` : ''}
     `;
@@ -257,48 +159,29 @@ function renderSection(container, label, articles) {
 function toggleRead(e, id, btn) {
   e.preventDefault();
   e.stopPropagation();
+  const card = btn.closest('.article-card');
   if (readIds.has(id)) {
     readIds.delete(id);
     btn.className = 'read-btn';
-    btn.textContent = '既読にする';
-    btn.closest('.article-card').querySelector('.article-title').style.opacity = '1';
+    btn.textContent = '既読';
+    card.classList.remove('is-read');
   } else {
     readIds.add(id);
-    btn.className = 'read-btn read-done';
+    btn.className = 'read-btn done';
     btn.textContent = '✓ 既読';
-    btn.closest('.article-card').querySelector('.article-title').style.opacity = '.6';
+    card.classList.add('is-read');
   }
-  localStorage.setItem('read_ids', JSON.stringify([...readIds]));
+  localStorage.setItem('rss_read', JSON.stringify([...readIds]));
 }
 
 function filterFeed(filter, btn) {
   currentFilter = filter;
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  if (allArticles.length) renderFeed(filter);
+  renderFeed(filter);
 }
 
-function getFallbackHTML() {
-  return `
-    <div class="feed-section">
-      <div class="feed-label" style="color:var(--text2)">📌 登録フィード一覧</div>
-      <div class="article-list">
-        ${FEEDS.map(f => `
-          <a class="article-card ${f.cardCls}" href="${f.url}" target="_blank" rel="noopener">
-            <div class="article-title">${f.label}</div>
-            <div class="article-meta">
-              <span class="article-source ${f.cls}">${f.id.toUpperCase()}</span>
-              <span class="article-date">直接リンク</span>
-            </div>
-          </a>
-        `).join('')}
-      </div>
-    </div>
-  `;
-}
-
-// 初回読み込み
-fetchAll();
+load();
 </script>
 </body>
 </html>
