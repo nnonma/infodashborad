@@ -1,0 +1,25 @@
+{
+  "updated": "2026-03-21 06:49 UTC",
+  "feeds": {
+    "riken": {
+      "label": "🔬 理化学研究所",
+      "color": "#c06080",
+      "articles": []
+    },
+    "nhk": {
+      "label": "📺 NHK サイエンス",
+      "color": "#7060c0",
+      "articles": []
+    },
+    "arxiv": {
+      "label": "📄 arXiv cs.AI",
+      "color": "#4080b0",
+      "articles": []
+    },
+    "jst": {
+      "label": "🧪 JST 最新情報",
+      "color": "#409070",
+      "articles": []
+    }
+  }
+}
