@@ -129,6 +129,11 @@
     ],
     "vrc": [
       {
+        "label": "VRC Terminal",
+        "href": "terminal.html",
+        "id": "terminal"
+      },
+      {
         "label": "Culture",
         "href": "vrc/culture.html",
         "id": "culture"
