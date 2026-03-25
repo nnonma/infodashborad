@@ -1,5 +1,5 @@
 {
-  "updated": "2026-03-21 06:49 UTC",
+  "updated": "2026-03-25 04:41 UTC",
   "feeds": {
     "riken": {
       "label": "🔬 理化学研究所",
@@ -14,7 +14,64 @@
     "arxiv": {
       "label": "📄 arXiv cs.AI",
       "color": "#4080b0",
-      "articles": []
+      "articles": [
+        {
+          "id": "arxiv_0",
+          "title": "Memory Bear AI Memory Science Engine for Multimodal Affective Intelligence: A Technical Report",
+          "link": "https://arxiv.org/abs/2603.22306",
+          "desc": "arXiv:2603.22306v1 Announce Type: new \nAbstract: Affective judgment in real interaction is rarely a purely local predict",
+          "date": "03/25 00:00"
+        },
+        {
+          "id": "arxiv_1",
+          "title": "The Efficiency Attenuation Phenomenon: A Computational Challenge to the Language of Thought Hypothesis",
+          "link": "https://arxiv.org/abs/2603.22312",
+          "desc": "arXiv:2603.22312v1 Announce Type: new \nAbstract: This paper computationally investigates whether thought requires a lang",
+          "date": "03/25 00:00"
+        },
+        {
+          "id": "arxiv_2",
+          "title": "Dynamic Fusion-Aware Graph Convolutional Neural Network for Multimodal Emotion Recognition in Conversations",
+          "link": "https://arxiv.org/abs/2603.22345",
+          "desc": "arXiv:2603.22345v1 Announce Type: new \nAbstract: Multimodal emotion recognition in conversations (MERC) aims to identify",
+          "date": "03/25 00:00"
+        },
+        {
+          "id": "arxiv_3",
+          "title": "Intelligence Inertia: Physical Principles and Applications",
+          "link": "https://arxiv.org/abs/2603.22347",
+          "desc": "arXiv:2603.22347v1 Announce Type: new \nAbstract: While Landauer's principle establishes the fundamental thermodynamic fl",
+          "date": "03/25 00:00"
+        },
+        {
+          "id": "arxiv_4",
+          "title": "Session Risk Memory (SRM): Temporal Authorization for Deterministic Pre-Execution Safety Gates",
+          "link": "https://arxiv.org/abs/2603.22350",
+          "desc": "arXiv:2603.22350v1 Announce Type: new \nAbstract: Deterministic pre-execution safety gates evaluate whether individual ag",
+          "date": "03/25 00:00"
+        },
+        {
+          "id": "arxiv_5",
+          "title": "STEM Agent: A Self-Adapting, Tool-Enabled, Extensible Architecture for Multi-Protocol AI Agent Systems",
+          "link": "https://arxiv.org/abs/2603.22359",
+          "desc": "arXiv:2603.22359v1 Announce Type: new \nAbstract: Current AI agent frameworks commit early to a single interaction protoc",
+          "date": "03/25 00:00"
+        },
+        {
+          "id": "arxiv_6",
+          "title": "From Static Templates to Dynamic Runtime Graphs: A Survey of Workflow Optimization for LLM Agents",
+          "link": "https://arxiv.org/abs/2603.22386",
+          "desc": "arXiv:2603.22386v1 Announce Type: new \nAbstract: Large language model (LLM)-based systems are becoming increasingly popu",
+          "date": "03/25 00:00"
+        },
+        {
+          "id": "arxiv_7",
+          "title": "Computational Arbitrage in AI Model Markets",
+          "link": "https://arxiv.org/abs/2603.22404",
+          "desc": "arXiv:2603.22404v1 Announce Type: new \nAbstract: Consider a market of competing model providers selling query access to ",
+          "date": "03/25 00:00"
+        }
+      ]
     },
     "jst": {
       "label": "🧪 JST 最新情報",
