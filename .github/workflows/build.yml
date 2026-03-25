@@ -1,0 +1,170 @@
+name: build and deploy
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: validate data.json
+        run: |
+          python3 -c "
+          import json, sys
+          try:
+              with open('data.json', 'r', encoding='utf-8') as f:
+                  json.load(f)
+              print('data.json: OK')
+          except json.JSONDecodeError as e:
+              print(f'data.json: ERROR — {e}')
+              sys.exit(1)
+          "
+
+      - name: generate links
+        run: |
+          python3 - <<'PYEOF'
+          import json, os, re
+
+          with open('data.json', 'r', encoding='utf-8') as f:
+              data = json.load(f)
+
+          def get_label(filepath, fallback):
+              try:
+                  with open(filepath, 'r', encoding='utf-8') as f:
+                      content = f.read()
+                  m = re.search(r'<title>([^<]+)</title>', content, re.IGNORECASE)
+                  if m:
+                      label = re.sub(r'\s*[—\-–].+$', '', m.group(1)).strip()
+                      return label if label else fallback
+              except:
+                  pass
+              return fallback
+
+          # 除外フォルダ
+          EXCLUDED = {'.github', '_proto', 'node_modules', '.git', 'vrc'}
+
+          # ルート直下のフォルダを自動検出（_や.始まり以外・除外リスト以外）
+          auto_folders = sorted([
+              d for d in os.listdir('.')
+              if os.path.isdir(d)
+              and not d.startswith('_')
+              and not d.startswith('.')
+              and d not in EXCLUDED
+          ])
+
+          for folder in auto_folders:
+              files = sorted([f for f in os.listdir(folder) if f.endswith('.html')])
+              entries = []
+              for fname in files:
+                  fpath = os.path.join(folder, fname)
+                  fallback = fname.replace('.html', '')
+                  label = get_label(fpath, fallback)
+                  entries.append({'label': label, 'href': f'{folder}/{fname}'})
+              data['links'][folder] = entries
+              print(f'{folder}/: {len(entries)} files -> links.{folder}')
+
+          # vrc/ は terminal.html を先頭に固定
+          vrc_pages = [
+              {'label': 'VRC Terminal', 'href': 'terminal.html', 'id': 'terminal'}
+          ]
+          if os.path.isdir('vrc'):
+              files = sorted([f for f in os.listdir('vrc') if f.endswith('.html')])
+              for fname in files:
+                  fpath = os.path.join('vrc', fname)
+                  fallback = fname.replace('.html', '')
+                  label = get_label(fpath, fallback)
+                  vrc_pages.append({'label': label, 'href': f'vrc/{fname}', 'id': fname.replace('.html','')})
+          data['links']['vrc'] = vrc_pages
+          print(f'vrc/: {len(vrc_pages)} entries -> links.vrc')
+
+          with open('data.json', 'w', encoding='utf-8') as f:
+              json.dump(data, f, ensure_ascii=False, indent=2)
+          print('links updated.')
+          PYEOF
+
+      - name: fetch rss feeds
+        run: |
+          python3 - <<'PYEOF'
+          import json, urllib.request, xml.etree.ElementTree as ET
+          from datetime import datetime, timezone
+          import re
+
+          FEEDS = [
+              {'id':'riken',  'label':'🔬 理化学研究所', 'url':'https://www.riken.jp/medialibrary/riken/press/rss.xml',  'color':'#c06080','max':8},
+              {'id':'nhk',    'label':'📺 NHK サイエンス','url':'https://www3.nhk.or.jp/rss/news/cat05.xml',             'color':'#7060c0','max':8},
+              {'id':'arxiv',  'label':'📄 arXiv cs.AI',  'url':'https://rss.arxiv.org/rss/cs.AI',                       'color':'#4080b0','max':8},
+              {'id':'jst',    'label':'🧪 JST 最新情報', 'url':'https://www.jst.go.jp/pr/announce/rss.xml',             'color':'#409070','max':8},
+          ]
+
+          def strip_html(text):
+              return re.sub(r'<[^>]+>', '', text or '').strip()
+
+          def parse_date(s):
+              if not s: return ''
+              for fmt in ['%a, %d %b %Y %H:%M:%S %z','%a, %d %b %Y %H:%M:%S %Z']:
+                  try:
+                      return datetime.strptime(s.strip(), fmt).strftime('%m/%d %H:%M')
+                  except: pass
+              return s[:16] if s else ''
+
+          results = {}
+          for feed in FEEDS:
+              articles = []
+              try:
+                  req = urllib.request.Request(feed['url'], headers={'User-Agent':'Mozilla/5.0'})
+                  with urllib.request.urlopen(req, timeout=15) as r:
+                      root = ET.fromstring(r.read())
+                  for i, item in enumerate(root.findall('.//item')):
+                      if i >= feed['max']: break
+                      title = strip_html(item.findtext('title',''))
+                      link  = item.findtext('link','')
+                      desc  = strip_html(item.findtext('description',''))[:120]
+                      date  = parse_date(item.findtext('pubDate',''))
+                      if title:
+                          articles.append({'id':f"{feed['id']}_{i}",'title':title,'link':link,'desc':desc,'date':date})
+                  print(f"{feed['id']}: {len(articles)} articles")
+              except Exception as e:
+                  print(f"{feed['id']}: ERROR — {e}")
+              results[feed['id']] = {'label':feed['label'],'color':feed['color'],'articles':articles}
+
+          cache = {'updated':datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC'),'feeds':results}
+          with open('rss_cache.json','w',encoding='utf-8') as f:
+              json.dump(cache, f, ensure_ascii=False, indent=2)
+          print('rss_cache.json saved.')
+          PYEOF
+
+      - name: commit updated files
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data.json rss_cache.json
+          if git diff --cached --quiet; then
+            echo "no changes to commit"
+          else
+            git commit -m "auto: update links + rss cache [skip ci]"
+            git push
+          fi
+
+      - name: setup pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: deploy to pages
+        id: deployment
+        uses: actions/deploy-pages@v4
