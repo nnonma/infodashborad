@@ -155,7 +155,12 @@
       }
     ],
     "docs": [],
-    "editor": []
+    "editor": [
+      {
+        "label": "ロッド物語",
+        "href": "editor/rod_StoryNavigator.html"
+      }
+    ]
   },
   "culture": {
     "_label": "文化系",
